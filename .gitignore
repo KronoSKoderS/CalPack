@@ -104,3 +104,4 @@ ENV/
 .idea/*
 .vs/
 Concorde.pyproj.user
+scratchpad.py
