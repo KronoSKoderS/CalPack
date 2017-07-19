@@ -6,8 +6,7 @@
     <ProjectHome>.</ProjectHome>
     <StartupFile>
     </StartupFile>
-    <SearchPath>
-    </SearchPath>
+    <SearchPath>..\..\Concorde</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>test</Name>
@@ -23,6 +22,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BasicPackets.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\concorde\concorde.pyproj">
+      <Name>concorde</Name>
+      <Project>{ab0738fb-2ba7-4b55-a0ba-7142ec028e9a}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
