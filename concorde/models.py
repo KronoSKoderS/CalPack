@@ -66,17 +66,23 @@ class Field():
         self._bit_len = kwargs.get('bit_len', 16)
         self._num_words = kwargs.get('num_words', 1)
 
-    def __lt__(self, other):
-        raise NotImplementedError("The less than mixin MUST be defined!")
-
     def __eq__(self, other):
-        return not self < other and not other < self
+        if isinstance(other, Field):
+            return self._val == other._val
+        return self._val == other
 
-    def __ne__(self, other):
-        return self < other or other < self
+    def __lt__(self, other):
+        if isinstance(other, Field):
+            return self._val < other._val
+        return self._val < other
 
     def __gt__(self, other):
-        return other < self
+        if isinstance(other, Field):
+            return self._val > other._val
+        return self._val > other
+
+    def __ne__(self, other):
+        return not self == other
 
     def __ge__(self, other):
         return not self < other
@@ -103,9 +109,7 @@ class IntField(Field):
 
         self._val = kwargs.get('initial_value', 0)
 
-    def __lt__(self, other):
-        return self._val > other
-
+    
 
 class ReservedField(Field):
     pass
