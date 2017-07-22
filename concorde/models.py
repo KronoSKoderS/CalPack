@@ -24,7 +24,7 @@ def typed_property(name, expected_type):
     return prop
 
 
-def field_property(field_name, field):
+def _field_property(field_name, field):
     """
     Simple function used to allow for setting fields directly, and returning the class
     of the fields. 
@@ -35,7 +35,17 @@ def field_property(field_name, field):
 
     @prop.setter
     def prop(self, value):
-        setattr(field, '_val', value)
+        # if we're the same field type, then we need to copy over the internal value
+        if isinstance(value, type(field)):
+            setattr(field, '_val', value._val)
+
+        else:
+            # Ensuring the type if it's set
+            if field._type is not _no_type and not isinstance(value, field._type):
+                raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
+
+            # Sets the internal value of the field
+            setattr(field, '_val', value)
 
     return prop
 
@@ -46,14 +56,13 @@ class Field():
     following is required:
 
     1. Add to _acceptable_params for any new keyword arguments
-    2. define __lt__
     3. define _c_type
     4. define _type
     """
 
     _bit_len = typed_property('bit_len', int)
     _num_words = typed_property('num_words', int)
-    _acceptable_params = ['bit_len', 'num_words']
+    _acceptable_params = set(['bit_len', 'num_words'])
     _c_type = None
     _type = _no_type
     _val = None
@@ -89,15 +98,21 @@ class Field():
 
     def __le__(self, other):
         return not other < self
-        
+
+    def __repr__(self):
+        return repr(self._val)
+
+    def __str__(self):
+        return str(self._val)
 
 
 class IntField(Field):
     _unsigned = typed_property('unsigned', bool)
     _little_endian = typed_property('little_endian', bool)
+    _type = int
 
     def __init__(self, **kwargs):
-        self._acceptable_params += ['little_endian', 'unsigned', 'initial_value']
+        self._acceptable_params.update(['little_endian', 'unsigned', 'initial_value'])
         super(IntField, self).__init__(**kwargs)
 
         self._little_endian = kwargs.get('little_endian', False)
@@ -125,21 +140,22 @@ class _MetaPacket(type):
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, value in clsdict.items():
             if isinstance(value, Field):
-                order.append(name)
-                d[name] = field_property(name, value)
+                if value._num_words > 1:
+                    value._type = list
 
-                if value._num_words > 0:
-
+                    # arrays will need to have a custom class underneath
                     class _field(ctypes.Structure):
-                        _fields_ = [('value', value._c_type)]
+                        _fields_ = [('value', value._c_type, value._bit_len)]
 
                     fields.append(('_' + name, _field * value._num_words))
                 else:
                     fields.append(('_' + name, value._c_type, value._bit_len))
-                
+
+                order.append(name)
+                d[name] = _field_property(name, value)
 
         # Here we save the order
-        d['_order'] = order
+        d['_fields_order'] = order
 
         # Here we save the structure
         class c_struct(ctypes.Structure):
@@ -158,9 +174,18 @@ class _MetaPacket(type):
 class Packet(metaclass=_MetaPacket):
     
     def pack(self):
-        return ctypes.string_at(ctypes.byref(self._c_struct), ctypes.sizeof(self._c_struct))
+        c_pkt = self._c_struct()
+        for f_name in self._fields_order:
+            setattr(c_pkt, "_" + f_name, getattr(self, f_name)._val)
+
+        return ctypes.string_at(ctypes.byref(c_pkt), ctypes.sizeof(c_pkt))
 
     @classmethod
     def unpack(cls, buf):
         cstring = ctypes.create_string_buffer(buf)
-        return ctypes.cast(ctypes.pointer(cstring), ctypes.POINTER(cls._c_struct)).contents
+        c_pkt = ctypes.cast(ctypes.pointer(cstring), ctypes.POINTER(cls._c_struct)).contents
+        pkt = cls()
+        for f_name in cls._fields_order:
+            setattr(pkt, f_name, getattr(c_pkt, "_" + f_name))
+
+        return pkt

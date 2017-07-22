@@ -25,12 +25,10 @@
     <Compile Include="builtins\ip.py" />
     <Compile Include="builtins\__init__.py" />
     <Compile Include="models.py" />
-    <Compile Include="packets\__init__.py" />
     <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="builtins\" />
-    <Folder Include="packets\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
