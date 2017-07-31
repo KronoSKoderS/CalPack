@@ -49,7 +49,7 @@ class Test_AdvancedPackets(unittest.TestCase):
             field1 = models.IntField(num_words=10)
 
         class adv_pkt(models.Packet):
-            field2 = models.EncapsulatedPacket(simple_pkt)
+            field2 = simple_pkt
 
         p = adv_pkt()
 

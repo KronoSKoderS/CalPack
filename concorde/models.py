@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 _no_type = object()
 
+
 def typed_property(name, expected_type):
     """
     Simple function used to ensure a specific type for a property defined within a 
@@ -124,10 +125,14 @@ class IntField(Field):
 
         self._val = kwargs.get('initial_value', 0)
 
-    
 
 class ReservedField(Field):
     pass
+
+
+class EncapsulatedPacketField(Field):
+    def __init__(self, packet, **kwargs):
+        pass
 
 
 class _MetaPacket(type):
@@ -139,7 +144,14 @@ class _MetaPacket(type):
 
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, value in clsdict.items():
-            if isinstance(value, Field):
+            # Encapsulated Packet are different.  They're already created packets.  
+            if isinstance(value, _MetaPacket):
+                value._type = value
+                fields.append(('_' + name, value._c_struct))
+                order.append(name)
+                d[name] = _field_property(name, value)
+
+            elif isinstance(value, Field):
                 if value._num_words > 1:
                     value._type = list
 
