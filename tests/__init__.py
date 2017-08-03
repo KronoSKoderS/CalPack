@@ -6,8 +6,9 @@ def get_tests():
 
 def full_suite():
 
-    from .runtests import BasicPackets
+    from .BasicPackets import Test_SimplePackets, Test_AdvancedPackets
 
     return unittest.TestSuite([
-        unittest.TestLoader().loadTestsFromTestCase(BasicPackets),
+        unittest.TestLoader().loadTestsFromTestCase(Test_SimplePackets),
+        unittest.TestLoader().loadTestsFromTestCase(Test_AdvancedPackets),
     ])
