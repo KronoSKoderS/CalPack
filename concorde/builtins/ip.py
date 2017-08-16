@@ -1,8 +1,39 @@
-from concorde import packets as pkts
-from concorde import packets as pkts
+from concorde import models
 
 
-class IPv4(pkts.Packet):
+class TCP_HEADER(models.Packet):
+    _word_size = 32
+
+    # Word 0
+    source_port = models.IntField(bit_len=16)
+    dest_port = models.IntField(bit_len=16)
+    
+    # Word 1
+    seq_num = models.IntField()
+    
+    # Word 2
+    ack = models.IntField()
+    
+    # Word 3
+    data_offset = models.IntField(bit_len=4)
+    reserved = models.ReservedField(bit_len=3)
+    ns = models.BoolField()
+    cwr = models.BoolField()
+    ece = models.BoolField()
+    urg = models.BoolField()
+    ack = models.BoolField()
+    psh = models.BoolField()
+    rst = models.BoolField()
+    syn = models.BoolField()
+    fin = models.BoolField()
+    windows_size = models.IntField(bit_len=16)
+
+    # Word 4
+    checksum = models.ChecksumField(bit_len=16)
+    urg_pointer = models.IntField(bit_len=16)
+
+
+class IPv4(models.Packet):
     _word_length = 32
     
     # Word 0
