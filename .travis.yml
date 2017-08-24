@@ -1,21 +1,27 @@
 language: python
 python:
-- '3.3'
-- '3.4'
-- '3.5'
-- 3.5-dev
-- nightly
+  - 3.3
+  - 3.4
+  - 3.6
+  - pypy
+  - nightly
 install:
-- pip install -r requirements.txt
+  - pip install -r requirements.txt
+  - pip install coveralls
 script:
-- coverage run --source=concorde setup.py test
-after_success: coveralls
+  - coverage run --source=concorde setup.py test
+after_success:
+  - coveralls
+
+
 notifications:
   slack:
     rooms:
       secure: pBCEtu1hyyihGiia0+5uA2pksCFe3izuiLNo2T2ZOmh3EgbigZqgGXuamWnRoo+C7sfL8YPkbg3zWOTFOhsZg9tQ5WvOcLK/4BYXpVwkkMtP3JfJ/am1gGvDi5w7sdB8fTb3NykCDpkFFnTf5N35i5O3nwvfzVNJjMLN6+wFnH2xj0FXNcp29f5NZoX1GxWIAdeUZg2WVK2NDgFrLBr65p0t9THhmLeFA0zykpjQmIRRJlif1RMjTnd2HuSJkAIco9graKB3VMNW/37rgCeM3KfWRKL0Am9LmMCK+R7XxOkl58mbd38M5Y76CxSU6nCX9k37cEVZ8HN5acqti4Stu/IhAY6HAEF9GlJTozsF8FL0GJGWL53Psv9fkfVMUhU6Doyas5X2bo6bcxVmTskwkbrgIS5UhGY51BGPmuYOwqYCWueKrCVzqvu8tZ0i912d/8JmR5SIpw7N9P0UftmRQT/aJSCTfTJQqYLIfj13z//bum9884FPy/WpHtuFPZueDY+Wz6D9MRyY/P/8rkhag/491hf1OVL6fgo61o/115QwYeJpsiKvM4BnXlNihy148mqPEl+ijocOklft30+vvZERvC3MXwseUpWtDP5+HAD0clUQXbY+3GtZcG4Vr4WEdizHx3bYn/PtblVfDBsVPqFe18UfE7Ql75JV9/QUzrA=
     on_success: change
     on_failure: always
+
+
 deploy:
   provider: pypi
   user: KronoSKoderS
