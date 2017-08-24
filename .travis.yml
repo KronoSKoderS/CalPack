@@ -1,0 +1,33 @@
+language: python
+python:
+  - 3.3
+  - 3.4
+  - 3.6
+  - pypy3
+  - nightly
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
+script:
+  - coverage run --source=concorde setup.py test
+after_success:
+  - coveralls
+
+
+notifications:
+  slack:
+    rooms:
+      secure: pBCEtu1hyyihGiia0+5uA2pksCFe3izuiLNo2T2ZOmh3EgbigZqgGXuamWnRoo+C7sfL8YPkbg3zWOTFOhsZg9tQ5WvOcLK/4BYXpVwkkMtP3JfJ/am1gGvDi5w7sdB8fTb3NykCDpkFFnTf5N35i5O3nwvfzVNJjMLN6+wFnH2xj0FXNcp29f5NZoX1GxWIAdeUZg2WVK2NDgFrLBr65p0t9THhmLeFA0zykpjQmIRRJlif1RMjTnd2HuSJkAIco9graKB3VMNW/37rgCeM3KfWRKL0Am9LmMCK+R7XxOkl58mbd38M5Y76CxSU6nCX9k37cEVZ8HN5acqti4Stu/IhAY6HAEF9GlJTozsF8FL0GJGWL53Psv9fkfVMUhU6Doyas5X2bo6bcxVmTskwkbrgIS5UhGY51BGPmuYOwqYCWueKrCVzqvu8tZ0i912d/8JmR5SIpw7N9P0UftmRQT/aJSCTfTJQqYLIfj13z//bum9884FPy/WpHtuFPZueDY+Wz6D9MRyY/P/8rkhag/491hf1OVL6fgo61o/115QwYeJpsiKvM4BnXlNihy148mqPEl+ijocOklft30+vvZERvC3MXwseUpWtDP5+HAD0clUQXbY+3GtZcG4Vr4WEdizHx3bYn/PtblVfDBsVPqFe18UfE7Ql75JV9/QUzrA=
+    on_success: change
+    on_failure: always
+
+
+deploy:
+  provider: pypi
+  user: KronoSKoderS
+  password:
+    secure: PWjzM0e8dASWUK+cvrKLx4rhUj8oAerOdZW63NYOUYbwnDxCcJYk71IIVkRPnYOeJ37577J+0S0J9ftie8Tzqc4Bo6XmuzBVboi+0ZsYdJffLs0pMOwNQFE+lKbX0AzFE7jlq1EX8QNxFSL13KF95T2nZ2Y+lbV+92g9m4D4cEI0XFMkJqijD8r5B5Ezp24DfUYYskqaD6KA+DHsOZFiXohbnPXHE9vQ8pkagjHRr/+J+SjR2bkv39fhd94jfJF0WmgEIlA5+oucqxKJ1h/DGExscAGJ0KGAjmZoahyLVLXR8uwmtpdFQ9Ykl9Hi9Frv9bc9FpijtbuEVmGs2k6Oq6F9RgCXweKhfyZe7Dfl9ZqKyckCkxSCup81ntfi2K0dYOkwcm60/+JeptS1GujVUzTFdaUOSDQ7W3W8NaZf2zPsL13wdAZE2U67y328eaDyDVd9s7dxtV6bxY+p8gFqt1rAGo370m/zB3Fcki019u10Epuvl8wMJ1rM9A/h+kNJy5JHvuWr7LQBrf/vDdIOmwJWrRHWRj/c80UG8ZAsANVFwo8V0Rb8eSSuZ3EqsIc5l0lqLK3mkaY9C0Vr/AStmXkRKCaFKJoKBv6PHaIqceZMyWqjqQkUzFhz8vUMEN1atM1ZnXx7wB3CIzeIEkQYiFg9R3YqYhFZy6HtY3wf4Dk=
+  on:
+    branch: prod
+    distributions: sdist bdist_wheel
+    repo: KronoSKoderS/Concorde
