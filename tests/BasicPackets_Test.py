@@ -4,7 +4,8 @@ from random import randint
 
 from concorde import models
 
-class Test_SimplePackets(unittest.TestCase):
+
+class TestSimplePackets(unittest.TestCase):
     def setUp(self):
         class simple_pkt(models.Packet):
             field1 = models.IntField()
@@ -38,32 +39,32 @@ class Test_SimplePackets(unittest.TestCase):
 
         p.field3 = t_array
         self.assertEqual(p.field3, t_array)
-        
 
-class Test_AdvancedPackets(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def test_encapsulated_pkt(self):
-        class simple_pkt(models.Packet):
-            field1 = models.IntField(num_words=10)
-
-        class adv_pkt(models.Packet):
-            field2 = simple_pkt
-
-        p = adv_pkt()
-
-        # Verify abilily to access and set encap packets fields
-        p.field2.field1 = 100
-
-        self.assertEquals(p.field2.field1, 100)
-
-        sp = simple_pkt()
-        sp.field1 = 200
-
-        p.field2 = sp
-
-        self.assertEquals(p.field2.field1, 200)
+## TDD: Prototyping for encapsulated packets.
+# class TestAdvancedPackets(unittest.TestCase):
+#     def setUp(self):
+#         pass
+#
+#     def test_encapsulated_pkt(self):
+#         class simple_pkt(models.Packet):
+#             field1 = models.IntField(num_words=10)
+#
+#         class adv_pkt(models.Packet):
+#             field2 = simple_pkt
+#
+#         p = adv_pkt()
+#
+#         # Verify abilily to access and set encap packets fields
+#         p.field2.field1 = 100
+#
+#         self.assertEquals(p.field2.field1, 100)
+#
+#         sp = simple_pkt()
+#         sp.field1 = 200
+#
+#         p.field2 = sp
+#
+#         self.assertEquals(p.field2.field1, 200)
 
 
 if __name__ == '__main__':

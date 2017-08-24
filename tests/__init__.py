@@ -1,14 +1,18 @@
 import unittest
 
+
 def get_tests():
     return full_suite()
 
 
 def full_suite():
 
-    from .BasicPackets import Test_SimplePackets, Test_AdvancedPackets
+    from .BasicPackets_Test import TestSimplePackets, TestAdvancedPackets
 
     return unittest.TestSuite([
-        unittest.TestLoader().loadTestsFromTestCase(Test_SimplePackets),
-        unittest.TestLoader().loadTestsFromTestCase(Test_AdvancedPackets),
+        unittest.TestLoader().loadTestsFromTestCase(TestSimplePackets),
+#        unittest.TestLoader().loadTestsFromTestCase(Test_AdvancedPackets),
     ])
+
+if __name__ == "__main__":
+    unittest.main()
