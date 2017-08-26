@@ -1,18 +1,17 @@
 language: python
 python:
-  - 3.3
-  - 3.4
-  - 3.6
-  - pypy3
-  - nightly
+- 3.3
+- 3.4
+- 3.6
+- pypy3
+- nightly
 install:
-  - pip install -r requirements.txt
-  - pip install coveralls
+- pip install -r requirements.txt
+- pip install coveralls
 script:
-  - coverage run --source=calpack setup.py test
+- coverage run --source=calpack setup.py test
 after_success:
-  - coveralls
-
+- coveralls
 
 notifications:
   slack:
@@ -21,13 +20,28 @@ notifications:
     on_success: change
     on_failure: always
 
-
 deploy:
-  provider: pypi
-  user: KronoSKoderS
-  password:
-    secure: PWjzM0e8dASWUK+cvrKLx4rhUj8oAerOdZW63NYOUYbwnDxCcJYk71IIVkRPnYOeJ37577J+0S0J9ftie8Tzqc4Bo6XmuzBVboi+0ZsYdJffLs0pMOwNQFE+lKbX0AzFE7jlq1EX8QNxFSL13KF95T2nZ2Y+lbV+92g9m4D4cEI0XFMkJqijD8r5B5Ezp24DfUYYskqaD6KA+DHsOZFiXohbnPXHE9vQ8pkagjHRr/+J+SjR2bkv39fhd94jfJF0WmgEIlA5+oucqxKJ1h/DGExscAGJ0KGAjmZoahyLVLXR8uwmtpdFQ9Ykl9Hi9Frv9bc9FpijtbuEVmGs2k6Oq6F9RgCXweKhfyZe7Dfl9ZqKyckCkxSCup81ntfi2K0dYOkwcm60/+JeptS1GujVUzTFdaUOSDQ7W3W8NaZf2zPsL13wdAZE2U67y328eaDyDVd9s7dxtV6bxY+p8gFqt1rAGo370m/zB3Fcki019u10Epuvl8wMJ1rM9A/h+kNJy5JHvuWr7LQBrf/vDdIOmwJWrRHWRj/c80UG8ZAsANVFwo8V0Rb8eSSuZ3EqsIc5l0lqLK3mkaY9C0Vr/AStmXkRKCaFKJoKBv6PHaIqceZMyWqjqQkUzFhz8vUMEN1atM1ZnXx7wB3CIzeIEkQYiFg9R3YqYhFZy6HtY3wf4Dk=
-  on:
-    branch: prod
-    distributions: sdist bdist_wheel
-    repo: KronoSKoderS/CalPack
+  - provider: releases
+    skip_cleanup: true
+    api_key:
+      secure: HloNBoprUIDLX7uK1LytFXk39+PEc4fx7hW9JDVGkj3uHEvPFYEvv+Ynhy3OlMMZMqQ0LAxfdI5UJVkhkDlmWkcQtudfAYyLwasafQ9fB0y4kruxS22GgLLkMKVkhI/n+SQZ29JA3WMSidZAkwYkqKODbrw2m3genlqt8D3gUh8pKKpE03vo+Eg4SygTZbG7N8RfpnRaFmGLidvhWUvHhBCIjtoiAtF0X3MNr7KnWXaZJk1Fb1Qz9MEUav9nYwKylXFMNyHFyEMHeQWd3oesgfi+rk/XdLdAd/QT23pVwtgUuOpBeXcI0Abq/3cCzvGhcbna/LOufGuWehm/ow4X5ITgi4JYeX1M2s2w2Bx4cJfbMJ+CWno7o35Lpbwx0C1Gs3My7mwZ4qjGlaGvf+XrLCzbVFmEhVyMdlDMU0Q45mCmzV6b0AZyq0hpBNgX2RG+PqHgn1HJgg5SIoNIjUY9R/JlM8tqCPDuEmlf7jbxOsmNuIN/Ve9dv757f5YZdf3fuBwBVfjxhTOKE9Dpe3t8wDCoY2pHUzm8AmV0qqdAFMcX1QulntBehA2jxDDVujUscAtP3pxPFj4+FZh7ctW5Krh5sFrc5XFQv/4xzojBkmqHIgFnklRmi6VySeQgQNXAk4WCODaTZpPBk6UPkah/li9VKrMzbiKKvJqhMRIr0rc=
+    file: $(build/*.tar.gz)
+    on:
+      repo: KronoSKoderS/CalPack
+      branch: tags
+
+  - provider: pypi
+    user: KronoSKoderS
+    password:
+      secure: PWjzM0e8dASWUK+cvrKLx4rhUj8oAerOdZW63NYOUYbwnDxCcJYk71IIVkRPnYOeJ37577J+0S0J9ftie8Tzqc4Bo6XmuzBVboi+0ZsYdJffLs0pMOwNQFE+lKbX0AzFE7jlq1EX8QNxFSL13KF95T2nZ2Y+lbV+92g9m4D4cEI0XFMkJqijD8r5B5Ezp24DfUYYskqaD6KA+DHsOZFiXohbnPXHE9vQ8pkagjHRr/+J+SjR2bkv39fhd94jfJF0WmgEIlA5+oucqxKJ1h/DGExscAGJ0KGAjmZoahyLVLXR8uwmtpdFQ9Ykl9Hi9Frv9bc9FpijtbuEVmGs2k6Oq6F9RgCXweKhfyZe7Dfl9ZqKyckCkxSCup81ntfi2K0dYOkwcm60/+JeptS1GujVUzTFdaUOSDQ7W3W8NaZf2zPsL13wdAZE2U67y328eaDyDVd9s7dxtV6bxY+p8gFqt1rAGo370m/zB3Fcki019u10Epuvl8wMJ1rM9A/h+kNJy5JHvuWr7LQBrf/vDdIOmwJWrRHWRj/c80UG8ZAsANVFwo8V0Rb8eSSuZ3EqsIc5l0lqLK3mkaY9C0Vr/AStmXkRKCaFKJoKBv6PHaIqceZMyWqjqQkUzFhz8vUMEN1atM1ZnXx7wB3CIzeIEkQYiFg9R3YqYhFZy6HtY3wf4Dk=
+    on:
+      branch: prod
+      distributions: sdist bdist_wheel
+      repo: KronoSKoderS/CalPack
+
+  - provider: pages
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
+    on:
+      branch: master
+
