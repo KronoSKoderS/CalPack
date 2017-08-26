@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Concorde documentation build configuration file, created by
+# CalPack documentation build configuration file, created by
 # sphinx-quickstart on Sun Aug 20 23:51:09 2017.
 #
 # This file is execfile()d with the current directory set to its

@@ -263,4 +263,4 @@ docs/_build/
 .cache/
 build/
 dist/
-concorde.egg-info/
+calpack.egg-info/
