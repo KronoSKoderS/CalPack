@@ -1,3 +1,8 @@
+"""
+models - a collection of classes and function to create new custom packets.
+===========================================================================
+"""
+
 import ctypes
 
 from collections import OrderedDict
@@ -136,6 +141,9 @@ class EncapsulatedPacketField(Field):
 
 
 class _MetaPacket(type):
+    """
+    _MetaPacket - A class used to generate the classes defined by the user into a usable class.
+    """
     def __new__(cls, clsname, bases, clsdict):
         d = dict(clsdict)
         
