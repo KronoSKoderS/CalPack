@@ -1,4 +1,4 @@
-from concorde import models
+from calpack import models
 
 num_words = 13
 
