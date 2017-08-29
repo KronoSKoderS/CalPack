@@ -1,4 +1,5 @@
 import unittest
+import struct
 
 from random import randint
 
@@ -32,6 +33,18 @@ class TestSimplePackets(unittest.TestCase):
         with self.assertRaises(TypeError):
             p.field1 = ""
 
+    def test_set_valid_from_other_field(self):
+        p = self.simple_pkt()
+        p2 = self.simple_pkt()
+
+        v1 = randint(0, 100)
+        
+        p.field1 = v1
+
+        p2.field1 = p.field1
+
+        self.assertEqual(p.field1, p2.field1)
+
     def test_set_array_field(self):
         p = self.simple_pkt()
 
@@ -39,6 +52,19 @@ class TestSimplePackets(unittest.TestCase):
 
         p.field3 = t_array
         self.assertEqual(p.field3, t_array)
+
+
+    def test_from_binary(self):
+        vals = [randint(0, 100) for i in range(12)]
+        b_val = struct.pack('<' + 'h' * 12, *vals)
+
+        p = self.simple_pkt.from_bytes(b_val)
+
+        self.assertEquals(p.field1, vals[0])
+        self.assertEquals(p.field2, vals[1])
+
+        self.assertEquals(p.field3, vals[2:])
+
 
 ## TDD: Prototyping for encapsulated packets.
 # class TestAdvancedPackets(unittest.TestCase):

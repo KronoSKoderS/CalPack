@@ -37,13 +37,13 @@ def _field_property(field_name, field):
     """
     @property
     def prop(self):
-        return field
+        return getattr(self._c_struct, '_' + field_name)
 
     @prop.setter
     def prop(self, value):
         # if we're the same field type, then we need to copy over the internal value
         if isinstance(value, type(field)):
-            setattr(field, '_val', value._val)
+            setattr(self._c_struct, '_' + field_name, field)
 
         else:
             # Ensuring the type if it's set
@@ -51,7 +51,7 @@ def _field_property(field_name, field):
                 raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
 
             # Sets the internal value of the field
-            setattr(field, '_val', value)
+            setattr(self._c_struct, '_' + field_name, value)
 
     return prop
 
@@ -128,8 +128,6 @@ class IntField(Field):
         else:
             self._c_type = ctypes.c_int64
 
-        self._val = kwargs.get('initial_value', 0)
-
 
 class ReservedField(Field):
     pass
@@ -193,7 +191,7 @@ class _MetaPacket(type):
 
 class Packet(metaclass=_MetaPacket):
     
-    def pack(self):
+    def to_bytes(self):
         c_pkt = self._c_struct()
         for f_name in self._fields_order:
             setattr(c_pkt, "_" + f_name, getattr(self, f_name)._val)
@@ -201,11 +199,10 @@ class Packet(metaclass=_MetaPacket):
         return ctypes.string_at(ctypes.byref(c_pkt), ctypes.sizeof(c_pkt))
 
     @classmethod
-    def unpack(cls, buf):
+    def from_bytes(cls, buf):
         cstring = ctypes.create_string_buffer(buf)
         c_pkt = ctypes.cast(ctypes.pointer(cstring), ctypes.POINTER(cls._c_struct)).contents
         pkt = cls()
-        for f_name in cls._fields_order:
-            setattr(pkt, f_name, getattr(c_pkt, "_" + f_name))
+        pkt._c_struct = c_pkt
 
         return pkt
