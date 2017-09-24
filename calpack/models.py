@@ -34,6 +34,15 @@ def _field_property(field_name, field):
     """
     Simple function used to allow for setting fields directly, and returning the class
     of the fields. 
+
+    This is the "magic" of the Fields and Packet Interface.  This allows the user to 
+    set and get the field as if it were the type of field being used.  
+
+    For example `packet.field1 = 10` would use the `@prop.setter` part of this function
+    definition.  
+
+    Note that this can ONLY be used within a class definition since there's the use of 
+    the `self` class call.  
     """
     @property
     def prop(self):
@@ -58,69 +67,44 @@ def _field_property(field_name, field):
 
 class Field():
     """
-    A Super class that all other fields inherit from.  When creating a new field, the
-    following is required:
-
-    1. Add to _acceptable_params for any new keyword arguments
-    3. define _c_type
-    4. define _type
+    A Super class that all other fields inherit from.
     """
-
-    _bit_len = typed_property('bit_len', int)
+    
     _num_words = typed_property('num_words', int)
     _acceptable_params = set(['bit_len', 'num_words'])
     _c_type = None
     _type = _no_type
-    _val = None
 
     def __init__(self, **kwargs):
         for k, v, in kwargs.items():
             if k not in self._acceptable_params:
                 raise KeyError("`{k}` is not an accepted parameter for {cls}".format(k=k, cls=self.__class__))
 
-        self._bit_len = kwargs.get('bit_len', 16)
         self._num_words = kwargs.get('num_words', 1)
 
-    def __eq__(self, other):
-        if isinstance(other, Field):
-            return self._val == other._val
-        return self._val == other
 
-    def __lt__(self, other):
-        if isinstance(other, Field):
-            return self._val < other._val
-        return self._val < other
+class ListField(Field):
+    
+    _type = list
 
-    def __gt__(self, other):
-        if isinstance(other, Field):
-            return self._val > other._val
-        return self._val > other
-
-    def __ne__(self, other):
-        return not self == other
-
-    def __ge__(self, other):
-        return not self < other
-
-    def __le__(self, other):
-        return not other < self
-
-    def __repr__(self):
-        return repr(self._val)
-
-    def __str__(self):
-        return str(self._val)
+    def __init__(self):
+        super(ListField, self).__init__(**kwargs)
 
 
 class IntField(Field):
+    """
+    An Integer field.  
+    """
+    _bit_len = typed_property('bit_len', int)
     _unsigned = typed_property('unsigned', bool)
     _little_endian = typed_property('little_endian', bool)
     _type = int
 
     def __init__(self, **kwargs):
-        self._acceptable_params.update(['little_endian', 'unsigned', 'initial_value'])
+        self._acceptable_params.update(['bit_len', 'little_endian', 'unsigned', 'initial_value'])
         super(IntField, self).__init__(**kwargs)
 
+        self._bit_len = kwargs.get('bit_len', 16)
         self._little_endian = kwargs.get('little_endian', False)
         self._unsigned = kwargs.get('unsigned', False)
         if self._unsigned:
@@ -129,13 +113,14 @@ class IntField(Field):
             self._c_type = ctypes.c_int64
 
 
-class ReservedField(Field):
-    pass
+# The following are intended for future use.  
+#class ReservedField(Field):
+#    pass
 
 
-class EncapsulatedPacketField(Field):
-    def __init__(self, packet, **kwargs):
-        pass
+#class EncapsulatedPacketField(Field):
+#    def __init__(self, packet, **kwargs):
+#        pass
 
 
 class _MetaPacket(type):
@@ -150,14 +135,8 @@ class _MetaPacket(type):
 
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, value in clsdict.items():
-            # Encapsulated Packet are different.  They're already created packets.  
-            if isinstance(value, _MetaPacket):
-                value._type = value
-                fields.append(('_' + name, value._c_struct))
-                order.append(name)
-                d[name] = _field_property(name, value)
 
-            elif isinstance(value, Field):
+            if isinstance(value, Field):
                 if value._num_words > 1:
                     value._type = list
 
@@ -172,10 +151,19 @@ class _MetaPacket(type):
                 order.append(name)
                 d[name] = _field_property(name, value)
 
+            # This hasn't been tested and won't be included in the release just yet.  
+            ## Encapsulated Packet are different.  They're already created packets.  
+            #elif isinstance(value, _MetaPacket):
+            #    raise NotImplementedError()
+            #    value._type = value
+            #    fields.append(('_' + name, value._c_struct))
+            #    order.append(name)
+            #    d[name] = _field_property(name, value)
+
         # Here we save the order
         d['_fields_order'] = order
 
-        # Here we save the structure
+        # Here we create the internal structure
         class c_struct(ctypes.Structure):
             pass
         

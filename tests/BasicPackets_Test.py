@@ -11,7 +11,6 @@ class TestSimplePackets(unittest.TestCase):
         class simple_pkt(models.Packet):
             field1 = models.IntField()
             field2 = models.IntField()
-            field3 = models.IntField(num_words=10)
 
         self.simple_pkt = simple_pkt
 
@@ -55,15 +54,13 @@ class TestSimplePackets(unittest.TestCase):
 
 
     def test_from_binary(self):
-        vals = [randint(0, 100) for i in range(12)]
-        b_val = struct.pack('<' + 'h' * 12, *vals)
+        vals = [randint(0, 100) for i in range(2)]
+        b_val = struct.pack('<' + 'h' * 2, *vals)
 
         p = self.simple_pkt.from_bytes(b_val)
 
         self.assertEquals(p.field1, vals[0])
         self.assertEquals(p.field2, vals[1])
-
-        self.assertEquals(p.field3, vals[2:])
 
 
 ## TDD: Prototyping for encapsulated packets.
