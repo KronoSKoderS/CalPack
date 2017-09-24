@@ -50,17 +50,12 @@ def _field_property(field_name, field):
 
     @prop.setter
     def prop(self, value):
-        # if we're the same field type, then we need to copy over the internal value
-        if isinstance(value, type(field)):
-            setattr(self._c_struct, '_' + field_name, field)
+        # Ensuring the type if it's set
+        if field._type is not _no_type and not isinstance(value, field._type):
+            raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
 
-        else:
-            # Ensuring the type if it's set
-            if field._type is not _no_type and not isinstance(value, field._type):
-                raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
-
-            # Sets the internal value of the field
-            setattr(self._c_struct, '_' + field_name, value)
+        # Sets the internal value of the field
+        setattr(self._c_struct, '_' + field_name, value)
 
     return prop
 
