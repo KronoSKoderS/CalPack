@@ -161,7 +161,7 @@ class Packet(metaclass=_MetaPacket):
         self._c_pkt = self._c_struct()
 
     @property
-    def word_size(self):
+    def num_words(self):
         return ceil(self._num_bits_used / self.word_size)
 
     @property

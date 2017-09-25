@@ -88,6 +88,10 @@ class TestSimplePackets(unittest.TestCase):
             class invalid_pkt(models.Packet):
                 inv_field = models.IntField(keyword_that_dont_exist=100)
 
+    def test_check_word_size(self):
+        p = self.simple_pkt()
+        self.assertEquals(p.num_words, 2)
+
 
 ## TDD: Prototyping for encapsulated packets.
 # class TestAdvancedPackets(unittest.TestCase):
