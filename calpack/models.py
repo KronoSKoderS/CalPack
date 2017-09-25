@@ -6,20 +6,26 @@ models - a collection of classes and function to create new custom packets.
 import ctypes
 
 from collections import OrderedDict
+from math import ceil
 
 _no_type = object()
 
 
-def typed_property(name, expected_type):
+def typed_property(name, expected_type, default_val = None):
     """
     Simple function used to ensure a specific type for a property defined within a 
     class. 
     """
+    if default_val is not None:
+        if not isinstance(default_val, expected_type):
+            raise TypeError("{v} must be of type {t}".format(v=default_val, t=expected_type))
+
     storage_name = '_internal_' + name
 
     @property
     def prop(self):
-        return getattr(self, storage_name)
+        val = getattr(self, storage_name, None)
+        return val if val is not None else default_val
 
     @prop.setter
     def prop(self, value):
@@ -46,7 +52,7 @@ def _field_property(field_name, field):
     """
     @property
     def prop(self):
-        return getattr(self._c_struct, '_' + field_name)
+        return getattr(self._c_pkt, '_' + field_name)
 
     @prop.setter
     def prop(self, value):
@@ -55,7 +61,7 @@ def _field_property(field_name, field):
             raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
 
         # Sets the internal value of the field
-        setattr(self._c_struct, '_' + field_name, value)
+        setattr(self._c_pkt, '_' + field_name, value)
 
     return prop
 
@@ -65,7 +71,7 @@ class Field():
     A Super class that all other fields inherit from.
     """
     
-    _num_words = typed_property('num_words', int)
+    num_words = typed_property('num_words', int)
     _acceptable_params = set(['bit_len', 'num_words'])
     _c_type = None
     _type = _no_type
@@ -75,47 +81,33 @@ class Field():
             if k not in self._acceptable_params:
                 raise KeyError("`{k}` is not an accepted parameter for {cls}".format(k=k, cls=self.__class__))
 
-        self._num_words = kwargs.get('num_words', 1)
-
-
-class ListField(Field):
-    
-    _type = list
-
-    def __init__(self):
-        super(ListField, self).__init__(**kwargs)
+            # set the user defined keyword args.  
+            setattr(self, k, v)
 
 
 class IntField(Field):
     """
     An Integer field.  
-    """
-    _bit_len = typed_property('bit_len', int)
-    _unsigned = typed_property('unsigned', bool)
-    _little_endian = typed_property('little_endian', bool)
-    _type = int
 
+    valid keyword arguments:
+
+    - bit_len = the length in bits of the integer.  Max value of 64. (default 16)
+    - unsigned = wheter to treat the int as an unsigned integer or signed integer (default unsigned)
+    - little_endian = wheter to treate the int as a little endian or big endian integer (default os preference)
+    """
+    _type = int
+    bit_len = typed_property('bit_len', int, 16)
+    unsigned = typed_property('unsigned', bool, False)
+    little_endian = typed_property('little_endian', bool)
+    
     def __init__(self, **kwargs):
         self._acceptable_params.update(['bit_len', 'little_endian', 'unsigned', 'initial_value'])
         super(IntField, self).__init__(**kwargs)
 
-        self._bit_len = kwargs.get('bit_len', 16)
-        self._little_endian = kwargs.get('little_endian', False)
-        self._unsigned = kwargs.get('unsigned', False)
-        if self._unsigned:
+        if self.unsigned:
             self._c_type = ctypes.c_uint64
         else:
             self._c_type = ctypes.c_int64
-
-
-# The following are intended for future use.  
-#class ReservedField(Field):
-#    pass
-
-
-#class EncapsulatedPacketField(Field):
-#    def __init__(self, packet, **kwargs):
-#        pass
 
 
 class _MetaPacket(type):
@@ -128,32 +120,18 @@ class _MetaPacket(type):
         order = []
         fields = []
 
+        num_bits_used = 0
+
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, value in clsdict.items():
 
             if isinstance(value, Field):
-                if value._num_words > 1:
-                    value._type = list
+                fields.append(('_' + name, value._c_type, value.bit_len))
 
-                    # arrays will need to have a custom class underneath
-                    class _field(ctypes.Structure):
-                        _fields_ = [('value', value._c_type, value._bit_len)]
-
-                    fields.append(('_' + name, _field * value._num_words))
-                else:
-                    fields.append(('_' + name, value._c_type, value._bit_len))
+                num_bits_used += value.bit_len
 
                 order.append(name)
                 d[name] = _field_property(name, value)
-
-            # This hasn't been tested and won't be included in the release just yet.  
-            ## Encapsulated Packet are different.  They're already created packets.  
-            #elif isinstance(value, _MetaPacket):
-            #    raise NotImplementedError()
-            #    value._type = value
-            #    fields.append(('_' + name, value._c_struct))
-            #    order.append(name)
-            #    d[name] = _field_property(name, value)
 
         # Here we save the order
         d['_fields_order'] = order
@@ -165,6 +143,9 @@ class _MetaPacket(type):
         c_struct._fields_ = fields
         d['_c_struct'] = c_struct
 
+        # finally we store the number of words
+        d['_num_bits_used'] = num_bits_used
+
         return type.__new__(cls, clsname, bases, d)
 
     @classmethod
@@ -173,19 +154,28 @@ class _MetaPacket(type):
 
 
 class Packet(metaclass=_MetaPacket):
+    word_size = typed_property('word_size', int, 16)
+
+    def __init__(self):
+        # create an internal c structure instance for us to interface with.  
+        self._c_pkt = self._c_struct()
+
+    @property
+    def word_size(self):
+        return ceil(self._num_bits_used / self.word_size)
+
+    @property
+    def byte_size(self):
+        return ceil(self._num_bits_used / 8)
     
     def to_bytes(self):
-        c_pkt = self._c_struct()
-        for f_name in self._fields_order:
-            setattr(c_pkt, "_" + f_name, getattr(self, f_name)._val)
-
-        return ctypes.string_at(ctypes.byref(c_pkt), ctypes.sizeof(c_pkt))
+        return ctypes.string_at(ctypes.addressof(self._c_pkt), self.byte_size)
 
     @classmethod
     def from_bytes(cls, buf):
         cstring = ctypes.create_string_buffer(buf)
         c_pkt = ctypes.cast(ctypes.pointer(cstring), ctypes.POINTER(cls._c_struct)).contents
         pkt = cls()
-        pkt._c_struct = c_pkt
+        pkt._c_pkt = c_pkt
 
         return pkt
