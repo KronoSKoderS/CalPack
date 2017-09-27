@@ -1,6 +1,47 @@
 """
-models - a collection of classes and function to create new custom packets.
-===========================================================================
+=======================================================================================================================
+models - a collection of classes and functions to create new custom packets.
+=======================================================================================================================
+
+This module is the building blocks for creating packets.  It also provides the ability for users to create custom 
+fields for their packets.  
+
+
+Creating and working with Custom Packets:
+-----------------------------------------
+
+Creating a custom packet requires inheriting the `Packet` class and then defining the Field within the order they are 
+expected to be seen:
+
+    from calpack import models
+
+    class Header(models.Packet):
+        source = models.IntField()
+        dest = models.IntField()
+        data1 = models.IntField()
+        data2 = models.IntField()
+
+Once the packet is defined, creating an instance of that packet allows you to manipulate it.  Fields are automatically 
+set to a 'default' zero'd value.  
+
+    my_pkt = Header()
+
+    my_pkt.source = 123
+    my_pkt.dest = 456
+    my_pkt.data1 = 789
+
+    print(my_pkt.source)  # 123
+
+Packet fields can be easily copied and compared to other packets:
+
+    my_pkt2 = Header()
+    my_pkt2.source = my_pkt.source
+    my_pkt2.dest = 654
+
+    my_pkt.source == my_pkt2.source  # True
+    my_pkt.dest == my_pkt2.dest  # False
+
+
 """
 
 import ctypes
@@ -13,22 +54,33 @@ _no_type = object()
 
 def typed_property(name, expected_type, default_val = None):
     """
-    Simple function used to ensure a specific type for a property defined within a 
-    class. 
+    Simple function used to ensure a specific type for a property defined within a class.  This can ONLY be used 
+    within a class definition as the `self` keyword is used.  
+
+    :param str name: the name of the variable.  This can be anything, but cannot be already in use.  
+    :param type expected_type: the expected type.  When setting this property at the class level, if the types 
+        do not match, a `TypeError` is raised.  
+    :param default_val: (Optional) the default value for the property.  If not set, then `None` is used.  This 
+        MUST be of the same type as `expected_type` or a `TypeError` is raised.  
+    :return: the property
+    :raises TypeError: if the `default_val` or property's set value is not of type `expected_type`
     """
-    if default_val is not None:
-        if not isinstance(default_val, expected_type):
-            raise TypeError("{v} must be of type {t}".format(v=default_val, t=expected_type))
+    if default_val is not None and not isinstance(default_val, expected_type):
+        raise TypeError("{v} must be of type {t}".format(v=default_val, t=expected_type))
 
     storage_name = '_internal_' + name
 
     @property
     def prop(self):
+
+        # Return the set value.  If the property hasn't been set yet then use the default value
         val = getattr(self, storage_name, None)
         return val if val is not None else default_val
 
     @prop.setter
     def prop(self, value):
+
+        # Raise an error if `value` is not of the expected type.  This ensure proper type setting.  
         if not isinstance(value, expected_type):
             raise TypeError("{v} must be of type {t}".format(v=value, t=expected_type))
         setattr(self, storage_name, value)
@@ -38,17 +90,18 @@ def typed_property(name, expected_type, default_val = None):
 
 def _field_property(field_name, field):
     """
-    Simple function used to allow for setting fields directly, and returning the class
-    of the fields. 
+    Simple function used to allow for setting fields directly, and returning the class of the fields. 
 
-    This is the "magic" of the Fields and Packet Interface.  This allows the user to 
-    set and get the field as if it were the type of field being used.  
+    This is the "magic" of the Fields and Packet Interface.  This allows the user to set and get the field as if it 
+    were the type of field being used.  
 
-    For example `packet.field1 = 10` would use the `@prop.setter` part of this function
-    definition.  
+    For example `packet.field1 = 10` would use the `@prop.setter` part of this function definition.  
 
-    Note that this can ONLY be used within a class definition since there's the use of 
-    the `self` class call.  
+    Note that this can ONLY be used within a class definition since there's the use of the `self` class call.  
+
+    This is different from `typed_property` in that it assumes were within a `Packet` class with the _c_pkt property
+    already defined.  This function is for internal use only within the `MetaPacket` definition and is NOT exppected 
+    to be used by the user.  THAT MEANS YOU!
     """
     @property
     def prop(self):
@@ -68,11 +121,13 @@ def _field_property(field_name, field):
 
 class Field():
     """
-    A Super class that all other fields inherit from.
+    A Super class that all other fields inherit from.  Any class that inherits from this class will be restricted
+    to instantiation with keywords as defined in the `_acceptable_params` property which is a `set`.  Update this 
+    `set` first in the `__init__` 
     """
     
     num_words = typed_property('num_words', int)
-    _acceptable_params = set(['bit_len', 'num_words'])
+    _acceptable_params = set(['num_words'])
     _c_type = None
     _type = _no_type
 
