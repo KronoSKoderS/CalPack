@@ -1,23 +1,87 @@
+"""
+=======================================================================================================================
+models - a collection of classes and functions to create new custom packets.
+=======================================================================================================================
+
+This module is the building blocks for creating packets.  It also provides the ability for users to create custom 
+fields for their packets.  
+
+Creating and working with Custom ``Packet``s
+--------------------------------------------
+
+Creating a custom packet requires inheriting the `Packet` class and then defining the Field within the order they are 
+expected to be seen::
+    
+    from calpack import models
+
+    class Header(models.Packet):
+        source = models.IntField()
+        dest = models.IntField()
+        data1 = models.IntField()
+        data2 = models.IntField()
+
+Once the packet is defined, creating an instance of that packet allows you to manipulate it.  Fields are automatically 
+set to a 'default' zero'd value::
+
+    my_pkt = Header()
+
+    my_pkt.source = 123
+    my_pkt.dest = 456
+    my_pkt.data1 = 789
+
+    print(my_pkt.source)  # 123
+
+Packet fields can be easily copied and compared to other packets::
+
+    my_pkt2 = Header()
+    my_pkt2.source = my_pkt.source
+    my_pkt2.dest = 654
+
+    my_pkt.source == my_pkt2.source  # True
+    my_pkt.dest == my_pkt2.dest  # False
+
+
+Code
+----
+"""
+
 import ctypes
 
 from collections import OrderedDict
+from math import ceil
 
 _no_type = object()
 
 
-def typed_property(name, expected_type):
+def typed_property(name, expected_type, default_val = None):
     """
-    Simple function used to ensure a specific type for a property defined within a 
-    class. 
+    Simple function used to ensure a specific type for a property defined within a class.  This can ONLY be used 
+    within a class definition as the `self` keyword is used.  
+
+    :param str name: the name of the variable.  This can be anything, but cannot be already in use.  
+    :param type expected_type: the expected type.  When setting this property at the class level, if the types 
+        do not match, a `TypeError` is raised.  
+    :param default_val: (Optional) the default value for the property.  If not set, then `None` is used.  This 
+        MUST be of the same type as `expected_type` or a `TypeError` is raised.  
+    :return: the property
+    :raises TypeError: if the `default_val` or property's set value is not of type `expected_type`
     """
+    if default_val is not None and not isinstance(default_val, expected_type):
+        raise TypeError("{v} must be of type {t}".format(v=default_val, t=expected_type))
+
     storage_name = '_internal_' + name
 
     @property
     def prop(self):
-        return getattr(self, storage_name)
+
+        # Return the set value.  If the property hasn't been set yet then use the default value
+        val = getattr(self, storage_name, None)
+        return val if val is not None else default_val
 
     @prop.setter
     def prop(self, value):
+
+        # Raise an error if `value` is not of the expected type.  This ensure proper type setting.  
         if not isinstance(value, expected_type):
             raise TypeError("{v} must be of type {t}".format(v=value, t=expected_type))
         setattr(self, storage_name, value)
@@ -27,141 +91,104 @@ def typed_property(name, expected_type):
 
 def _field_property(field_name, field):
     """
-    Simple function used to allow for setting fields directly, and returning the class
-    of the fields. 
+    Simple function used to allow for setting fields directly, and returning the class of the fields. 
+
+    This is the "magic" of the Fields and Packet Interface.  This allows the user to set and get the field as if it 
+    were the type of field being used.  
+
+    For example `packet.field1 = 10` would use the `@prop.setter` part of this function definition.  
+
+    Note that this can ONLY be used within a class definition since there's the use of the `self` class call.  
+
+    This is different from `typed_property` in that it assumes were within a `Packet` class with the _c_pkt property
+    already defined.  This function is for internal use only within the `MetaPacket` definition and is NOT exppected 
+    to be used by the user.  THAT MEANS YOU!
     """
     @property
     def prop(self):
-        return field
+        return getattr(self._c_pkt, '_' + field_name)
 
     @prop.setter
     def prop(self, value):
-        # if we're the same field type, then we need to copy over the internal value
-        if isinstance(value, type(field)):
-            setattr(field, '_val', value._val)
+        # Ensuring the type if it's set
+        if field._type is not _no_type and not isinstance(value, field._type):
+            raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
 
-        else:
-            # Ensuring the type if it's set
-            if field._type is not _no_type and not isinstance(value, field._type):
-                raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
-
-            # Sets the internal value of the field
-            setattr(field, '_val', value)
+        # Sets the internal value of the field
+        setattr(self._c_pkt, '_' + field_name, value)
 
     return prop
 
 
 class Field():
     """
-    A Super class that all other fields inherit from.  When creating a new field, the
-    following is required:
+    A Super class that all other fields inherit from.  Any class that inherits from this class will be restricted
+    to instantiation with keywords as defined in the `_acceptable_params` property which is a `set`.  Update this 
+    `set` first in the `__init__` 
 
-    1. Add to _acceptable_params for any new keyword arguments
-    3. define _c_type
-    4. define _type
+    This class is NOT intended for direct use.  Custom Fields MUST inherit from this class.  
     """
-
-    _bit_len = typed_property('bit_len', int)
-    _num_words = typed_property('num_words', int)
-    _acceptable_params = set(['bit_len', 'num_words'])
+    
+    num_words = typed_property('num_words', int)
+    _acceptable_params = set(['num_words'])
     _c_type = None
     _type = _no_type
-    _val = None
 
     def __init__(self, **kwargs):
         for k, v, in kwargs.items():
             if k not in self._acceptable_params:
                 raise KeyError("`{k}` is not an accepted parameter for {cls}".format(k=k, cls=self.__class__))
 
-        self._bit_len = kwargs.get('bit_len', 16)
-        self._num_words = kwargs.get('num_words', 1)
-
-    def __eq__(self, other):
-        if isinstance(other, Field):
-            return self._val == other._val
-        return self._val == other
-
-    def __lt__(self, other):
-        if isinstance(other, Field):
-            return self._val < other._val
-        return self._val < other
-
-    def __gt__(self, other):
-        if isinstance(other, Field):
-            return self._val > other._val
-        return self._val > other
-
-    def __ne__(self, other):
-        return not self == other
-
-    def __ge__(self, other):
-        return not self < other
-
-    def __le__(self, other):
-        return not other < self
-
-    def __repr__(self):
-        return repr(self._val)
-
-    def __str__(self):
-        return str(self._val)
+            # set the user defined keyword args.  
+            setattr(self, k, v)
 
 
 class IntField(Field):
-    _unsigned = typed_property('unsigned', bool)
-    _little_endian = typed_property('little_endian', bool)
-    _type = int
+    """
+    An Integer field.
 
+    valid keyword arguments:
+
+    - bit_len: the length in bits of the integer.  Max value of 64. (default 16)
+    - signed: wheter to treat the int as an signed integer or unsigned integer (default unsigned)
+    - little_endian: wheter to treate the int as a little endian or big endian integer (default os preference)
+    """
+    _type = int
+    bit_len = typed_property('bit_len', int, 16)
+    signed = typed_property('signed', bool, False)
+    little_endian = typed_property('little_endian', bool)
+    
     def __init__(self, **kwargs):
-        self._acceptable_params.update(['little_endian', 'unsigned', 'initial_value'])
+        self._acceptable_params.update(['bit_len', 'little_endian', 'signed', 'initial_value'])
         super(IntField, self).__init__(**kwargs)
 
-        self._little_endian = kwargs.get('little_endian', False)
-        self._unsigned = kwargs.get('unsigned', False)
-        if self._unsigned:
-            self._c_type = ctypes.c_uint64
-        else:
+        if self.signed:
             self._c_type = ctypes.c_int64
-
-        self._val = kwargs.get('initial_value', 0)
-
-
-class ReservedField(Field):
-    pass
-
-
-class EncapsulatedPacketField(Field):
-    def __init__(self, packet, **kwargs):
-        pass
+        else:
+            self._c_type = ctypes.c_uint64
 
 
 class _MetaPacket(type):
+    """
+    _MetaPacket - A class used to generate the classes defined by the user into a usable class.
+
+    This class is the magic for Turning the ``Packet`` class definitions into actual operating packets.  
+    """
     def __new__(cls, clsname, bases, clsdict):
         d = dict(clsdict)
         
         order = []
         fields = []
 
+        num_bits_used = 0
+
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, value in clsdict.items():
-            # Encapsulated Packet are different.  They're already created packets.  
-            if isinstance(value, _MetaPacket):
-                value._type = value
-                fields.append(('_' + name, value._c_struct))
-                order.append(name)
-                d[name] = _field_property(name, value)
 
-            elif isinstance(value, Field):
-                if value._num_words > 1:
-                    value._type = list
+            if isinstance(value, Field):
+                fields.append(('_' + name, value._c_type, value.bit_len))
 
-                    # arrays will need to have a custom class underneath
-                    class _field(ctypes.Structure):
-                        _fields_ = [('value', value._c_type, value._bit_len)]
-
-                    fields.append(('_' + name, _field * value._num_words))
-                else:
-                    fields.append(('_' + name, value._c_type, value._bit_len))
+                num_bits_used += value.bit_len
 
                 order.append(name)
                 d[name] = _field_property(name, value)
@@ -169,12 +196,15 @@ class _MetaPacket(type):
         # Here we save the order
         d['_fields_order'] = order
 
-        # Here we save the structure
+        # Here we create the internal structure
         class c_struct(ctypes.Structure):
             pass
         
         c_struct._fields_ = fields
         d['_c_struct'] = c_struct
+
+        # finally we store the number of words
+        d['_num_bits_used'] = num_bits_used
 
         return type.__new__(cls, clsname, bases, d)
 
@@ -184,20 +214,39 @@ class _MetaPacket(type):
 
 
 class Packet(metaclass=_MetaPacket):
-    
-    def pack(self):
-        c_pkt = self._c_struct()
-        for f_name in self._fields_order:
-            setattr(c_pkt, "_" + f_name, getattr(self, f_name)._val)
+    """
+    A super class that custom packet classes MUST inherit from.  This class is NOT intended to be used directly, but 
+    as a super class.  
 
-        return ctypes.string_at(ctypes.byref(c_pkt), ctypes.sizeof(c_pkt))
+    Example::
+        class Header(models.Packet):
+            source = models.IntField()
+            dest = models.IntField()
+            data1 = models.IntField()
+            data2 = models.IntField()
+    """
+    word_size = typed_property('word_size', int, 16)
+
+    def __init__(self):
+        # create an internal c structure instance for us to interface with.  
+        self._c_pkt = self._c_struct()
+
+    @property
+    def num_words(self):
+        return ceil(self._num_bits_used / self.word_size)
+
+    @property
+    def byte_size(self):
+        return ceil(self._num_bits_used / 8)
+    
+    def to_bytes(self):
+        return ctypes.string_at(ctypes.addressof(self._c_pkt), self.byte_size)
 
     @classmethod
-    def unpack(cls, buf):
+    def from_bytes(cls, buf):
         cstring = ctypes.create_string_buffer(buf)
         c_pkt = ctypes.cast(ctypes.pointer(cstring), ctypes.POINTER(cls._c_struct)).contents
         pkt = cls()
-        for f_name in cls._fields_order:
-            setattr(pkt, f_name, getattr(c_pkt, "_" + f_name))
+        pkt._c_pkt = c_pkt
 
         return pkt
