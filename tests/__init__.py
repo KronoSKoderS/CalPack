@@ -7,12 +7,12 @@ def get_tests():
 
 def full_suite():
 
-    from .BasicPackets_Test import TestIntField, TestSimplePackets
+    from .BasicPackets_Test import TestIntField, TestSimplePacket
     from .Utilities_Test import Test_Utilities_Test
 
     return unittest.TestSuite([
         unittest.TestLoader().loadTestsFromTestCase(TestIntField),
-        unittest.TestLoader().loadTestsFromTestCase(TestSimplePackets),
+        unittest.TestLoader().loadTestsFromTestCase(TestSimplePacket),
         untitest.TestLoader().loadtestsFromTestCase(Test_Utilities_Test),
     ])
 
