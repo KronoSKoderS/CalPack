@@ -6,13 +6,12 @@ models - a collection of classes and functions to create new custom packets.
 This module is the building blocks for creating packets.  It also provides the ability for users to create custom 
 fields for their packets.  
 
-
-Creating and working with Custom Packets:
------------------------------------------
+Creating and working with Custom ``Packet``s
+--------------------------------------------
 
 Creating a custom packet requires inheriting the `Packet` class and then defining the Field within the order they are 
-expected to be seen:
-
+expected to be seen::
+    
     from calpack import models
 
     class Header(models.Packet):
@@ -22,7 +21,7 @@ expected to be seen:
         data2 = models.IntField()
 
 Once the packet is defined, creating an instance of that packet allows you to manipulate it.  Fields are automatically 
-set to a 'default' zero'd value.  
+set to a 'default' zero'd value::
 
     my_pkt = Header()
 
@@ -32,7 +31,7 @@ set to a 'default' zero'd value.
 
     print(my_pkt.source)  # 123
 
-Packet fields can be easily copied and compared to other packets:
+Packet fields can be easily copied and compared to other packets::
 
     my_pkt2 = Header()
     my_pkt2.source = my_pkt.source
@@ -42,6 +41,8 @@ Packet fields can be easily copied and compared to other packets:
     my_pkt.dest == my_pkt2.dest  # False
 
 
+Code
+----
 """
 
 import ctypes
@@ -124,6 +125,8 @@ class Field():
     A Super class that all other fields inherit from.  Any class that inherits from this class will be restricted
     to instantiation with keywords as defined in the `_acceptable_params` property which is a `set`.  Update this 
     `set` first in the `__init__` 
+
+    This class is NOT intended for direct use.  Custom Fields MUST inherit from this class.  
     """
     
     num_words = typed_property('num_words', int)
@@ -142,13 +145,13 @@ class Field():
 
 class IntField(Field):
     """
-    An Integer field.  
+    An Integer field.
 
     valid keyword arguments:
 
-    - bit_len = the length in bits of the integer.  Max value of 64. (default 16)
-    - unsigned = wheter to treat the int as an unsigned integer or signed integer (default unsigned)
-    - little_endian = wheter to treate the int as a little endian or big endian integer (default os preference)
+    - bit_len: the length in bits of the integer.  Max value of 64. (default 16)
+    - signed: wheter to treat the int as an signed integer or unsigned integer (default unsigned)
+    - little_endian: wheter to treate the int as a little endian or big endian integer (default os preference)
     """
     _type = int
     bit_len = typed_property('bit_len', int, 16)
@@ -168,6 +171,8 @@ class IntField(Field):
 class _MetaPacket(type):
     """
     _MetaPacket - A class used to generate the classes defined by the user into a usable class.
+
+    This class is the magic for Turning the ``Packet`` class definitions into actual operating packets.  
     """
     def __new__(cls, clsname, bases, clsdict):
         d = dict(clsdict)
@@ -209,6 +214,17 @@ class _MetaPacket(type):
 
 
 class Packet(metaclass=_MetaPacket):
+    """
+    A super class that custom packet classes MUST inherit from.  This class is NOT intended to be used directly, but 
+    as a super class.  
+
+    Example::
+        class Header(models.Packet):
+            source = models.IntField()
+            dest = models.IntField()
+            data1 = models.IntField()
+            data2 = models.IntField()
+    """
     word_size = typed_property('word_size', int, 16)
 
     def __init__(self):

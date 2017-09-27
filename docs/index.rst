@@ -11,6 +11,8 @@ Welcome to CalPack's documentation!
    :caption: Contents:
 
 
+   modelsdoc
+
 
 Indices and tables
 ==================
