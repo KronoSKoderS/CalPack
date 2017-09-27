@@ -13,7 +13,7 @@ def full_suite():
     return unittest.TestSuite([
         unittest.TestLoader().loadTestsFromTestCase(TestIntField),
         unittest.TestLoader().loadTestsFromTestCase(TestSimplePacket),
-        untitest.TestLoader().loadtestsFromTestCase(Test_Utilities_Test),
+        unittest.TestLoader().loadtestsFromTestCase(Test_Utilities_Test),
     ])
 
 if __name__ == "__main__":
