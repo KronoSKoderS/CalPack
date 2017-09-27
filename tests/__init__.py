@@ -7,10 +7,13 @@ def get_tests():
 
 def full_suite():
 
-    from .BasicPackets_Test import TestSimplePackets
+    from .BasicPackets_Test import TestIntField, TestSimplePacket
+    from .Utilities_Test import Test_Utilities_Test
 
     return unittest.TestSuite([
-        unittest.TestLoader().loadTestsFromTestCase(TestSimplePackets),
+        unittest.TestLoader().loadTestsFromTestCase(TestIntField),
+        unittest.TestLoader().loadTestsFromTestCase(TestSimplePacket),
+        unittest.TestLoader().loadTestsFromTestCase(Test_Utilities_Test),
     ])
 
 if __name__ == "__main__":
