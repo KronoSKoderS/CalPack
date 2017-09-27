@@ -97,17 +97,17 @@ class IntField(Field):
     """
     _type = int
     bit_len = typed_property('bit_len', int, 16)
-    unsigned = typed_property('unsigned', bool, False)
+    signed = typed_property('signed', bool, False)
     little_endian = typed_property('little_endian', bool)
     
     def __init__(self, **kwargs):
-        self._acceptable_params.update(['bit_len', 'little_endian', 'unsigned', 'initial_value'])
+        self._acceptable_params.update(['bit_len', 'little_endian', 'signed', 'initial_value'])
         super(IntField, self).__init__(**kwargs)
 
-        if self.unsigned:
-            self._c_type = ctypes.c_uint64
-        else:
+        if self.signed:
             self._c_type = ctypes.c_int64
+        else:
+            self._c_type = ctypes.c_uint64
 
 
 class _MetaPacket(type):

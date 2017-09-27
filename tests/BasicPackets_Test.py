@@ -10,15 +10,15 @@ class TestSimplePackets(unittest.TestCase):
     def setUp(self):
         class simple_pkt(models.Packet):
             field1 = models.IntField()
-            field2 = models.IntField(unsigned=True)
+            field2 = models.IntField(signed=True)
 
         self.simple_pkt = simple_pkt
 
     def test_set_simple_int_fields(self):
         p = self.simple_pkt()
 
-        v1 = randint(-32768, 32767)
-        v2 = randint(0, 65536)
+        v1 = randint(0, 65536)
+        v2 = randint(-32768, 32767)
 
         p.field1 = v1
         p.field2 = v2
@@ -36,7 +36,7 @@ class TestSimplePackets(unittest.TestCase):
         p = self.simple_pkt()
         p2 = self.simple_pkt()
 
-        v1 = randint(-32768, 32767)
+        v1 = randint(0, 65536)
         
         p.field1 = v1
 
@@ -46,10 +46,10 @@ class TestSimplePackets(unittest.TestCase):
 
 
     def test_from_binary(self):
-        v1 = randint(-32768, 32767)
-        v2 = randint(0, 65536)
+        v1 = randint(0, 65536)
+        v2 = randint(-32768, 32767)
         vals = [v1, v2]
-        b_val = struct.pack('hH', *vals)
+        b_val = struct.pack('Hh', *vals)
 
         p = self.simple_pkt.from_bytes(b_val)
 
@@ -57,10 +57,10 @@ class TestSimplePackets(unittest.TestCase):
         self.assertEquals(p.field2, vals[1])
 
     def test_to_binary(self):
-        v1 = randint(-32768, 32767)
-        v2 = randint(0, 65536)
+        v1 = randint(0, 65536)
+        v2 = randint(-32768, 32767)
         vals = [v1, v2]
-        b_val = struct.pack('hH', *vals)
+        b_val = struct.pack('Hh', *vals)
 
         p = self.simple_pkt()
         p.field1 = vals[0]
@@ -71,7 +71,9 @@ class TestSimplePackets(unittest.TestCase):
         self.assertEquals(pkt_bin, b_val)
 
     def test_to_from_binary(self):
-        vals = [randint(0, 100) for i in range(2)]
+        v1 = randint(0, 65536)
+        v2 = randint(-32768, 32767)
+        vals = [v1, v2]
 
         p = self.simple_pkt()
         p.field1 = vals[0]
