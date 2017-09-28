@@ -88,7 +88,7 @@ class TestIntField(unittest.TestCase):
             class invalid_pkt(models.Packet):
                 inv_field = models.IntField(keyword_that_dont_exist=100)
 
-    def test_int_field_bit_lenth(self):
+    def test_int_field_with_variable_bit_lenth(self):
         class int_packet_with_varied_sized_int_fields(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -98,9 +98,12 @@ class TestIntField(unittest.TestCase):
         pkt = int_packet_with_varied_sized_int_fields()
         pkt.int_field = 100
         pkt.int_field_signed = -100
-        pkt_int_field_4_bits = 15
-        pkt_int_field_12_bits = 4095
+        pkt.int_field_4_bits = 15
+        pkt.int_field_12_bits = 1023
 
+        b_str = b'd\x00\x9c\xff\xff?'
+
+        self.assertEquals(b_str, pkt.to_bytes())
 
 class TestSimplePacket(unittest.TestCase):
 
