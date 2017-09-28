@@ -224,9 +224,16 @@ class Packet(metaclass=_MetaPacket):
     """
     word_size = typed_property('word_size', int, 16)
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         # create an internal c structure instance for us to interface with.
         self._c_pkt = self._c_struct()
+
+        # This allows for pre-definition of a field value.  
+        for key, val in kwargs.items():
+            # Only set the keyword args associated with the field.  If it isn't found, then we'll processing like 
+            #   normal.  
+            if key in self._fields_order:
+                setattr(self, key, val)
 
     @property
     def num_words(self):

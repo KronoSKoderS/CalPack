@@ -116,6 +116,16 @@ class TestSimplePacket(unittest.TestCase):
         p = two_int_field_packet()
         self.assertEquals(p.num_words, 2)
 
+
+    def test_create_packet_object_with_defined_values(self):
+        class two_int_field_packet(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
+
+        p = two_int_field_packet(int_field=12, int_field_signed=-12)
+        self.assertEquals(p.int_field, 12)
+        self.assertEquals(p.int_field_signed, -12)
+
 ## TDD: Prototyping for encapsulated packets.
 # class TestAdvancedPackets(unittest.TestCase):
 #     def setUp(self):
