@@ -130,7 +130,7 @@ class TestSimplePacket(unittest.TestCase):
     def test_create_packet_with_default_field_value(self):
         class two_int_field_packet(models.Packet):
             int_field = models.IntField(default_val=12)
-            int_field = models.IntField(signed=True, default_val=-12)
+            int_field_signed = models.IntField(signed=True, default_val=-12)
 
 
         p = two_int_field_packet()
