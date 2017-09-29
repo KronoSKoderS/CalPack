@@ -73,8 +73,7 @@ def typed_property(name, expected_type, default_val=None):
     @property
     def prop(self):
         # Return the set value.  If the property hasn't been set yet then use the default value
-        val = getattr(self, storage_name, None)
-        return val if val is not None else default_val
+        return getattr(self, storage_name, default_val)
 
     @prop.setter
     def prop(self, value):
@@ -86,7 +85,7 @@ def typed_property(name, expected_type, default_val=None):
     return prop
 
 
-def _field_property(field_name, field, default_val=None):
+def _field_property(field_name, field):
     """
     Simple function used to allow for setting fields directly, and returning the class of the fields.
 
@@ -101,22 +100,23 @@ def _field_property(field_name, field, default_val=None):
     already defined.  This function is for internal use only within the `MetaPacket` definition and is NOT exppected
     to be used by the user.  THAT MEANS YOU!
     """
-    if default_val is not None and not isinstance(default_val, expected_type):
-        raise TypeError("{v} must be of type {t}".format(v=default_val, t=expected_type))
-
-
     @property
     def prop(self):
-        return getattr(self._c_pkt, '_' + field_name)
+        field._val = getattr(self._c_pkt, '_' + field_name)
+        return field
 
     @prop.setter
     def prop(self, value):
+        set_val = value
+        if isinstance(value, type(field)):
+            set_val = value._val
+
         # Ensuring the type if it's set
-        if field._type is not _NO_TYPE and not isinstance(value, field._type):
+        if field._type is not _NO_TYPE and not isinstance(set_val, field._type):
             raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
 
         # Sets the internal value of the field
-        setattr(self._c_pkt, '_' + field_name, value)
+        setattr(self._c_pkt, '_' + field_name, set_val)
 
     return prop
 
@@ -134,6 +134,7 @@ class Field():
     _acceptable_params = set(['num_words', 'default_val'])
     _c_type = None
     _type = _NO_TYPE
+    _val = None
 
     def __init__(self, **kwargs):
         for key, val, in kwargs.items():
@@ -142,6 +143,9 @@ class Field():
 
             # set the user defined keyword args.
             setattr(self, key, val)
+
+    def __eq__(self, other):
+        return self._val == other
 
 
 class IntField(Field):
@@ -232,10 +236,15 @@ class Packet(metaclass=_MetaPacket):
         # create an internal c structure instance for us to interface with.
         self._c_pkt = self._c_struct()
 
-        # This allows for pre-definition of a field value.  
+        # This allows for pre-definition of a field value after packet definition
+        for name in self._fields_order:
+            d_val = getattr(getattr(self, name), 'default_val', None)
+            if d_val is not None:
+                setattr(self, name, d_val)
+
+        # This allows for pre-definition of a field value at instantiation
         for key, val in kwargs.items():
-            # Only set the keyword args associated with the field.  If it isn't found, then we'll processing like 
-            #   normal.  
+            # Only set the keyword args associated with fields.  If it isn't found, then we'll process like normal.
             if key in self._fields_order:
                 setattr(self, key, val)
 
