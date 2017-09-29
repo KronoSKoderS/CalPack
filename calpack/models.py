@@ -86,7 +86,7 @@ def typed_property(name, expected_type, default_val=None):
     return prop
 
 
-def _field_property(field_name, field):
+def _field_property(field_name, field, default_val=None):
     """
     Simple function used to allow for setting fields directly, and returning the class of the fields.
 
@@ -101,6 +101,10 @@ def _field_property(field_name, field):
     already defined.  This function is for internal use only within the `MetaPacket` definition and is NOT exppected
     to be used by the user.  THAT MEANS YOU!
     """
+    if default_val is not None and not isinstance(default_val, expected_type):
+        raise TypeError("{v} must be of type {t}".format(v=default_val, t=expected_type))
+
+
     @property
     def prop(self):
         return getattr(self._c_pkt, '_' + field_name)
@@ -127,7 +131,7 @@ class Field():
     """
     
     num_words = typed_property('num_words', int)
-    _acceptable_params = set(['num_words'])
+    _acceptable_params = set(['num_words', 'default_val'])
     _c_type = None
     _type = _NO_TYPE
 
