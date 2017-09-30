@@ -137,6 +137,19 @@ class TestSimplePacket(unittest.TestCase):
         self.assertEquals(p.int_field, 12)
         self.assertEquals(p.int_field_signed, -12)
 
+    def test_create_packet_with_multi_field(self):
+
+        class multi_int_field_packet(models.Packet):
+            list_int_field = models.IntField(array_size=10)
+
+        expected_vals = list(range(10))
+        p = multi_int_field_packet()
+        p.list_int_field = expected_vals
+
+        self.assertEqual(p.list_int_field, expected_vals)
+
+
+
 ## TDD: Prototyping for encapsulated packets.
 # class TestAdvancedPackets(unittest.TestCase):
 #     def setUp(self):
