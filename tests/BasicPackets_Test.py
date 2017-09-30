@@ -88,7 +88,7 @@ class TestIntField(unittest.TestCase):
             class invalid_pkt(models.Packet):
                 inv_field = models.IntField(keyword_that_dont_exist=100)
 
-    def test_int_field_bit_lenth(self):
+    def test_int_field_with_variable_bit_lenth(self):
         class int_packet_with_varied_sized_int_fields(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -98,9 +98,12 @@ class TestIntField(unittest.TestCase):
         pkt = int_packet_with_varied_sized_int_fields()
         pkt.int_field = 100
         pkt.int_field_signed = -100
-        pkt_int_field_4_bits = 15
-        pkt_int_field_12_bits = 4095
+        pkt.int_field_4_bits = 15
+        pkt.int_field_12_bits = 1023
 
+        b_str = b'd\x00\x9c\xff\xff?'
+
+        self.assertEquals(b_str, pkt.to_bytes())
 
 class TestSimplePacket(unittest.TestCase):
 
@@ -112,6 +115,40 @@ class TestSimplePacket(unittest.TestCase):
 
         p = two_int_field_packet()
         self.assertEquals(p.num_words, 2)
+
+
+    def test_create_packet_object_with_defined_values(self):
+        class two_int_field_packet(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
+
+        p = two_int_field_packet(int_field=12, int_field_signed=-12)
+        self.assertEquals(p.int_field, 12)
+        self.assertEquals(p.int_field_signed, -12)
+
+
+    def test_create_packet_with_default_field_value(self):
+        class two_int_field_packet(models.Packet):
+            int_field = models.IntField(default_val=12)
+            int_field_signed = models.IntField(signed=True, default_val=-12)
+
+
+        p = two_int_field_packet()
+        self.assertEquals(p.int_field, 12)
+        self.assertEquals(p.int_field_signed, -12)
+
+    def test_create_packet_with_multi_field(self):
+
+        class multi_int_field_packet(models.Packet):
+            list_int_field = models.IntField(array_size=10)
+
+        expected_vals = list(range(10))
+        p = multi_int_field_packet()
+        p.list_int_field = expected_vals
+
+        self.assertEqual(p.list_int_field, expected_vals)
+
+
 
 ## TDD: Prototyping for encapsulated packets.
 # class TestAdvancedPackets(unittest.TestCase):
