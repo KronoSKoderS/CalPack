@@ -73,8 +73,7 @@ def typed_property(name, expected_type, default_val=None):
     @property
     def prop(self):
         # Return the set value.  If the property hasn't been set yet then use the default value
-        val = getattr(self, storage_name, None)
-        return val if val is not None else default_val
+        return getattr(self, storage_name, default_val)
 
     @prop.setter
     def prop(self, value):
@@ -86,7 +85,7 @@ def typed_property(name, expected_type, default_val=None):
     return prop
 
 
-def _field_property(field_name, field, default_val=None):
+def _field_property(field_name, field):
     """
     Simple function used to allow for setting fields directly, and returning the class of the fields.
 
@@ -101,22 +100,23 @@ def _field_property(field_name, field, default_val=None):
     already defined.  This function is for internal use only within the `MetaPacket` definition and is NOT exppected
     to be used by the user.  THAT MEANS YOU!
     """
-    if default_val is not None and not isinstance(default_val, expected_type):
-        raise TypeError("{v} must be of type {t}".format(v=default_val, t=expected_type))
-
-
     @property
     def prop(self):
-        return getattr(self._c_pkt, '_' + field_name)
+        field._val = getattr(self._c_pkt, '_' + field_name)
+        return field
 
     @prop.setter
     def prop(self, value):
+        set_val = value
+        if isinstance(value, type(field)):
+            set_val = value._val
+
         # Ensuring the type if it's set
-        if field._type is not _NO_TYPE and not isinstance(value, field._type):
+        if field._type is not _NO_TYPE and not isinstance(set_val, field._type):
             raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
 
         # Sets the internal value of the field
-        setattr(self._c_pkt, '_' + field_name, value)
+        setattr(self._c_pkt, '_' + field_name, set_val)
 
     return prop
 
@@ -128,12 +128,36 @@ class Field():
     `set` first in the `__init__`
 
     This class is NOT intended for direct use.  Custom Fields MUST inherit from this class.
+
+    When creating a custom field the following MUST be defined:
+
+        * c_type - A ctypes.c_<type> class that can be used within the ctypes.Structure class.
+        * type - A Python type that is used to ensure type setting.
+
+    Furthermore, `_accetable_params` (a set of strings) must be updated.  This list is used to limit the keyword
+    arguments for __init__.  In order to allow the user to use keyword arguments, you MUST update this property.
+    futher more, any allowed keyword arguments passed in by the user, are automatically set as properties for the
+    class.
+
+    Example field creation::
+
+        class MyCustomInt(Field):
+            type = int
+            c_type = ctypes.c_int16
+
+            def __init__(self, **kwargs):
+                self._acceptable_params.update(["one", "two"]
+                super(MyCustomInt, self).__init__(**kwargs)
+
+        f = MyCustomInt(one=1)
+        print(f.one)  # '1'
     """
     
-    num_words = typed_property('num_words', int)
-    _acceptable_params = set(['num_words', 'default_val'])
+    array_size = typed_property('array_size', int, 0)
+    _acceptable_params = set(['array_size', 'default_val'])
     _c_type = None
     _type = _NO_TYPE
+    _val = None
 
     def __init__(self, **kwargs):
         for key, val, in kwargs.items():
@@ -142,6 +166,9 @@ class Field():
 
             # set the user defined keyword args.
             setattr(self, key, val)
+
+    def __eq__(self, other):
+        return self._val == other
 
 
 class IntField(Field):
@@ -174,6 +201,23 @@ class _MetaPacket(type):
     _MetaPacket - A class used to generate the classes defined by the user into a usable class.
 
     This class is the magic for Turning the ``Packet`` class definitions into actual operating packets.
+
+    The process of how this all works is a little convoluted, however here is a basic overview:
+
+        1. A User has defined a packet through subclassing the `Packet` class
+        2. For each `Field` child class:
+            - The ctype is created based on bit width and ctypes type
+            - The order in which it was defined is saved
+            - The bit width of the field is summed
+            - A `_field_property` is created.  This function, monkey pactches the class
+                to enable setting the value directly (i.e. pkt.field = some_val) while
+                still enabling access to the other Field methods and properties.  
+        3. A `ctypes.Structure` is created with `_fields_` in order and type of the Fields.
+
+    In order for this to work, the following are assumed about the defined `Field` classes:
+
+        * c_type is defined with a `ctypes.c_<type>` 
+        * type is defined with a Python object type
     """
     def __new__(mcs, clsname, bases, clsdict):
         class_dict = dict(clsdict)
@@ -187,12 +231,32 @@ class _MetaPacket(type):
         for name, value in clsdict.items():
 
             if isinstance(value, Field):
-                fields.append(('_' + name, value._c_type, value.bit_len))
+                if isinstance(value, IntField):
+                    field_tuple = (('_' + name, value._c_type, value.bit_len))
 
-                num_bits_used += value.bit_len
+                    num_bits_used += value.bit_len
 
-                order.append(name)
-                class_dict[name] = _field_property(name, value)
+                    order.append(name)
+                    f_prop = _field_property(name, value)
+
+                ## Default Field processing
+                #elif isinstance(value, Field):
+                #    fields.append(('_' + name, value._c_type))
+
+                #    num_bits_used += value.bit_len
+
+                #    order.append(name)
+                #    class_dict[name] = _field_property(name, value)
+
+
+                if value.array_size > 0:
+                    field_tuple = list(field_tuple)
+                    field_tuple[1] * value.array_size
+                    field_tuple = tuple(field_tuple)
+                    f_prop = (f_prop, ) * value.array_size
+
+                fields.append(field_tuple)
+                class_dict[name] = f_prop
 
         # Here we save the order
         class_dict['_fields_order'] = order
@@ -220,6 +284,7 @@ class Packet(metaclass=_MetaPacket):
     as a super class.
 
     Example::
+
         class Header(models.Packet):
             source = models.IntField()
             dest = models.IntField()
@@ -232,10 +297,15 @@ class Packet(metaclass=_MetaPacket):
         # create an internal c structure instance for us to interface with.
         self._c_pkt = self._c_struct()
 
-        # This allows for pre-definition of a field value.  
+        # This allows for pre-definition of a field value after packet definition
+        for name in self._fields_order:
+            d_val = getattr(getattr(self, name), 'default_val', None)
+            if d_val is not None:
+                setattr(self, name, d_val)
+
+        # This allows for pre-definition of a field value at instantiation
         for key, val in kwargs.items():
-            # Only set the keyword args associated with the field.  If it isn't found, then we'll processing like 
-            #   normal.  
+            # Only set the keyword args associated with fields.  If it isn't found, then we'll process like normal.
             if key in self._fields_order:
                 setattr(self, key, val)
 
