@@ -330,3 +330,10 @@ class Packet(metaclass=_MetaPacket):
         pkt._c_pkt = c_pkt
 
         return pkt
+
+    def __eq__(self, other):
+        # if it's not the same packet type
+        if not isinstance(other, type(self)):
+            return False
+
+        return self.to_bytes() == other.to_bytes()
