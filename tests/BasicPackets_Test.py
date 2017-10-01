@@ -148,6 +148,17 @@ class TestSimplePacket(unittest.TestCase):
 
         self.assertEqual(p.list_int_field, expected_vals)
 
+    def test_compare_two_packets(self):
+
+        class two_int_field_packet(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
+
+        pkt1 = two_int_field_packet(int_field=1, int_field_signed=-1)
+        pkt2 = two_int_field_packet(int_field=1, int_field_signed=-1)
+
+        self.assertEquals(pkt1, pkt2)
+
 
 
 ## TDD: Prototyping for encapsulated packets.
