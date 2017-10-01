@@ -148,7 +148,7 @@ class TestSimplePacket(unittest.TestCase):
 
         self.assertEqual(p.list_int_field, expected_vals)
 
-    def test_compare_two_packets(self):
+    def test_compare_two_same_packets(self):
 
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()
@@ -158,6 +158,35 @@ class TestSimplePacket(unittest.TestCase):
         pkt2 = two_int_field_packet(int_field=1, int_field_signed=-1)
 
         self.assertEquals(pkt1, pkt2)
+
+    def test_compare_two_different_packets(self):
+
+        class two_int_field_packet(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
+
+        class two_int_field_packet_2(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
+
+
+        pkt_orig = two_int_field_packet(int_field=1, int_field_signed=-1)
+        pkt_different_class_same_byte_out = two_int_field_packet_2(int_field=1, int_field_signed=-1)
+
+        # even though these packets will generate the same byte output and the fields are the same, this should raise
+        #   an error as their classes are not the same.  
+        self.assertFalse(pkt_orig == pkt_different_class_same_byte_out)
+
+        class three_int_field_packet(models.Packet):
+            int_field = models.IntField()
+            int_field_2 = models.IntField()
+            int_field_3 = models.IntField()
+
+        pkt_different_class_different_byte_out = three_int_field_packet(int_field=1, int_field_2=2, int_field_3=3)
+        self.assertFalse(pkt_orig == pkt_different_class_different_byte_out)
+
+        pkt_same_class_different_values = two_int_field_packet(int_field=1, int_field_signed=2)
+        self.assertFalse(pkt_orig == pkt_same_class_different_values)
 
 
 
