@@ -48,9 +48,9 @@ Simply using `pip install calpack` will get this installed.
 The following list is a set of major features that is planned to be worked on.  For a more exhautive list, view the issues page, or if you have ZenHub
 installed, view our current board. 
 
-- Ability to create a field with multiple words (i.e. a Data Array Field)
-- Set the specific bitfield length for the `IntField` (in progress)
-- Ability to compare packets for equality
+- <strike>Ability to create a field with multiple words (i.e. a Data Array Field)</strike>
+- <strike>Set the specific bitfield length for the `IntField` (in progress)</strike>
+- <strike>Ability to compare packets for equality</strike>
 - Ability to set an already defined packet as a field for another packet
 - Builtin packet for commonly used packets, such as TCP/IP, UDP, etc,.
 - Adding other Field types (Float, String, etc,.)
