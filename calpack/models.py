@@ -41,8 +41,25 @@ Packet fields can be easily copied and compared to other packets::
     my_pkt.dest == my_pkt2.dest  # False
 
 
-Code
-----
+Packets themself can also be campared:
+
+    my_pkt = Header()
+    my_pkt.source = 123
+    my_pkt.dest = 456
+    my_pkt.data1 = 789
+
+    my_pkt2 = Header()
+    my_pkt2.source = 123
+    my_pkt2.dest = 456
+    my_pkt2.data1 = 123
+
+    my_pkt == my_pkt2 # False
+    my_pkt2.data1 = 789
+
+    my_pkt == my_pkt2 # True
+
+Class/Function specific Docs
+----------------------------
 """
 from collections import OrderedDict
 from math import ceil
