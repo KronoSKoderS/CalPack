@@ -148,6 +148,17 @@ class TestSimplePacket(unittest.TestCase):
 
         self.assertEqual(p.list_int_field, expected_vals)
 
+    def test_set_invalid_type_multi_field(self):
+
+        class multi_int_field_packet(models.Packet):
+            list_int_field = models.IntField(array_size=10)
+
+        expected_vals = list(range(10))
+        p = multi_int_field_packet()
+
+        with self.assertRaises(TypeError):
+            p.list_int_field = 100
+
     def test_compare_two_same_packets(self):
 
         class two_int_field_packet(models.Packet):
@@ -188,33 +199,28 @@ class TestSimplePacket(unittest.TestCase):
         pkt_same_class_different_values = two_int_field_packet(int_field=1, int_field_signed=2)
         self.assertFalse(pkt_orig == pkt_same_class_different_values)
 
+class TestAdvancedPackets(unittest.TestCase):
 
+     def test_encapsulated_pkt(self):
+         class simple_pkt(models.Packet):
+             field1 = models.IntField()
 
-## TDD: Prototyping for encapsulated packets.
-# class TestAdvancedPackets(unittest.TestCase):
-#     def setUp(self):
-#         pass
-#
-#     def test_encapsulated_pkt(self):
-#         class simple_pkt(models.Packet):
-#             field1 = models.IntField(num_words=10)
-#
-#         class adv_pkt(models.Packet):
-#             field2 = simple_pkt
-#
-#         p = adv_pkt()
-#
-#         # Verify abilily to access and set encap packets fields
-#         p.field2.field1 = 100
-#
-#         self.assertEquals(p.field2.field1, 100)
-#
-#         sp = simple_pkt()
-#         sp.field1 = 200
-#
-#         p.field2 = sp
-#
-#         self.assertEquals(p.field2.field1, 200)
+         class adv_pkt(models.Packet):
+             field2 = simple_pkt
+
+         p = adv_pkt()
+
+         # Verify abilily to access and set encap packets fields
+         p.field2.field1 = 100
+
+         self.assertEquals(p.field2.field1, 100)
+
+         sp = simple_pkt()
+         sp.field1 = 200
+
+         p.field2 = sp
+
+         self.assertEquals(p.field2.field1, 200)
 
 
 if __name__ == '__main__':
