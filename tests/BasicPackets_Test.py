@@ -1,10 +1,12 @@
-import unittest
-import struct
-
 from random import randint
-
 from calpack import models
 
+import unittest
+import struct
+import sys
+
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
 
 class TestIntField(unittest.TestCase):
     def setUp(self):
@@ -101,7 +103,10 @@ class TestIntField(unittest.TestCase):
         pkt.int_field_4_bits = 15
         pkt.int_field_12_bits = 1023
 
-        b_str = b'd\x00\x9c\xff\xff?'
+        if PY3:
+            b_str = b'd\x00\x9c\xff\xff?'
+        else:
+            b_str = b'd\x00\xcf\xf9\xff?'
 
         self.assertEquals(b_str, pkt.to_bytes())
 

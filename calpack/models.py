@@ -61,12 +61,34 @@ Packets themself can also be campared:
 Class/Function specific Docs
 ----------------------------
 """
+from __future__ import print_function
 from collections import OrderedDict
 from math import ceil
 
 import ctypes
+import sys
+
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
 
 _NO_TYPE = object()
+
+# This was taken from the six.py source code.  Reason being that I only needed a small part of six
+#   and didn't want to rely on the third-party installation just for this package.  
+def add_metaclass(metaclass):
+    """Class decorator for creating a class with a metaclass."""
+    def wrapper(cls):
+        orig_vars = cls.__dict__.copy()
+        slots = orig_vars.get('__slots__')
+        if slots is not None:
+            if isinstance(slots, str):
+                slots = [slots]
+            for slots_var in slots:
+                orig_vars.pop(slots_var)
+        orig_vars.pop('__dict__', None)
+        orig_vars.pop('__weakref__', None)
+        return metaclass(cls.__name__, cls.__bases__, orig_vars)
+    return wrapper
 
 
 def typed_property(name, expected_type, default_val=None):
@@ -138,7 +160,7 @@ def _field_property(field_name, field):
     return prop
 
 
-class Field():
+class Field(object):
     """
     A Super class that all other fields inherit from.  Any class that inherits from this class will be restricted
     to instantiation with keywords as defined in the `_acceptable_params` property which is a `set`.  Update this
@@ -198,7 +220,10 @@ class IntField(Field):
     - signed: wheter to treat the int as an signed integer or unsigned integer (default unsigned)
     - little_endian: wheter to treate the int as a little endian or big endian integer (default os preference)
     """
-    _type = int
+    if PY2:
+        _type = (int, long)
+    else:
+        _type = int
     bit_len = typed_property('bit_len', int, 16)
     signed = typed_property('signed', bool, False)
     little_endian = typed_property('little_endian', bool)
@@ -220,6 +245,7 @@ class PacketField(Field):
         super(PacketField, self).__init__(**kwargs)
 
         self.packet_cls = packet_cls
+
 
 class _MetaPacket(type):
     """
@@ -308,7 +334,8 @@ class _MetaPacket(type):
         return OrderedDict()
 
 
-class Packet(metaclass=_MetaPacket):
+@add_metaclass(_MetaPacket)
+class Packet():
     """
     A super class that custom packet classes MUST inherit from.  This class is NOT intended to be used directly, but
     as a super class.
@@ -345,7 +372,7 @@ class Packet(metaclass=_MetaPacket):
 
     @property
     def byte_size(self):
-        return ceil(self._num_bits_used / 8)
+        return int(ceil(self._num_bits_used / 8))
     
     def to_bytes(self):
         """Converts the packet into a byte string."""
