@@ -247,6 +247,12 @@ class PacketField(Field):
         self.packet_cls = packet_cls
 
 
+class ArrayField(Field):
+    def __init__(self, array_cls, array_size, **kwargs):
+        super(ArrayField, self).__init__(**kwargs)
+        self.array_cls = array_cls
+        self.array_size = array_size
+
 class _MetaPacket(type):
     """
     _MetaPacket - A class used to generate the classes defined by the user into a usable class.
@@ -281,21 +287,24 @@ class _MetaPacket(type):
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, value in clsdict.items():
 
-            if isinstance(value, Field) or isinstance(value, PacketField):
+            if isinstance(value, Field):
+                order.append(name)
+                
                 if isinstance(value, IntField):
                     field_tuple = (('_' + name, value._c_type, value.bit_len))
                     num_bits_used += value.bit_len
-                    order.append(name)
                     f_prop = _field_property(name, value)
 
                 elif isinstance(value, PacketField):
                     field_tuple = (('_' + name, value._packet_cls._c_struct))
                     num_bits_used += value._packet_cls._num_bits_used
-                    order.append(name)
                     f_prop = value._packet_cls
 
+                elif isinstance(value, ArrayField):
+                    field_tuple = (('_' + name, value._c_type * value.array_size))
 
-                ## Default Field processing
+                # TODO: This should be used for enabling custom field types.  
+                ## Default Field processing  
                 #elif isinstance(value, Field):
                 #    fields.append(('_' + name, value._c_type))
 
