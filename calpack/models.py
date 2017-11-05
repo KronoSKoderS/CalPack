@@ -124,7 +124,7 @@ def typed_property(name, expected_type, default_val=None):
     return prop
 
 
-def _field_property(field_name, field):
+def _field_property(field_name, field, isArray=False):
     """
     Simple function used to allow for setting fields directly, and returning the class of the fields.
 
@@ -139,23 +139,41 @@ def _field_property(field_name, field):
     already defined.  This function is for internal use only within the `MetaPacket` definition and is NOT exppected
     to be used by the user.  THAT MEANS YOU!
     """
-    @property
-    def prop(self):
-        field._val = getattr(self._c_pkt, '_' + field_name)
-        return field
+    if isArray:
+        @property
+        def prop(self):
+            field._val = tuple(getattr(self._c_pkt, '_' + field_name))
+            return field
 
-    @prop.setter
-    def prop(self, value):
-        set_val = value
-        if isinstance(value, type(field)):
-            set_val = value._val
+        @prop.setter
+        def prop(self, value):
+            set_val = value
+            if isinstance(value, type(field)):
+                set_val = value._val
 
-        # Ensuring the type if it's set
-        if field._type is not _NO_TYPE and not isinstance(set_val, field._type):
-            raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
+            if not isinstance(set_val, tuple):
+                raise TypeError("{v} must be of type {t1} or {t1}".format(v=value, t1=field._type, t2=type(field)))
 
-        # Sets the internal value of the field
-        setattr(self._c_pkt, '_' + field_name, set_val)
+            setattr(self._c_pkt, '_' + field_name, *set_val)
+
+    else:
+        @property
+        def prop(self):
+            field._val = getattr(self._c_pkt, '_' + field_name)
+            return field
+
+        @prop.setter
+        def prop(self, value):
+            set_val = value
+            if isinstance(value, type(field)):
+                set_val = value._val
+
+            # Ensuring the type if it's set
+            if field._type is not _NO_TYPE and not isinstance(set_val, field._type):
+                raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
+
+            # Sets the internal value of the field
+            setattr(self._c_pkt, '_' + field_name, set_val)
 
     return prop
 
@@ -192,11 +210,11 @@ class Field(object):
         print(f.one)  # '1'
     """
     
-    array_size = typed_property('array_size', int, 0)
-    _acceptable_params = set(['array_size', 'default_val'])
+    _acceptable_params = set(['default_val'])
     _c_type = None
     _type = _NO_TYPE
     _val = None
+    _bit_len = None
 
     def __init__(self, **kwargs):
         for key, val, in kwargs.items():
@@ -208,6 +226,25 @@ class Field(object):
 
     def __eq__(self, other):
         return self._val == other
+
+    def set_c_struct_interface(self, c_struct_interface):
+        self._val = c_struct_interface
+
+    def create_field_tuple(self, name):
+        raise NotImplementedError("This must be implemented for the Specific Field Type")
+
+    @property
+    def bit_len(self):
+        return self._bit_len
+
+    @property
+    def val(self):
+        return 
+
+    @val.setter
+    def val(self, value):
+        if self._type is not _NO_TYPE and not isinstance(value, self._type):
+            raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=self._type, t2=type(self)))
 
 
 class IntField(Field):
@@ -224,6 +261,7 @@ class IntField(Field):
         _type = (int, long)
     else:
         _type = int
+
     bit_len = typed_property('bit_len', int, 16)
     signed = typed_property('signed', bool, False)
     little_endian = typed_property('little_endian', bool)
@@ -239,19 +277,24 @@ class IntField(Field):
 
 
 class PacketField(Field):
-    """"""
+    """A custom field for handling another packet as a field."""
 
     def __init__(self, packet_cls, **kwargs):
+        self._acceptable_params.remove('default_val')
         super(PacketField, self).__init__(**kwargs)
 
         self.packet_cls = packet_cls
 
 
 class ArrayField(Field):
+    """A custom field for handling an array of fields"""
+    _type = list
     def __init__(self, array_cls, array_size, **kwargs):
+        self._acceptable_params.remove('default_val')
         super(ArrayField, self).__init__(**kwargs)
         self.array_cls = array_cls
         self.array_size = array_size
+
 
 class _MetaPacket(type):
     """
@@ -301,7 +344,14 @@ class _MetaPacket(type):
                     f_prop = value._packet_cls
 
                 elif isinstance(value, ArrayField):
-                    field_tuple = (('_' + name, value._c_type * value.array_size))
+                    if isinstance(value.array_cls, PacketField):
+                        field_tuple = (('_' + name, value.array_cls._c_struct * value.array_size))
+                        num_bits_used = value.array_cls._packet_cls._num_bits_used
+                        f_frop = _field_property(name, value)
+                    else:
+                        field_tuple = (('_' + name, value.array_cls._c_type * value.array_size))
+                        num_bits_used = value.bit_len
+                        f_prop = _field_property(name, value)
 
                 # TODO: This should be used for enabling custom field types.  
                 ## Default Field processing  
@@ -312,13 +362,6 @@ class _MetaPacket(type):
 
                 #    order.append(name)
                 #    class_dict[name] = _field_property(name, value)
-
-
-                if value.array_size > 0:
-                    field_tuple = list(field_tuple)
-                    field_tuple[1] * value.array_size
-                    field_tuple = tuple(field_tuple)
-                    f_prop = (f_prop, ) * value.array_size
 
                 fields.append(field_tuple)
                 class_dict[name] = f_prop
