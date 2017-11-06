@@ -124,62 +124,11 @@ def typed_property(name, expected_type, default_val=None):
     return prop
 
 
-def _field_property(field_name, field, isArray=False):
-    """
-    Simple function used to allow for setting fields directly, and returning the class of the fields.
-
-    This is the "magic" of the Fields and Packet Interface.  This allows the user to set and get the field as if it
-    were the type of field being used.
-
-    For example `packet.field1 = 10` would use the `@prop.setter` part of this function definition.
-
-    Note that this can ONLY be used within a class definition since there's the use of the `self` class call.
-
-    This is different from `typed_property` in that it assumes were within a `Packet` class with the _c_pkt property
-    already defined.  This function is for internal use only within the `MetaPacket` definition and is NOT exppected
-    to be used by the user.  THAT MEANS YOU!
-    """
-    if isArray:
-        @property
-        def prop(self):
-            field._val = tuple(getattr(self._c_pkt, '_' + field_name))
-            return field
-
-        @prop.setter
-        def prop(self, value):
-            set_val = value
-            if isinstance(value, type(field)):
-                set_val = value._val
-
-            if not isinstance(set_val, tuple):
-                raise TypeError("{v} must be of type {t1} or {t1}".format(v=value, t1=field._type, t2=type(field)))
-
-            setattr(self._c_pkt, '_' + field_name, *set_val)
-
-    else:
-        @property
-        def prop(self):
-            field._val = getattr(self._c_pkt, '_' + field_name)
-            return field
-
-        @prop.setter
-        def prop(self, value):
-            set_val = value
-            if isinstance(value, type(field)):
-                set_val = value._val
-
-            # Ensuring the type if it's set
-            if field._type is not _NO_TYPE and not isinstance(set_val, field._type):
-                raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
-
-            # Sets the internal value of the field
-            setattr(self._c_pkt, '_' + field_name, set_val)
-
-    return prop
-
-
 class Field(object):
     """
+    TODO: This needs to be updated with the new interface.  
+
+
     A Super class that all other fields inherit from.  Any class that inherits from this class will be restricted
     to instantiation with keywords as defined in the `_acceptable_params` property which is a `set`.  Update this
     `set` first in the `__init__`
@@ -196,24 +145,12 @@ class Field(object):
     futher more, any allowed keyword arguments passed in by the user, are automatically set as properties for the
     class.
 
-    Example field creation::
-
-        class MyCustomInt(Field):
-            type = int
-            c_type = ctypes.c_int16
-
-            def __init__(self, **kwargs):
-                self._acceptable_params.update(["one", "two"]
-                super(MyCustomInt, self).__init__(**kwargs)
-
-        f = MyCustomInt(one=1)
-        print(f.one)  # '1'
     """
     
     _acceptable_params = set(['default_val'])
     _c_type = None
     _type = _NO_TYPE
-    _val = None
+    _field_c_interface = None
     _bit_len = None
 
     def __init__(self, **kwargs):
@@ -225,13 +162,16 @@ class Field(object):
             setattr(self, key, val)
 
     def __eq__(self, other):
-        return self._val == other
+        if isinstance(other, Field):
+            return self.val == other.val
 
-    def set_c_struct_interface(self, c_struct_interface):
-        self._val = c_struct_interface
+        return self.val == other
+
+    def set_field_c_interface(self, field_c_interface):
+        self._field_c_interface = field_c_interface
 
     def create_field_tuple(self, name):
-        raise NotImplementedError("This must be implemented for the Specific Field Type")
+        return (name, value._c_type)
 
     @property
     def bit_len(self):
@@ -239,12 +179,11 @@ class Field(object):
 
     @property
     def val(self):
-        return 
+        return self._field_c_interface
 
     @val.setter
     def val(self, value):
-        if self._type is not _NO_TYPE and not isinstance(value, self._type):
-            raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=self._type, t2=type(self)))
+        self._field_c_interface = value
 
 
 class IntField(Field):
@@ -275,6 +214,9 @@ class IntField(Field):
         else:
             self._c_type = ctypes.c_uint64
 
+    def create_field_tuple(self, name):
+        return (name, self._c_type, self.bit_len)
+
 
 class PacketField(Field):
     """A custom field for handling another packet as a field."""
@@ -284,6 +226,13 @@ class PacketField(Field):
         super(PacketField, self).__init__(**kwargs)
 
         self.packet_cls = packet_cls
+
+    @property
+    def bit_len(self):
+        return self.packet_cls.bit_len
+
+    def create_field_tuple(self, name):
+        return (name, self._packet_cls._c_struct)
 
 
 class ArrayField(Field):
@@ -327,41 +276,34 @@ class _MetaPacket(type):
 
         num_bits_used = 0
 
+        def _field_property(field_name, field):
+            """
+            Simple function used to allow for setting fields directly, and returning the class of the fields.
+
+            This is the "magic" of the Fields and Packet Interface.  This allows the user to set and get the field as if it
+            were the type of field being used.
+
+            For example `packet.field1 = 10` would use the `@prop.setter` part of this function definition.
+            """
+            @property
+            def prop(self):
+                return field
+
+            @prop.setter
+            def prop(self, value):
+                field.val = value
+
+            return prop
+
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, value in clsdict.items():
 
             if isinstance(value, Field):
                 order.append(name)
-                
-                if isinstance(value, IntField):
-                    field_tuple = (('_' + name, value._c_type, value.bit_len))
-                    num_bits_used += value.bit_len
-                    f_prop = _field_property(name, value)
 
-                elif isinstance(value, PacketField):
-                    field_tuple = (('_' + name, value._packet_cls._c_struct))
-                    num_bits_used += value._packet_cls._num_bits_used
-                    f_prop = value._packet_cls
-
-                elif isinstance(value, ArrayField):
-                    if isinstance(value.array_cls, PacketField):
-                        field_tuple = (('_' + name, value.array_cls._c_struct * value.array_size))
-                        num_bits_used = value.array_cls._packet_cls._num_bits_used
-                        f_frop = _field_property(name, value)
-                    else:
-                        field_tuple = (('_' + name, value.array_cls._c_type * value.array_size))
-                        num_bits_used = value.bit_len
-                        f_prop = _field_property(name, value)
-
-                # TODO: This should be used for enabling custom field types.  
-                ## Default Field processing  
-                #elif isinstance(value, Field):
-                #    fields.append(('_' + name, value._c_type))
-
-                #    num_bits_used += value.bit_len
-
-                #    order.append(name)
-                #    class_dict[name] = _field_property(name, value)
+                field_tuple = value.create_field_tuple('_' + name)
+                num_bits_used += value.bit_len
+                f_prop = _field_property(name, value)
 
                 fields.append(field_tuple)
                 class_dict[name] = f_prop
@@ -377,7 +319,7 @@ class _MetaPacket(type):
         class_dict['_c_struct'] = Cstruct
 
         # finally we store the number of words
-        class_dict['_num_bits_used'] = num_bits_used
+        class_dict['bit_len'] = num_bits_used
 
         return type.__new__(mcs, clsname, bases, class_dict)
 
@@ -418,13 +360,19 @@ class Packet():
             if key in self._fields_order:
                 setattr(self, key, val)
 
+
+        # finally we set each fields interface with the newly create c_struct
+        for field_name in self._fields_order:
+            field = getattr(self, field_name)
+            field.set_field_c_interface(getattr(self._c_pkt, '_' + field_name))
+
     @property
     def num_words(self):
-        return ceil(self._num_bits_used / self.word_size)
+        return ceil(self.bit_len / self.word_size)
 
     @property
     def byte_size(self):
-        return int(ceil(self._num_bits_used / 8))
+        return int(ceil(self.bit_len / 8))
     
     def to_bytes(self):
         """Converts the packet into a byte string."""
