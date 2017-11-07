@@ -146,29 +146,28 @@ class Field(object):
     class.
 
     """
-    
-    _acceptable_params = set(['default_val'])
     _c_type = None
     _type = _NO_TYPE
-    _field_c_interface = None
+    _field_name = None
+    _val = None
     _bit_len = None
 
-    def __init__(self, **kwargs):
-        for key, val, in kwargs.items():
-            if key not in self._acceptable_params:
-                raise KeyError("`{k}` is not an accepted parameter for {cls}".format(k=key, cls=self.__class__))
-
-            # set the user defined keyword args.
-            setattr(self, key, val)
+    def __init__(self, default_val=None):
+        self.default_val = default_val
 
     def __eq__(self, other):
         if isinstance(other, Field):
-            return self.val == other.val
+            return self._val == other._val
 
-        return self.val == other
+        return self._val == other
 
-    def set_field_c_interface(self, field_c_interface):
-        self._field_c_interface = field_c_interface
+    def __get__(self, ins, own):
+        if ins is not None:
+            self._val = getattr(ins._c_pkt, self._field_name, self.default_val)
+        return self
+
+    def __set__(self, ins, val):
+        setattr(ins._c_pkt, self._field_name, val)
 
     def create_field_tuple(self, name):
         return (name, value._c_type)
@@ -205,9 +204,12 @@ class IntField(Field):
     signed = typed_property('signed', bool, False)
     little_endian = typed_property('little_endian', bool)
     
-    def __init__(self, **kwargs):
-        self._acceptable_params.update(['bit_len', 'little_endian', 'signed', 'initial_value'])
-        super(IntField, self).__init__(**kwargs)
+    def __init__(self, bit_len=16, little_endian=False, signed=False, default_val=0):
+        super(IntField, self).__init__(default_val)
+
+        self.bit_len = bit_len
+        self.little_endian = little_endian
+        self.signed = signed
 
         if self.signed:
             self._c_type = ctypes.c_int64
@@ -364,7 +366,8 @@ class Packet():
         # finally we set each fields interface with the newly create c_struct
         for field_name in self._fields_order:
             field = getattr(self, field_name)
-            field.set_field_c_interface(getattr(self._c_pkt, '_' + field_name))
+            p_c_interface = ctypes.byref(self._c_pkt, getattr(self._c_struct, '_' + field_name).offset)
+            field._field_name = "_" + field_name
 
     @property
     def num_words(self):
