@@ -167,7 +167,12 @@ class Field(object):
         return self
 
     def __set__(self, ins, val):
-        setattr(ins._c_pkt, self._field_name, val)
+        new_val = val
+        if isinstance(val, Field):
+            new_val = val._val
+
+        setattr(ins._c_pkt, self._field_name, new_val)
+        self._val = getattr(ins._c_pkt, self._field_name)
 
     def create_field_tuple(self, name):
         return (name, value._c_type)
@@ -175,14 +180,6 @@ class Field(object):
     @property
     def bit_len(self):
         return self._bit_len
-
-    @property
-    def val(self):
-        return self._field_c_interface
-
-    @val.setter
-    def val(self, value):
-        self._field_c_interface = value
 
 
 class IntField(Field):
@@ -207,7 +204,7 @@ class IntField(Field):
     def __init__(self, bit_len=16, little_endian=False, signed=False, default_val=0):
         super(IntField, self).__init__(default_val)
 
-        self.bit_len = bit_len
+        self._bit_len = bit_len
         self.little_endian = little_endian
         self.signed = signed
 
@@ -223,9 +220,8 @@ class IntField(Field):
 class PacketField(Field):
     """A custom field for handling another packet as a field."""
 
-    def __init__(self, packet_cls, **kwargs):
-        self._acceptable_params.remove('default_val')
-        super(PacketField, self).__init__(**kwargs)
+    def __init__(self, packet_cls, default_val=None):
+        super(PacketField, self).__init__(default_val)
 
         self.packet_cls = packet_cls
 
@@ -240,9 +236,8 @@ class PacketField(Field):
 class ArrayField(Field):
     """A custom field for handling an array of fields"""
     _type = list
-    def __init__(self, array_cls, array_size, **kwargs):
-        self._acceptable_params.remove('default_val')
-        super(ArrayField, self).__init__(**kwargs)
+    def __init__(self, array_cls, array_size, default_val=None):
+        super(ArrayField, self).__init__(default_val)
         self.array_cls = array_cls
         self.array_size = array_size
 
@@ -278,37 +273,21 @@ class _MetaPacket(type):
 
         num_bits_used = 0
 
-        def _field_property(field_name, field):
-            """
-            Simple function used to allow for setting fields directly, and returning the class of the fields.
-
-            This is the "magic" of the Fields and Packet Interface.  This allows the user to set and get the field as if it
-            were the type of field being used.
-
-            For example `packet.field1 = 10` would use the `@prop.setter` part of this function definition.
-            """
-            @property
-            def prop(self):
-                return field
-
-            @prop.setter
-            def prop(self, value):
-                field.val = value
-
-            return prop
-
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, value in clsdict.items():
 
             if isinstance(value, Field):
                 order.append(name)
 
-                field_tuple = value.create_field_tuple('_' + name)
+                internal_name = "_" + name
+
+                value._field_name = internal_name
+
+                field_tuple = value.create_field_tuple(internal_name)
                 num_bits_used += value.bit_len
-                f_prop = _field_property(name, value)
 
                 fields.append(field_tuple)
-                class_dict[name] = f_prop
+                class_dict[name] = value
 
         # Here we save the order
         class_dict['_fields_order'] = order
@@ -361,13 +340,6 @@ class Packet():
             # Only set the keyword args associated with fields.  If it isn't found, then we'll process like normal.
             if key in self._fields_order:
                 setattr(self, key, val)
-
-
-        # finally we set each fields interface with the newly create c_struct
-        for field_name in self._fields_order:
-            field = getattr(self, field_name)
-            p_c_interface = ctypes.byref(self._c_pkt, getattr(self._c_struct, '_' + field_name).offset)
-            field._field_name = "_" + field_name
 
     @property
     def num_words(self):
