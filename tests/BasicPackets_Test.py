@@ -28,6 +28,8 @@ class TestIntField(unittest.TestCase):
         self.assertEqual(p.int_field, v1)
         self.assertEqual(p.int_field_signed, v2)
 
+        self.assertEqual(type(p.int_field), models.IntField)
+
     def test_field_raises_TypeError_when_setting_non_int_value(self):
         p = self.two_int_field_packet()
         
@@ -219,6 +221,8 @@ class TestAdvancedPackets(unittest.TestCase):
          p.field2.field1 = 100
 
          self.assertEquals(p.field2.field1, 100)
+         self.assertEquals(type(p.field2), models.PacketField)
+         self.assertEquals(type(p.field2.field1), models.IntField)
 
          sp = simple_pkt()
          sp.field1 = 200

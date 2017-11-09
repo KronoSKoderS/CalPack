@@ -229,6 +229,15 @@ class PacketField(Field):
     def bit_len(self):
         return self.packet_cls.bit_len
 
+    def __eq__(self, other):
+        pass
+
+    def __get__(self, ins, own):
+        pass
+
+    def __set__(self, ins, val):
+        pass
+
     def create_field_tuple(self, name):
         return (name, self._packet_cls._c_struct)
 
