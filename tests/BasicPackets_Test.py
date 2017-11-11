@@ -62,6 +62,8 @@ class TestIntField(unittest.TestCase):
         This test verifies that a "TypeErorr" is raised when setting a non-signed value to a
         signed value.  
         """
+        p = self.two_int_field_packet()
+
         with self.assertRaises(TypeError):
             p.int_field = -123
 
@@ -126,11 +128,6 @@ class TestIntField(unittest.TestCase):
         self.assertEquals(p.int_field, p2.int_field)
         self.assertEquals(p.int_field_signed, p2.int_field_signed)
 
-    def test_int_field_raises_KeyError_when_using_invalid_key_words(self):
-        with self.assertRaises(KeyError):
-            class invalid_pkt(models.Packet):
-                inv_field = models.IntField(keyword_that_dont_exist=100)
-
     def test_int_field_with_variable_bit_lenth(self):
         class int_packet_with_varied_sized_int_fields(models.Packet):
             int_field = models.IntField()
@@ -145,9 +142,9 @@ class TestIntField(unittest.TestCase):
         pkt.int_field_12_bits = 1023
 
         if PY3:
-            b_str = b'd\x00\x9c\xff\xff?'
+            b_str = b'd\x00\x9c\xff\x0f\x00\xff\x03'
         else:
-            b_str = b'd\x00\xcf\xf9\xff?'
+            b_str = b'd\x00\x0f\x00\x9c\xff\xff\x03'
 
         self.assertEquals(b_str, pkt.to_bytes())
 
@@ -199,7 +196,7 @@ class TestSimplePacket(unittest.TestCase):
     def test_set_invalid_type_multi_field(self):
 
         class multi_int_field_packet(models.Packet):
-            list_int_field = models.ArrayField(models.IntField, 10)
+            list_int_field = models.ArrayField(models.IntField(), 10)
 
         expected_vals = list(range(10))
         p = multi_int_field_packet()
@@ -254,7 +251,7 @@ class TestAdvancedPackets(unittest.TestCase):
              field1 = models.IntField()
 
          class adv_pkt(models.Packet):
-             field2 = simple_pkt
+             field2 = models.PacketField(simple_pkt)
 
          p = adv_pkt()
 

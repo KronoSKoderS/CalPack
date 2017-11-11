@@ -158,8 +158,26 @@ class Field(object):
     def __eq__(self, other):
         if isinstance(other, Field):
             return self._val == other._val
-
         return self._val == other
+
+    def __ne__(self, other):
+        if isinstance(other, Field):
+            return self._val != other._val
+        return self._val != other
+
+    def __lt__(self, other):
+        if isinstance(other, Field):
+            return self._val < other._val
+        return self._val < other
+
+    def __gt__(self, other):
+        return other<self
+
+    def __ge__(self, other):
+        return not self<other
+
+    def __le__(self, other):
+        return not other<self
 
     def __get__(self, ins, own):
         if ins is not None:
@@ -213,6 +231,11 @@ class IntField(Field):
         else:
             self._c_type = ctypes.c_uint64
 
+    def __set__(self, ins, val):
+        if not self.signed and val < 0:
+            raise TypeError("Signed valued cannot be set for an unsiged IntField!")
+        return super(IntField, self).__set__(ins, val)
+
     def create_field_tuple(self, name):
         return (name, self._c_type, self.bit_len)
 
@@ -229,17 +252,14 @@ class PacketField(Field):
     def bit_len(self):
         return self.packet_cls.bit_len
 
-    def __eq__(self, other):
-        pass
+    def create_field_tuple(self, name):
+        return (name, self.packet_cls._c_struct)
 
     def __get__(self, ins, own):
-        pass
+        if ins is not None:
+            self._val = self.packet_cls.pkt_from_c_struct(ins, self._field_name)
 
-    def __set__(self, ins, val):
-        pass
-
-    def create_field_tuple(self, name):
-        return (name, self._packet_cls._c_struct)
+        return self
 
 
 class ArrayField(Field):
@@ -261,6 +281,9 @@ class ArrayField(Field):
         return self._val[:] == other
 
     def __set__(self, ins, val):
+        if not isinstance(val, ArrayField) and not isinstance(val, list):
+            raise TypeError("Must be of type ArrayField or list")
+
         temp = getattr(ins._c_pkt, self._field_name)
         temp[:] = val
         setattr(ins._c_pkt, self._field_name, temp)
@@ -352,7 +375,23 @@ class Packet():
     """
     word_size = typed_property('word_size', int, 16)
 
-    def __init__(self, **kwargs):
+    _c_struct = None
+    _fields_order = None
+
+
+    @classmethod
+    def pkt_from_c_struct(cls, ins, field_name):
+        c_struct = getattr(ins._c_struct, field_name)
+        fields_order = [field[0][1:] for field in ins._c_pkt._fields_]
+        return cls(c_struct, fields_order)
+
+    def __init__(self, c_struct = None, fields_order = None, **kwargs):
+        if c_struct is not None:
+            self._c_struct = c_struct
+
+        if fields_order is not None:
+            self._fields_order = fields_order
+
         # create an internal c structure instance for us to interface with.
         self._c_pkt = self._c_struct()
 
