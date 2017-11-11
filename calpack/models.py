@@ -175,7 +175,7 @@ class Field(object):
         self._val = getattr(ins._c_pkt, self._field_name)
 
     def create_field_tuple(self, name):
-        return (name, value._c_type)
+        return (name, self._c_type)
 
     @property
     def bit_len(self):
@@ -249,6 +249,24 @@ class ArrayField(Field):
         super(ArrayField, self).__init__(default_val)
         self.array_cls = array_cls
         self.array_size = array_size
+
+    @property
+    def bit_len(self):
+        return self.array_cls.bit_len * self.array_size
+
+    def __eq__(self, other):
+        if type(other) == ArrayField:
+            return self._val[:] == other._val[:]
+
+        return self._val[:] == other
+
+    def __set__(self, ins, val):
+        temp = getattr(ins._c_pkt, self._field_name)
+        temp[:] = val
+        setattr(ins._c_pkt, self._field_name, temp)
+
+    def create_field_tuple(self, name):
+        return (name, self.array_cls._c_type * self.array_size)
 
 
 class _MetaPacket(type):
