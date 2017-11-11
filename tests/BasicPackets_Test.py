@@ -17,6 +17,11 @@ class TestIntField(unittest.TestCase):
         self.two_int_field_packet = two_int_field_packet
 
     def test_set_valid_values_int_fields(self):
+        """
+        This test verifies that setting an integer field of a packet is done correctly.  This
+        also tests the comparison operator `__eq__`.  Finally, it checks that the types of the
+        field isn't altered.  
+        """
         p = self.two_int_field_packet()
 
         v1 = randint(0, 65535)
@@ -29,14 +34,42 @@ class TestIntField(unittest.TestCase):
         self.assertEqual(p.int_field_signed, v2)
 
         self.assertEqual(type(p.int_field), models.IntField)
+        self.assertEqual(type(p.int_field), models.IntField)
 
     def test_field_raises_TypeError_when_setting_non_int_value(self):
+        """
+        This test verifies that a "TypeError" is raised when setting a value other than
+        an integer for the IntField.  The following types are checked:
+
+            * String
+            * Float
+            * list
+        """
         p = self.two_int_field_packet()
         
         with self.assertRaises(TypeError):
             p.int_field = ""
 
+        with self.assertRaises(TypeError):
+            p.int_field_signed = 3.14
+
+        with self.assertRaises(TypeError):
+            p.int_field = [0] * 12
+
+
+    def test_field_raises_TypeError_when_setting_signed_to_nonsigned_int_value(self):
+        """
+        This test verifies that a "TypeErorr" is raised when setting a non-signed value to a
+        signed value.  
+        """
+        with self.assertRaises(TypeError):
+            p.int_field = -123
+
     def test_set_valid_value_from_other_field(self):
+        """
+        This test verifies that setting an integer field from another field is done properly
+        and doesn't change the field type.  
+        """
         p = self.two_int_field_packet()
         p2 = self.two_int_field_packet()
 
@@ -48,7 +81,13 @@ class TestIntField(unittest.TestCase):
 
         self.assertEqual(p.int_field, p2.int_field)
 
+        self.assertEqual(type(p.int_field), models.IntField)
+
     def test_create_class_from_bytes_string(self):
+        """
+        This test verifies that a class can be created from a byte string and that the values 
+        are properly parsed.  
+        """
         v1 = randint(0, 65535)
         v2 = randint(-32768, 32767)
         vals = [v1, v2]
