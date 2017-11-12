@@ -257,7 +257,8 @@ class PacketField(Field):
 
     def __get__(self, ins, own):
         if ins is not None:
-            self._val = self.packet_cls.pkt_from_c_struct(ins, self._field_name)
+            c_pkt = getattr(ins._c_pkt, self._field_name)
+            self._val = self.packet_cls(c_pkt = c_pkt)
 
         return self
 
@@ -378,22 +379,12 @@ class Packet():
     _c_struct = None
     _fields_order = None
 
-
-    @classmethod
-    def pkt_from_c_struct(cls, ins, field_name):
-        c_struct = getattr(ins._c_struct, field_name)
-        fields_order = [field[0][1:] for field in ins._c_pkt._fields_]
-        return cls(c_struct, fields_order)
-
-    def __init__(self, c_struct = None, fields_order = None, **kwargs):
-        if c_struct is not None:
-            self._c_struct = c_struct
-
-        if fields_order is not None:
-            self._fields_order = fields_order
+    def __init__(self, c_pkt = None, **kwargs):
 
         # create an internal c structure instance for us to interface with.
         self._c_pkt = self._c_struct()
+        if c_pkt is not None:
+            self._c_pkt = c_pkt
 
         # This allows for pre-definition of a field value after packet definition
         for name in self._fields_order:
