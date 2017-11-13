@@ -10,10 +10,10 @@ def get_tests():
 
 def full_suite():
 
-    from .IntField_Test import Test_IntField
-    from .BasicPackets_Test import Test_BasicPacket
-    from .ArrayField_Test import Test_ArrayField
-    from .PacketField_Test import Test_PacketField
+    from tests.IntField_Test import Test_IntField
+    from tests.BasicPackets_Test import Test_BasicPacket
+    from tests.ArrayField_Test import Test_ArrayField
+    from tests.PacketField_Test import Test_PacketField
 
     return unittest.TestSuite([
         unittest.TestLoader().loadTestsFromTestCase(Test_BasicPacket),
