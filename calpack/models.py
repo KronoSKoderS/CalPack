@@ -74,7 +74,8 @@ PY3 = sys.version_info[0] == 3
 _NO_TYPE = object()
 
 # This was taken from the six.py source code.  Reason being that I only needed a small part of six
-#   and didn't want to rely on the third-party installation just for this package.  
+#   and didn't want to rely on the third-party installation just for this package.  I highly recommend
+#   looking at them for Python 2/3 compatible coding:  https://github.com/benjaminp/six
 def add_metaclass(metaclass):
     """Class decorator for creating a class with a metaclass."""
     def wrapper(cls):
@@ -124,44 +125,11 @@ def typed_property(name, expected_type, default_val=None):
     return prop
 
 
-def _field_property(field_name, field):
-    """
-    Simple function used to allow for setting fields directly, and returning the class of the fields.
-
-    This is the "magic" of the Fields and Packet Interface.  This allows the user to set and get the field as if it
-    were the type of field being used.
-
-    For example `packet.field1 = 10` would use the `@prop.setter` part of this function definition.
-
-    Note that this can ONLY be used within a class definition since there's the use of the `self` class call.
-
-    This is different from `typed_property` in that it assumes were within a `Packet` class with the _c_pkt property
-    already defined.  This function is for internal use only within the `MetaPacket` definition and is NOT exppected
-    to be used by the user.  THAT MEANS YOU!
-    """
-    @property
-    def prop(self):
-        field._val = getattr(self._c_pkt, '_' + field_name)
-        return field
-
-    @prop.setter
-    def prop(self, value):
-        set_val = value
-        if isinstance(value, type(field)):
-            set_val = value._val
-
-        # Ensuring the type if it's set
-        if field._type is not _NO_TYPE and not isinstance(set_val, field._type):
-            raise TypeError("{v} must be of type {t1} or {t2}".format(v=value, t1=field._type, t2=type(field)))
-
-        # Sets the internal value of the field
-        setattr(self._c_pkt, '_' + field_name, set_val)
-
-    return prop
-
-
 class Field(object):
     """
+    TODO: This needs to be updated with the new interface.  
+
+
     A Super class that all other fields inherit from.  Any class that inherits from this class will be restricted
     to instantiation with keywords as defined in the `_acceptable_params` property which is a `set`.  Update this
     `set` first in the `__init__`
@@ -178,36 +146,59 @@ class Field(object):
     futher more, any allowed keyword arguments passed in by the user, are automatically set as properties for the
     class.
 
-    Example field creation::
-
-        class MyCustomInt(Field):
-            type = int
-            c_type = ctypes.c_int16
-
-            def __init__(self, **kwargs):
-                self._acceptable_params.update(["one", "two"]
-                super(MyCustomInt, self).__init__(**kwargs)
-
-        f = MyCustomInt(one=1)
-        print(f.one)  # '1'
     """
-    
-    array_size = typed_property('array_size', int, 0)
-    _acceptable_params = set(['array_size', 'default_val'])
     _c_type = None
     _type = _NO_TYPE
+    _field_name = None
     _val = None
+    _bit_len = None
 
-    def __init__(self, **kwargs):
-        for key, val, in kwargs.items():
-            if key not in self._acceptable_params:
-                raise KeyError("`{k}` is not an accepted parameter for {cls}".format(k=key, cls=self.__class__))
-
-            # set the user defined keyword args.
-            setattr(self, key, val)
+    def __init__(self, default_val=None):
+        self.default_val = default_val
 
     def __eq__(self, other):
+        if isinstance(other, Field):
+            return self._val == other._val
         return self._val == other
+
+    def __ne__(self, other):
+        if isinstance(other, Field):
+            return self._val != other._val
+        return self._val != other
+
+    def __lt__(self, other):
+        if isinstance(other, Field):
+            return self._val < other._val
+        return self._val < other
+
+    def __gt__(self, other):
+        return other < self
+
+    def __ge__(self, other):
+        return not self < other
+
+    def __le__(self, other):
+        return not other < self
+
+    def __get__(self, ins, own):
+        if ins is not None:
+            self._val = getattr(ins._c_pkt, self._field_name, self.default_val)
+        return self
+
+    def __set__(self, ins, val):
+        new_val = val
+        if isinstance(val, Field):
+            new_val = val._val
+
+        setattr(ins._c_pkt, self._field_name, new_val)
+        self._val = getattr(ins._c_pkt, self._field_name)
+
+    def create_field_tuple(self, name):
+        return (name, self._c_type)
+
+    @property
+    def bit_len(self):
+        return self._bit_len
 
 
 class IntField(Field):
@@ -224,34 +215,91 @@ class IntField(Field):
         _type = (int, long)
     else:
         _type = int
+
     bit_len = typed_property('bit_len', int, 16)
     signed = typed_property('signed', bool, False)
     little_endian = typed_property('little_endian', bool)
     
-    def __init__(self, **kwargs):
-        self._acceptable_params.update(['bit_len', 'little_endian', 'signed', 'initial_value'])
-        super(IntField, self).__init__(**kwargs)
+    def __init__(self, bit_len=16, little_endian=False, signed=False, default_val=0):
+        super(IntField, self).__init__(default_val)
+
+        self._bit_len = bit_len
+        self.little_endian = little_endian
+        self.signed = signed
 
         if self.signed:
             self._c_type = ctypes.c_int64
         else:
             self._c_type = ctypes.c_uint64
 
+    def __set__(self, ins, val):
+        if not self.signed and val < 0:
+            raise TypeError("Signed valued cannot be set for an unsiged IntField!")
+        return super(IntField, self).__set__(ins, val)
+
+    def create_field_tuple(self, name):
+        return (name, self._c_type, self.bit_len)
+
 
 class PacketField(Field):
-    """"""
+    """A custom field for handling another packet as a field."""
 
-    def __init__(self, packet_cls, **kwargs):
-        super(PacketField, self).__init__(**kwargs)
+    def __init__(self, packet_cls, default_val=None):
+        super(PacketField, self).__init__(default_val)
 
         self.packet_cls = packet_cls
 
+    @property
+    def bit_len(self):
+        return self.packet_cls.bit_len
+
+    def create_field_tuple(self, name):
+        return (name, self.packet_cls._c_struct)
+
+    def __get__(self, ins, own):
+        if ins is not None:
+            c_pkt = getattr(ins._c_pkt, self._field_name)
+            self._val = self.packet_cls(c_pkt = c_pkt)
+
+        return self._val
+
+    def __set__(self, ins, val):
+        if type(val) == self.packet_cls:
+            setattr(ins._c_pkt, self._field_name, val._c_pkt)
+
+        else:
+            super(PacketField, self).__set__(ins, val)
+
 
 class ArrayField(Field):
-    def __init__(self, array_cls, array_size, **kwargs):
-        super(ArrayField, self).__init__(**kwargs)
+    """A custom field for handling an array of fields"""
+    _type = list
+    def __init__(self, array_cls, array_size, default_val=None):
+        super(ArrayField, self).__init__(default_val)
         self.array_cls = array_cls
         self.array_size = array_size
+
+    @property
+    def bit_len(self):
+        return self.array_cls.bit_len * self.array_size
+
+    def __eq__(self, other):
+        if type(other) == ArrayField:
+            return self._val[:] == other._val[:]
+
+        return self._val[:] == other
+
+    def __set__(self, ins, val):
+        if not isinstance(val, ArrayField) and not isinstance(val, list):
+            raise TypeError("Must be of type ArrayField or list")
+
+        temp = getattr(ins._c_pkt, self._field_name)
+        temp[:] = val
+        setattr(ins._c_pkt, self._field_name, temp)
+
+    def create_field_tuple(self, name):
+        return (name, self.array_cls._c_type * self.array_size)
+
 
 class _MetaPacket(type):
     """
@@ -289,39 +337,16 @@ class _MetaPacket(type):
 
             if isinstance(value, Field):
                 order.append(name)
-                
-                if isinstance(value, IntField):
-                    field_tuple = (('_' + name, value._c_type, value.bit_len))
-                    num_bits_used += value.bit_len
-                    f_prop = _field_property(name, value)
 
-                elif isinstance(value, PacketField):
-                    field_tuple = (('_' + name, value._packet_cls._c_struct))
-                    num_bits_used += value._packet_cls._num_bits_used
-                    f_prop = value._packet_cls
+                internal_name = "_" + name
 
-                elif isinstance(value, ArrayField):
-                    field_tuple = (('_' + name, value._c_type * value.array_size))
+                value._field_name = internal_name
 
-                # TODO: This should be used for enabling custom field types.  
-                ## Default Field processing  
-                #elif isinstance(value, Field):
-                #    fields.append(('_' + name, value._c_type))
-
-                #    num_bits_used += value.bit_len
-
-                #    order.append(name)
-                #    class_dict[name] = _field_property(name, value)
-
-
-                if value.array_size > 0:
-                    field_tuple = list(field_tuple)
-                    field_tuple[1] * value.array_size
-                    field_tuple = tuple(field_tuple)
-                    f_prop = (f_prop, ) * value.array_size
+                field_tuple = value.create_field_tuple(internal_name)
+                num_bits_used += value.bit_len
 
                 fields.append(field_tuple)
-                class_dict[name] = f_prop
+                class_dict[name] = value
 
         # Here we save the order
         class_dict['_fields_order'] = order
@@ -334,7 +359,7 @@ class _MetaPacket(type):
         class_dict['_c_struct'] = Cstruct
 
         # finally we store the number of words
-        class_dict['_num_bits_used'] = num_bits_used
+        class_dict['bit_len'] = num_bits_used
 
         return type.__new__(mcs, clsname, bases, class_dict)
 
@@ -359,15 +384,23 @@ class Packet():
     """
     word_size = typed_property('word_size', int, 16)
 
-    def __init__(self, **kwargs):
+    _c_struct = None
+    _fields_order = None
+
+    def __init__(self, c_pkt = None, **kwargs):
+
         # create an internal c structure instance for us to interface with.
         self._c_pkt = self._c_struct()
+        if c_pkt is not None:
+            self._c_pkt = c_pkt
 
-        # This allows for pre-definition of a field value after packet definition
-        for name in self._fields_order:
-            d_val = getattr(getattr(self, name), 'default_val', None)
-            if d_val is not None:
-                setattr(self, name, d_val)
+        # This allows for pre-definition of a field value after packet definition.  We only do this
+        #   if the packet isn't from another packet instantiation (i.e. c_pkt was already defined).  
+        if c_pkt is None:
+            for name in self._fields_order:
+                d_val = getattr(getattr(self, name), 'default_val', None)
+                if d_val is not None:
+                    setattr(self, name, d_val)
 
         # This allows for pre-definition of a field value at instantiation
         for key, val in kwargs.items():
@@ -377,11 +410,11 @@ class Packet():
 
     @property
     def num_words(self):
-        return ceil(self._num_bits_used / self.word_size)
+        return ceil(self.bit_len / self.word_size)
 
     @property
     def byte_size(self):
-        return int(ceil(self._num_bits_used / 8))
+        return int(ceil(self.bit_len / 8))
     
     def to_bytes(self):
         """Converts the packet into a byte string."""
