@@ -74,7 +74,8 @@ PY3 = sys.version_info[0] == 3
 _NO_TYPE = object()
 
 # This was taken from the six.py source code.  Reason being that I only needed a small part of six
-#   and didn't want to rely on the third-party installation just for this package.  
+#   and didn't want to rely on the third-party installation just for this package.  I highly recommend
+#   looking at them for Python 2/3 compatible coding:  https://github.com/benjaminp/six
 def add_metaclass(metaclass):
     """Class decorator for creating a class with a metaclass."""
     def wrapper(cls):
@@ -171,13 +172,13 @@ class Field(object):
         return self._val < other
 
     def __gt__(self, other):
-        return other<self
+        return other < self
 
     def __ge__(self, other):
-        return not self<other
+        return not self < other
 
     def __le__(self, other):
-        return not other<self
+        return not other < self
 
     def __get__(self, ins, own):
         if ins is not None:
@@ -260,7 +261,14 @@ class PacketField(Field):
             c_pkt = getattr(ins._c_pkt, self._field_name)
             self._val = self.packet_cls(c_pkt = c_pkt)
 
-        return self
+        return self._val
+
+    def __set__(self, ins, val):
+        if type(val) == self.packet_cls:
+            setattr(ins._c_pkt, self._field_name, val._c_pkt)
+
+        else:
+            super(PacketField, self).__set__(ins, val)
 
 
 class ArrayField(Field):
@@ -386,11 +394,13 @@ class Packet():
         if c_pkt is not None:
             self._c_pkt = c_pkt
 
-        # This allows for pre-definition of a field value after packet definition
-        for name in self._fields_order:
-            d_val = getattr(getattr(self, name), 'default_val', None)
-            if d_val is not None:
-                setattr(self, name, d_val)
+        # This allows for pre-definition of a field value after packet definition.  We only do this
+        #   if the packet isn't from another packet instantiation (i.e. c_pkt was already defined).  
+        if c_pkt is None:
+            for name in self._fields_order:
+                d_val = getattr(getattr(self, name), 'default_val', None)
+                if d_val is not None:
+                    setattr(self, name, d_val)
 
         # This allows for pre-definition of a field value at instantiation
         for key, val in kwargs.items():

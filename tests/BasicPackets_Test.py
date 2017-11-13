@@ -117,7 +117,7 @@ class TestAdvancedPackets(unittest.TestCase):
          p.field2.field1 = 100
 
          self.assertEquals(p.field2.field1, 100)
-         self.assertEquals(type(p.field2), models.PacketField)
+         self.assertTrue(isinstance(p.field2, models.Packet))
          self.assertEquals(type(p.field2.field1), models.IntField)
 
          sp = simple_pkt()
@@ -126,6 +126,8 @@ class TestAdvancedPackets(unittest.TestCase):
          p.field2 = sp
 
          self.assertEquals(p.field2.field1, 200)
+         self.assertTrue(isinstance(p.field2, models.Packet))
+         self.assertEquals(type(p.field2.field1), models.IntField)
 
 
 if __name__ == '__main__':
