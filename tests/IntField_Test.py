@@ -7,7 +7,7 @@ from tests import PY2, PY3
 from calpack import models
 
 
-class TestIntField(unittest.TestCase):
+class Test_IntField(unittest.TestCase):
     def setUp(self):
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()

@@ -10,12 +10,16 @@ def get_tests():
 
 def full_suite():
 
-    from .IntField_Test import TestIntField
-    from .BasicPackets_Test import TestSimplePacket
+    from .IntField_Test import Test_IntField
+    from .BasicPackets_Test import Test_BasicPacket
+    from .ArrayField_Test import Test_ArrayField
+    from .PacketField_Test import Test_PacketField
 
     return unittest.TestSuite([
-        unittest.TestLoader().loadTestsFromTestCase(TestIntField),
-        unittest.TestLoader().loadTestsFromTestCase(TestSimplePacket),
+        unittest.TestLoader().loadTestsFromTestCase(Test_BasicPacket),
+        unittest.TestLoader().loadTestsFromTestCase(Test_IntField),
+        unittest.TestLoader().loadTestsFromTestCase(Test_ArrayField),
+        unittest.TestLoader().loadTestsFromTestCase(Test_PacketField)
     ])
 
 if __name__ == "__main__":

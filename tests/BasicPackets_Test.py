@@ -6,7 +6,7 @@ from tests import PY2, PY3
 import unittest
 import struct
 
-class TestSimplePacket(unittest.TestCase):
+class Test_BasicPacket(unittest.TestCase):
 
     def test_check_word_size(self):
         
@@ -38,18 +38,7 @@ class TestSimplePacket(unittest.TestCase):
         self.assertEquals(p.int_field, 12)
         self.assertEquals(p.int_field_signed, -12)
 
-    def test_create_packet_with_multi_field(self):
-
-        class multi_int_field_packet(models.Packet):
-            list_int_field = models.ArrayField(models.IntField(), 10)
-
-        expected_vals = list(range(10))
-        p = multi_int_field_packet()
-        p.list_int_field = expected_vals
-
-        self.assertEqual(p.list_int_field, expected_vals)
-
-        self.assertEqual(type(p.list_int_field), models.ArrayField)
+    
 
     def test_set_invalid_type_multi_field(self):
 
@@ -102,32 +91,6 @@ class TestSimplePacket(unittest.TestCase):
         pkt_same_class_different_values = two_int_field_packet(int_field=1, int_field_signed=2)
         self.assertFalse(pkt_orig == pkt_same_class_different_values)
 
-class TestAdvancedPackets(unittest.TestCase):
-
-     def test_encapsulated_pkt(self):
-         class simple_pkt(models.Packet):
-             field1 = models.IntField()
-
-         class adv_pkt(models.Packet):
-             field2 = models.PacketField(simple_pkt)
-
-         p = adv_pkt()
-
-         # Verify abilily to access and set encap packets fields
-         p.field2.field1 = 100
-
-         self.assertEquals(p.field2.field1, 100)
-         self.assertTrue(isinstance(p.field2, models.Packet))
-         self.assertEquals(type(p.field2.field1), models.IntField)
-
-         sp = simple_pkt()
-         sp.field1 = 200
-
-         p.field2 = sp
-
-         self.assertEquals(p.field2.field1, 200)
-         self.assertTrue(isinstance(p.field2, models.Packet))
-         self.assertEquals(type(p.field2.field1), models.IntField)
 
 
 if __name__ == '__main__':
