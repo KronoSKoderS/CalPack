@@ -1,5 +1,6 @@
 import unittest
 import struct
+import ctypes
 
 from random import randint
 
@@ -91,16 +92,28 @@ class Test_IntField(unittest.TestCase):
             int_field_4_bits = models.IntField(bit_len=4)
             int_field_12_bits = models.IntField(bit_len=12)
 
-        pkt = int_packet_with_varied_sized_int_fields()
-        pkt.int_field = 100
-        pkt.int_field_signed = -100
-        pkt.int_field_4_bits = 15
-        pkt.int_field_12_bits = 1023
+        pkt = int_packet_with_varied_sized_int_fields(
+            int_field = 0xbeef,
+            int_field_signed = 0xdead,
+            int_field_4_bits = 0xa,
+            int_field_12_bits = 0xbc
+        )
 
-        if PY3:
-            b_str = b'd\x00\x9c\xff\x0f\x00\xff\x03'
-        else:
-            b_str = b'd\x00\x0f\x00\x9c\xff\xff\x03'
+        class c_pkt_struct(ctypes.Structure):
+            _fields_ = (
+                ('int_field', ctypes.c_uint16),
+                ('int_field_signed', ctypes.c_int16),
+                ('int_field_4_bits', ctypes.c_uint16, 4),
+                ('int_field_12_bits', ctypes.c_uint16, 12),
+            )
+
+        c_pkt = c_pkt_struct()
+        c_pkt.int_field = 0xbeef
+        c_pkt.int_field_signed = 0xdead
+        c_pkt.int_field_4_bits = 0xa
+        c_pkt.int_field_12_bits = 0xbc
+
+        b_str = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_pkt))
 
         self.assertEquals(b_str, pkt.to_bytes())
 
