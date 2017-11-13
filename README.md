@@ -1,10 +1,18 @@
-[![Build Status](https://travis-ci.org/KronoSKoderS/CalPack.svg?branch=prod)](https://travis-ci.org/KronoSKoderS/CalPack) [![Coverage Status](https://coveralls.io/repos/github/KronoSKoderS/CalPack/badge.svg?branch=dev)](https://coveralls.io/github/KronoSKoderS/CalPack?branch=dev) [![Documentation Status](https://readthedocs.org/projects/concorde/badge/?version=latest)](http://concorde.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/KronoSKoderS/CalPack.svg?branch=prod)](https://travis-ci.org/KronoSKoderS/CalPack) [![Coverage Status](https://coveralls.io/repos/github/KronoSKoderS/CalPack/badge.svg?branch=prod)](https://coveralls.io/github/KronoSKoderS/CalPack?branch=dev) [![Documentation Status](https://readthedocs.org/projects/concorde/badge/?version=latest)](http://concorde.readthedocs.io/en/latest/?badge=latest)
 
 # CalPack
 Packets in Python Simplified.  
 
+This python package is everything you need to transmorgrify your packets:  
+
+[![Calvin and Hobbes Strip](http://assets.amuniversal.com/8d40c700deba01317193005056a9545d)](http://www.gocomics.com/calvinandhobbes/1987/03/23)
+
 This package is intended to make creating and/or parsing packets on the fly quick and easy.  This is a wrapper around the [`ctypes` module](https://docs.python.org/dev/library/ctypes.html) built-in to python. 
 This package is designed with influence from Django's modeling and will look familar to those that have used it. 
+
+## Why `CalPack`?
+
+Because `Transmorgrifier` takes a REALLY long time to type out.  
 
 ## Installation
 
@@ -14,6 +22,8 @@ Simply using `pip install calpack` will get this installed.
  
 ## Examples
 ### Creating Custom Packets
+
+Creating custom packets is as easy as defining the fields:
     
     from calpack import models
     
@@ -24,9 +34,14 @@ Simply using `pip install calpack` will get this installed.
 
 
     pkt = my_pkt()
-
     pkt.field1 = 12
     pkt.field2 = -12
+
+    # OR directly set the field values:
+    other_pkt = my_pkt(
+        field1 = 12,
+        field2 = -12
+    )
 
 
 ### Converting to bytes
@@ -42,15 +57,14 @@ Simply using `pip install calpack` will get this installed.
     print(pkt2.field2)  # -12
 
 
-
 ## Upcoming Features:
 
 The following list is a set of major features that is planned to be worked on.  For a more exhautive list, view the issues page, or if you have ZenHub
 installed, view our current board. 
 
-- <strike>Ability to create a field with multiple words (i.e. a Data Array Field)</strike>
-- <strike>Set the specific bitfield length for the `IntField` (in progress)</strike>
-- <strike>Ability to compare packets for equality</strike>
-- Ability to set an already defined packet as a field for another packet
-- Builtin packet for commonly used packets, such as TCP/IP, UDP, etc,.
-- Adding other Field types (Float, String, etc,.)
+- [x] Ability to create a field with multiple words (i.e. a Data Array Field)
+- [x] Set the specific bitfield length for the `IntField` (in progress)
+- [x] Ability to compare packets for equality
+- [x] Ability to set an already defined packet as a field for another packet
+- [ ] Builtin packet for commonly used packets, such as TCP/IP, UDP, etc,.
+- [ ] Adding other Field types (Float, String, etc,.)
