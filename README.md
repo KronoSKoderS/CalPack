@@ -3,7 +3,7 @@
 # CalPack
 Packets in Python Simplified.  
 
-This package is intended to make creating and/or parsing packets on the fly quick and easy.  This is a wrapper around the `cytpes` modules built-in to python. 
+This package is intended to make creating and/or parsing packets on the fly quick and easy.  This is a wrapper around the [`ctypes` module](https://docs.python.org/dev/library/ctypes.html) built-in to python. 
 This package is designed with influence from Django's modeling and will look familar to those that have used it. 
 
 ## Installation
