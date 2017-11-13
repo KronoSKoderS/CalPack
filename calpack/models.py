@@ -345,7 +345,7 @@ class _MetaPacket(type):
 
         num_bits_used = 0
 
-        fields = [(field_name, clsdict.pop(field_name)) for field_name, obj in clsdict.items() if isinstance(obj, Field)]
+        fields = [(field_name, clsdict.get(field_name)) for field_name, obj in clsdict.items() if isinstance(obj, Field)]
 
         if PY2:
             fields.sort(lambda x, y: cmp(x[1].creation_counter, y[1].creation_counter))
