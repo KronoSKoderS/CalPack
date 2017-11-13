@@ -65,8 +65,9 @@ from __future__ import print_function
 from collections import OrderedDict
 from math import ceil
 
-import ctypes
 import sys
+import ctypes
+
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
@@ -127,34 +128,42 @@ def typed_property(name, expected_type, default_val=None):
 
 class Field(object):
     """
-    TODO: This needs to be updated with the new interface.  
+    A Super class that all other fields inherit from.  This class is NOT intended for direct use.  Custom Fields MUST 
+    inherit from this class.
 
+    When creating a custom field you MUST define the `_c_type` property with a valid `ctypes` data class.  
 
-    A Super class that all other fields inherit from.  Any class that inherits from this class will be restricted
-    to instantiation with keywords as defined in the `_acceptable_params` property which is a `set`.  Update this
-    `set` first in the `__init__`
+    The following sections describe further details when customizing the following:
 
-    This class is NOT intended for direct use.  Custom Fields MUST inherit from this class.
+        * __init__
+        * create_field_c_tuple
+        * bit_len
 
-    When creating a custom field the following MUST be defined:
+    ## `__init__`
 
-        * c_type - A ctypes.c_<type> class that can be used within the ctypes.Structure class.
-        * type - A Python type that is used to ensure type setting.
+    TODO: Update section
 
-    Furthermore, `_accetable_params` (a set of strings) must be updated.  This list is used to limit the keyword
-    arguments for __init__.  In order to allow the user to use keyword arguments, you MUST update this property.
-    futher more, any allowed keyword arguments passed in by the user, are automatically set as properties for the
-    class.
+    ## `create_field_c_tuple`
 
+    TODO: Update section
+
+    ## `bit_len`
+
+    TODO: Update section
     """
     _c_type = None
-    _type = _NO_TYPE
     _field_name = None
     _val = None
-    _bit_len = None
+
+    creation_counter = 0
+    
+    bit_len = typed_property('bit_len', int, 16)
 
     def __init__(self, default_val=None):
         self.default_val = default_val
+
+        self.creation_counter = Field.creation_counter
+        Field.creation_counter += 1
 
     def __eq__(self, other):
         if isinstance(other, Field):
@@ -180,25 +189,21 @@ class Field(object):
     def __le__(self, other):
         return not other < self
 
-    def __get__(self, ins, own):
-        if ins is not None:
-            self._val = getattr(ins._c_pkt, self._field_name, self.default_val)
+    def __get__(self, obj, objtype):
+        if obj is not None:
+            self._val = getattr(obj._c_pkt, self._field_name)
         return self
 
-    def __set__(self, ins, val):
+    def __set__(self, obj, val):
         new_val = val
         if isinstance(val, Field):
             new_val = val._val
 
-        setattr(ins._c_pkt, self._field_name, new_val)
-        self._val = getattr(ins._c_pkt, self._field_name)
+        setattr(obj._c_pkt, self._field_name, new_val)
+        self._val = getattr(obj._c_pkt, self._field_name)
 
-    def create_field_tuple(self, name):
+    def create_field_c_tuple(self, name):
         return (name, self._c_type)
-
-    @property
-    def bit_len(self):
-        return self._bit_len
 
 
 class IntField(Field):
@@ -208,22 +213,18 @@ class IntField(Field):
     valid keyword arguments:
 
     - bit_len: the length in bits of the integer.  Max value of 64. (default 16)
-    - signed: wheter to treat the int as an signed integer or unsigned integer (default unsigned)
-    - little_endian: wheter to treate the int as a little endian or big endian integer (default os preference)
+    - signed: whether to treat the int as an signed integer or unsigned integer (default unsigned)
     """
-    if PY2:
-        _type = (int, long)
-    else:
-        _type = int
 
-    bit_len = typed_property('bit_len', int, 16)
     signed = typed_property('signed', bool, False)
+
+    # TODO: Implement endianess processing
     little_endian = typed_property('little_endian', bool)
     
-    def __init__(self, bit_len=16, little_endian=False, signed=False, default_val=0):
+    def __init__(self, bit_len=16, signed=False, default_val=0, little_endian=False):
         super(IntField, self).__init__(default_val)
 
-        self._bit_len = bit_len
+        self.bit_len = bit_len
         self.little_endian = little_endian
         self.signed = signed
 
@@ -232,20 +233,20 @@ class IntField(Field):
         else:
             self._c_type = ctypes.c_uint64
 
-    def __set__(self, ins, val):
+    def __set__(self, obj, val):
         if not self.signed and val < 0:
             raise TypeError("Signed valued cannot be set for an unsiged IntField!")
-        return super(IntField, self).__set__(ins, val)
+        return super(IntField, self).__set__(obj, val)
 
-    def create_field_tuple(self, name):
+    def create_field_c_tuple(self, name):
         return (name, self._c_type, self.bit_len)
 
 
 class PacketField(Field):
     """A custom field for handling another packet as a field."""
 
-    def __init__(self, packet_cls, default_val=None):
-        super(PacketField, self).__init__(default_val)
+    def __init__(self, packet_cls):
+        super(PacketField, self).__init__()
 
         self.packet_cls = packet_cls
 
@@ -253,19 +254,19 @@ class PacketField(Field):
     def bit_len(self):
         return self.packet_cls.bit_len
 
-    def create_field_tuple(self, name):
+    def create_field_c_tuple(self, name):
         return (name, self.packet_cls._c_struct)
 
-    def __get__(self, ins, own):
-        if ins is not None:
-            c_pkt = getattr(ins._c_pkt, self._field_name)
+    def __get__(self, obj, objtype):
+        if obj is not None:
+            c_pkt = getattr(obj._c_pkt, self._field_name)
             self._val = self.packet_cls(c_pkt = c_pkt)
 
         return self._val
 
-    def __set__(self, ins, val):
+    def __set__(self, obj, val):
         if type(val) == self.packet_cls:
-            setattr(ins._c_pkt, self._field_name, val._c_pkt)
+            setattr(obj._c_pkt, self._field_name, val._c_pkt)
 
         else:
             super(PacketField, self).__set__(ins, val)
@@ -273,10 +274,9 @@ class PacketField(Field):
 
 class ArrayField(Field):
     """A custom field for handling an array of fields"""
-    _type = list
     def __init__(self, array_cls, array_size, default_val=None):
         super(ArrayField, self).__init__(default_val)
-        self.array_cls = array_cls
+        self.array_cls = array_cls()
         self.array_size = array_size
 
     @property
@@ -289,15 +289,27 @@ class ArrayField(Field):
 
         return self._val[:] == other
 
-    def __set__(self, ins, val):
+    def __set__(self, obj, val):
         if not isinstance(val, ArrayField) and not isinstance(val, list):
             raise TypeError("Must be of type ArrayField or list")
 
-        temp = getattr(ins._c_pkt, self._field_name)
+        temp = getattr(obj._c_pkt, self._field_name)
         temp[:] = val
-        setattr(ins._c_pkt, self._field_name, temp)
+        setattr(obj._c_pkt, self._field_name, temp)
 
-    def create_field_tuple(self, name):
+    def __len__(self):
+        return len(self._val)
+
+    def __getitem__(self, key):
+        return self._val[key]
+
+    def __setitem__(self, key, val):
+        self._val[key] = val
+
+    def __iter__(self):
+        return iter(self._val)
+
+    def create_field_c_tuple(self, name):
         return (name, self.array_cls._c_type * self.array_size)
 
 
@@ -321,32 +333,36 @@ class _MetaPacket(type):
 
     In order for this to work, the following are assumed about the defined `Field` classes:
 
-        * c_type is defined with a `ctypes.c_<type>` 
-        * type is defined with a Python object type
+        * _c_type is defined with a `ctypes.c_<type>`
+        * bit_len
+        * create_field_c_tuple
     """
     def __new__(mcs, clsname, bases, clsdict):
         class_dict = dict(clsdict)
         
         order = []
-        fields = []
+        fields_tuple = []
 
         num_bits_used = 0
 
+        fields = [(field_name, clsdict.pop(field_name)) for field_name, obj in clsdict.items() if isinstance(obj, Field)]
+
+        if PY2:
+            fields.sort(lambda x, y: cmp(x[1].creation_counter, y[1].creation_counter))
+
         # for each 'Field' type we're gonna save the order and prep for the c struct
-        for name, value in clsdict.items():
+        for name, obj in fields:
+            order.append(name)
 
-            if isinstance(value, Field):
-                order.append(name)
+            internal_name = "_" + name
 
-                internal_name = "_" + name
+            obj._field_name = internal_name
 
-                value._field_name = internal_name
+            field_tuple = obj.create_field_c_tuple(internal_name)
+            num_bits_used += obj.bit_len
 
-                field_tuple = value.create_field_tuple(internal_name)
-                num_bits_used += value.bit_len
-
-                fields.append(field_tuple)
-                class_dict[name] = value
+            fields_tuple.append(field_tuple)
+            class_dict[name] = obj
 
         # Here we save the order
         class_dict['_fields_order'] = order
@@ -355,7 +371,7 @@ class _MetaPacket(type):
         class Cstruct(ctypes.Structure):
             pass
         
-        Cstruct._fields_ = fields
+        Cstruct._fields_ = fields_tuple
         class_dict['_c_struct'] = Cstruct
 
         # finally we store the number of words
