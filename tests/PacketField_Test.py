@@ -1,7 +1,14 @@
 import unittest
+import struct
+
+from random import randint
+
+from tests import PY2, PY3
+from calpack import models
+
 
 class Test_PacketField(unittest.TestCase):
-    def test_encapsulated_pkt(self):
+    def test_pktfield_encapsulated_pkt(self):
          class simple_pkt(models.Packet):
              field1 = models.IntField()
 

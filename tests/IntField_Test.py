@@ -15,7 +15,7 @@ class Test_IntField(unittest.TestCase):
 
         self.two_int_field_packet = two_int_field_packet
 
-    def test_set_valid_values_int_fields(self):
+    def test_intfield_set_valid_values(self):
         """
         This test verifies that setting an integer field of a packet is done correctly.  This
         also tests the comparison operator `__eq__`.  Finally, it checks that the types of the
@@ -35,7 +35,7 @@ class Test_IntField(unittest.TestCase):
         self.assertEqual(type(p.int_field), models.IntField)
         self.assertEqual(type(p.int_field), models.IntField)
 
-    def test_field_raises_TypeError_when_setting_non_int_value(self):
+    def test_intfield_raises_TypeError_when_setting_non_int_value(self):
         """
         This test verifies that a "TypeError" is raised when setting a value other than
         an integer for the IntField.  The following types are checked:
@@ -56,7 +56,7 @@ class Test_IntField(unittest.TestCase):
             p.int_field = [0] * 12
 
 
-    def test_field_raises_TypeError_when_setting_signed_to_nonsigned_int_value(self):
+    def test_intfield_raises_TypeError_when_setting_signed_to_nonsigned(self):
         """
         This test verifies that a "TypeErorr" is raised when setting a non-signed value to a
         signed value.  
@@ -66,7 +66,7 @@ class Test_IntField(unittest.TestCase):
         with self.assertRaises(TypeError):
             p.int_field = -123
 
-    def test_set_valid_value_from_other_field(self):
+    def test_intfield_set_valid_value_from_other_field(self):
         """
         This test verifies that setting an integer field from another field is done properly
         and doesn't change the field type.  
@@ -84,50 +84,7 @@ class Test_IntField(unittest.TestCase):
 
         self.assertEqual(type(p.int_field), models.IntField)
 
-    def test_create_class_from_bytes_string(self):
-        """
-        This test verifies that a class can be created from a byte string and that the values 
-        are properly parsed.  
-        """
-        v1 = randint(0, 65535)
-        v2 = randint(-32768, 32767)
-        vals = [v1, v2]
-        b_val = struct.pack('Hh', *vals)
-
-        p = self.two_int_field_packet.from_bytes(b_val)
-
-        self.assertEquals(p.int_field, vals[0])
-        self.assertEquals(p.int_field_signed, vals[1])
-
-    def test_export_to_bytes_string(self):
-        v1 = randint(0, 65535)
-        v2 = randint(-32768, 32767)
-        vals = [v1, v2]
-        b_val = struct.pack('Hh', *vals)
-
-        p = self.two_int_field_packet()
-        p.int_field = vals[0]
-        p.int_field_signed = vals[1]
-
-        pkt_bin = p.to_bytes()
-
-        self.assertEquals(pkt_bin, b_val)
-
-    def test_to_bytes_string_then_import_from_binary(self):
-        v1 = randint(0, 65535)
-        v2 = randint(-32768, 32767)
-        vals = [v1, v2]
-
-        p = self.two_int_field_packet()
-        p.int_field = vals[0]
-        p.int_field_signed = vals[1]
-
-        p2 = self.two_int_field_packet.from_bytes(p.to_bytes())
-
-        self.assertEquals(p.int_field, p2.int_field)
-        self.assertEquals(p.int_field_signed, p2.int_field_signed)
-
-    def test_int_field_with_variable_bit_lenth(self):
+    def test_intfield_with_variable_bit_lenth(self):
         class int_packet_with_varied_sized_int_fields(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -147,7 +104,7 @@ class Test_IntField(unittest.TestCase):
 
         self.assertEquals(b_str, pkt.to_bytes())
 
-    def test_int_field_comparitors(self):
+    def test_intfield_comparitors(self):
         p = self.two_int_field_packet()
 
         p.field1 = 10

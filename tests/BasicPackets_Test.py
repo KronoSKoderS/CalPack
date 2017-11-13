@@ -6,9 +6,10 @@ from tests import PY2, PY3
 import unittest
 import struct
 
+
 class Test_BasicPacket(unittest.TestCase):
 
-    def test_check_word_size(self):
+    def test_pkt_check_word_size(self):
         
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()
@@ -18,7 +19,7 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertEquals(p.num_words, 2)
 
 
-    def test_create_packet_object_with_defined_values(self):
+    def test_pkt_create_packet_object_with_defined_values(self):
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -28,7 +29,7 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertEquals(p.int_field_signed, -12)
 
 
-    def test_create_packet_with_default_field_value(self):
+    def test_pkt_create_packet_with_default_field_value(self):
         class two_int_field_packet(models.Packet):
             int_field = models.IntField(default_val=12)
             int_field_signed = models.IntField(signed=True, default_val=-12)
@@ -38,21 +39,27 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertEquals(p.int_field, 12)
         self.assertEquals(p.int_field_signed, -12)
 
-    
+    def test_pkt_create_class_from_bytes_string(self):
+        """
+        This test verifies that a class can be created from a byte string and that the values 
+        are properly parsed.  
+        """
 
-    def test_set_invalid_type_multi_field(self):
+        class two_int_field_packet(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
 
-        class multi_int_field_packet(models.Packet):
-            list_int_field = models.ArrayField(models.IntField(), 10)
+        v1 = randint(0, 65535)
+        v2 = randint(-32768, 32767)
+        vals = [v1, v2]
+        b_val = struct.pack('Hh', *vals)
 
-        expected_vals = list(range(10))
-        p = multi_int_field_packet()
+        p = two_int_field_packet.from_bytes(b_val)
 
-        with self.assertRaises(TypeError):
-            p.list_int_field = 100
+        self.assertEquals(p.int_field, vals[0])
+        self.assertEquals(p.int_field_signed, vals[1])
 
-    def test_compare_two_same_packets(self):
-
+    def test_pkt_compare_two_same_packets(self):
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -62,7 +69,7 @@ class Test_BasicPacket(unittest.TestCase):
 
         self.assertEquals(pkt1, pkt2)
 
-    def test_compare_two_different_packets(self):
+    def test_pkt_compare_two_different_packets(self):
 
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()
@@ -90,6 +97,42 @@ class Test_BasicPacket(unittest.TestCase):
 
         pkt_same_class_different_values = two_int_field_packet(int_field=1, int_field_signed=2)
         self.assertFalse(pkt_orig == pkt_same_class_different_values)
+
+    def test_pkt_export_to_bytes_string(self):
+        class two_int_field_packet(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
+
+        v1 = randint(0, 65535)
+        v2 = randint(-32768, 32767)
+        vals = [v1, v2]
+        b_val = struct.pack('Hh', *vals)
+
+        p = two_int_field_packet()
+        p.int_field = vals[0]
+        p.int_field_signed = vals[1]
+
+        pkt_bin = p.to_bytes()
+
+        self.assertEquals(pkt_bin, b_val)
+
+    def test_pkt_to_bytes_string_then_import_from_binary(self):
+        class two_int_field_packet(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
+
+        v1 = randint(0, 65535)
+        v2 = randint(-32768, 32767)
+        vals = [v1, v2]
+
+        p = two_int_field_packet()
+        p.int_field = vals[0]
+        p.int_field_signed = vals[1]
+
+        p2 = two_int_field_packet.from_bytes(p.to_bytes())
+
+        self.assertEquals(p.int_field, p2.int_field)
+        self.assertEquals(p.int_field_signed, p2.int_field_signed)
 
 
 
