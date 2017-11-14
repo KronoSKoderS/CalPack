@@ -33,5 +33,17 @@ class Test_PacketField(unittest.TestCase):
          self.assertTrue(isinstance(p.field2, models.Packet))
          self.assertEquals(type(p.field2.field1), models.IntField)
 
+    def test_pktfield_raises_typeerror_when_not_pktclas(self):
+        class simple_pkt(models.Packet):
+             field1 = models.IntField()
+
+        class adv_pkt(models.Packet):
+            field2 = models.PacketField(simple_pkt)
+
+        p = adv_pkt()
+
+        with self.assertRaises(TypeError):
+            p.field2 = 100
+
 if __name__ == '__main__':
     unittest.main()

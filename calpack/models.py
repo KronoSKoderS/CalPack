@@ -265,11 +265,10 @@ class PacketField(Field):
         return self._val
 
     def __set__(self, obj, val):
-        if type(val) == self.packet_cls:
-            setattr(obj._c_pkt, self._field_name, val._c_pkt)
-
-        else:
-            super(PacketField, self).__set__(ins, val)
+        if type(val) != self.packet_cls:
+            raise TypeError("{} must be of type {}".format(val, TypeError(self.packet_cls)))
+            
+        setattr(obj._c_pkt, self._field_name, val._c_pkt)
 
 
 class ArrayField(Field):
