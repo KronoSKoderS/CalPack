@@ -44,5 +44,26 @@ class Test_ArrayField(unittest.TestCase):
         for i, val in enumerate(expected_vals):
             self.assertEquals(p.list_int_field[i], val)
 
+    def test_arrayfield_compare_two_arrayfields(self):
+        class multi_int_field_packet(models.Packet):
+            list_int_field = models.ArrayField(models.IntField, 10)
+
+        expected_vals = list(range(10))
+
+        p1 = multi_int_field_packet()
+        p1.list_int_field = expected_vals
+        
+        p2 = multi_int_field_packet()
+        p2.list_int_field = list(reversed(expected_vals))
+
+        # verify that the packets are not the same in memory
+        self.assertFalse(p1 is p2)
+
+        self.assertNotEquals(p1.list_int_field, p2.list_int_field)
+
+        p2.list_int_field = expected_vals
+
+        self.assertEquals(p1.list_int_field, p2.list_int_field)
+
 if __name__ == '__main__':
     unittest.main()
