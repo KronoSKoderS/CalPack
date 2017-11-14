@@ -159,6 +159,9 @@ class Field(object):
     
     bit_len = typed_property('bit_len', int, 16)
 
+    def __new__(cls, *args, **kwargs):
+        return super(Field, cls).__new__(cls)
+
     def __init__(self, default_val=None):
         self.default_val = default_val
 
@@ -282,11 +285,9 @@ class ArrayField(Field):
     def bit_len(self):
         return self.array_cls.bit_len * self.array_size
 
-    def __eq__(self, other):
-        if type(other) == ArrayField:
-            return self._val[:] == other._val[:]
-
-        return self._val[:] == other
+    def __get__(self, obj, objtype):
+        self._val = getattr(obj._c_pkt, self._field_name)[:]
+        return self
 
     def __set__(self, obj, val):
         if not isinstance(val, ArrayField) and not isinstance(val, list):
@@ -403,6 +404,8 @@ class Packet():
     _fields_order = None
 
     def __init__(self, c_pkt = None, **kwargs):
+
+
 
         # create an internal c structure instance for us to interface with.
         self._c_pkt = self._c_struct()
