@@ -135,6 +135,27 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertEquals(p.int_field_signed, p2.int_field_signed)
 
 
+    def test_pkt_two_instances_different_field_instances(self):
+        class simple_pkt(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
+
+        p1 = simple_pkt()
+        p2 = simple_pkt()
+
+        p1.int_field = 1
+        p2.int_field = 2
+
+        p1.int_field_signed = -1
+        p2.int_field_signed = -2
+
+        self.assertFalse(p1 is p2)
+        self.assertFalse(p1.int_field is p2.int_field)
+        
+        self.assertNotEquals(p1.int_field, p2.int_field)
+        self.assertNotEquals(p1.int_field_signed, p2.int_field_signed)
+
+
 
 if __name__ == '__main__':
     unittest.main()
