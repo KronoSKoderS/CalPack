@@ -67,6 +67,7 @@ from math import ceil
 
 import sys
 import ctypes
+import copy
 
 
 PY2 = sys.version_info[0] == 2
@@ -131,7 +132,7 @@ class Field(object):
     A Super class that all other fields inherit from.  This class is NOT intended for direct use.  Custom Fields MUST 
     inherit from this class.
 
-    When creating a custom field you MUST define the `_c_type` property with a valid `ctypes` data class.  
+    When creating a custom field you MUST define the `c_type` property with a valid `ctypes` data class.  
 
     The following sections describe further details when customizing the following:
 
@@ -151,16 +152,13 @@ class Field(object):
 
     TODO: Update section
     """
-    _c_type = None
-    _field_name = None
-    _val = None
+    c_type = None
+    field_name = None
+    val = None
 
     creation_counter = 0
     
     bit_len = typed_property('bit_len', int, 16)
-
-    def __new__(cls, *args, **kwargs):
-        return super(Field, cls).__new__(cls)
 
     def __init__(self, default_val=None):
         self.default_val = default_val
@@ -170,18 +168,18 @@ class Field(object):
 
     def __eq__(self, other):
         if isinstance(other, Field):
-            return self._val == other._val
-        return self._val == other
+            return self.val == other.val
+        return self.val == other
 
     def __ne__(self, other):
         if isinstance(other, Field):
-            return self._val != other._val
-        return self._val != other
+            return self.val != other.val
+        return self.val != other
 
     def __lt__(self, other):
         if isinstance(other, Field):
-            return self._val < other._val
-        return self._val < other
+            return self.val < other.val
+        return self.val < other
 
     def __gt__(self, other):
         return other < self
@@ -192,21 +190,26 @@ class Field(object):
     def __le__(self, other):
         return not other < self
 
-    def __get__(self, obj, objtype):
-        if obj is not None:
-            self._val = getattr(obj._c_pkt, self._field_name)
+    def __get__(self, obj, objowner):
+        if isinstance(obj, Packet):
+            self.val = self.get_c_field_val(obj._get_c_field(self.field_name))
         return self
 
     def __set__(self, obj, val):
         new_val = val
         if isinstance(val, Field):
-            new_val = val._val
+            new_val = obj.val
 
-        setattr(obj._c_pkt, self._field_name, new_val)
-        self._val = getattr(obj._c_pkt, self._field_name)
+        obj._set_c_field(self.field_name, new_val)
+
+    def set_c_field_val(self, val):
+        return val
+
+    def get_c_field_val(self, c_field):
+        return c_field
 
     def create_field_c_tuple(self, name):
-        return (name, self._c_type)
+        return (name, self.c_type)
 
 
 class IntField(Field):
@@ -232,17 +235,17 @@ class IntField(Field):
         self.signed = signed
 
         if self.signed:
-            self._c_type = ctypes.c_int64
+            self.c_type = ctypes.c_int64
         else:
-            self._c_type = ctypes.c_uint64
+            self.c_type = ctypes.c_uint64
 
-    def __set__(self, obj, val):
+    def set_c_field_value(self, val):
         if not self.signed and val < 0:
             raise TypeError("Signed valued cannot be set for an unsiged IntField!")
-        return super(IntField, self).__set__(obj, val)
+        return val
 
     def create_field_c_tuple(self, name):
-        return (name, self._c_type, self.bit_len)
+        return (name, self.c_type, self.bit_len)
 
 
 class PacketField(Field):
@@ -260,19 +263,8 @@ class PacketField(Field):
     def create_field_c_tuple(self, name):
         return (name, self.packet_cls._c_struct)
 
-    def __get__(self, obj, objtype):
-        if obj is not None:
-            c_pkt = getattr(obj._c_pkt, self._field_name)
-            self._val = self.packet_cls(c_pkt = c_pkt)
-
-        return self._val
-
-    def __set__(self, obj, val):
-        if type(val) != self.packet_cls:
-            raise TypeError("{} must be of type {}".format(val, TypeError(self.packet_cls)))
-            
-        setattr(obj._c_pkt, self._field_name, val._c_pkt)
-
+    def get_c_field_val(self, c_field):
+        return self.packet_cls(c_pkt = c_pkt)
 
 class ArrayField(Field):
     """A custom field for handling an array of fields"""
@@ -280,37 +272,23 @@ class ArrayField(Field):
         super(ArrayField, self).__init__(default_val)
         self.array_cls = array_cls()
         self.array_size = array_size
+        self.c_type = (self.array_cls.c_type * self.array_size)
 
     @property
     def bit_len(self):
         return self.array_cls.bit_len * self.array_size
 
-    def __get__(self, obj, objtype):
-        self._val = getattr(obj._c_pkt, self._field_name)[:]
-        return self
+    def get_c_field_val(self, c_field):
+        return c_field[:]
 
-    def __set__(self, obj, val):
+    def set_c_field_val(self, val):
         if not isinstance(val, ArrayField) and not isinstance(val, list):
             raise TypeError("Must be of type ArrayField or list")
 
-        temp = getattr(obj._c_pkt, self._field_name)
-        temp[:] = val
-        setattr(obj._c_pkt, self._field_name, temp)
-
-    def __len__(self):
-        return len(self._val)
-
-    def __getitem__(self, key):
-        return self._val[key]
-
-    def __setitem__(self, key, val):
-        self._val[key] = val
-
-    def __iter__(self):
-        return iter(self._val)
+        return self.c_type(*val)
 
     def create_field_c_tuple(self, name):
-        return (name, self.array_cls._c_type * self.array_size)
+        return (name, self.array_cls.c_type * self.array_size)
 
 
 class _MetaPacket(type):
@@ -333,7 +311,7 @@ class _MetaPacket(type):
 
     In order for this to work, the following are assumed about the defined `Field` classes:
 
-        * _c_type is defined with a `ctypes.c_<type>`
+        * c_type is defined with a `ctypes.c_<type>`
         * bit_len
         * create_field_c_tuple
     """
@@ -354,25 +332,23 @@ class _MetaPacket(type):
         for name, obj in fields:
             order.append(name)
 
-            internal_name = "_" + name
+            obj.field_name = name
 
-            obj._field_name = internal_name
-
-            field_tuple = obj.create_field_c_tuple(internal_name)
+            field_tuple = obj.create_field_c_tuple(name)
             num_bits_used += obj.bit_len
 
             fields_tuple.append(field_tuple)
             class_dict[name] = obj
 
         # Here we save the order
-        class_dict['_fields_order'] = order
+        class_dict['fields_order'] = order
 
         # Here we create the internal structure
         class Cstruct(ctypes.Structure):
             pass
         
         Cstruct._fields_ = fields_tuple
-        class_dict['_c_struct'] = Cstruct
+        class_dict['_Packet__c_struct'] = Cstruct
 
         # finally we store the number of words
         class_dict['bit_len'] = num_bits_used
@@ -399,23 +375,33 @@ class Packet():
             data2 = models.IntField()
     """
     word_size = typed_property('word_size', int, 16)
+    fields_order = None
 
-    _c_struct = None
-    _fields_order = None
+    __c_struct = None
+
+    @classmethod
+    def get_field_instance(cls, field_name):
+        return getattr(cls, field_name)
+
+    def __new__(cls, *args, **kwargs):
+        obj = super(Packet, cls).__new__(cls, *args, **kwargs)
+
+        for field_name in obj.fields_order:
+            setattr(obj, field_name, copy.deepcopy(getattr(cls, field_name)))
+
+        return obj
 
     def __init__(self, c_pkt = None, **kwargs):
 
-
-
         # create an internal c structure instance for us to interface with.
-        self._c_pkt = self._c_struct()
+        self.__c_pkt = self.__c_struct()
         if c_pkt is not None:
-            self._c_pkt = c_pkt
+            self.__c_pkt = c_pkt
 
         # This allows for pre-definition of a field value after packet definition.  We only do this
         #   if the packet isn't from another packet instantiation (i.e. c_pkt was already defined).  
         if c_pkt is None:
-            for name in self._fields_order:
+            for name in self.fields_order:
                 d_val = getattr(getattr(self, name), 'default_val', None)
                 if d_val is not None:
                     setattr(self, name, d_val)
@@ -423,8 +409,12 @@ class Packet():
         # This allows for pre-definition of a field value at instantiation
         for key, val in kwargs.items():
             # Only set the keyword args associated with fields.  If it isn't found, then we'll process like normal.
-            if key in self._fields_order:
+            if key in self.fields_order:
                 setattr(self, key, val)
+
+    @property
+    def c_pkt(self):
+        return self.__c_pkt
 
     @property
     def num_words(self):
@@ -436,15 +426,14 @@ class Packet():
     
     def to_bytes(self):
         """Converts the packet into a byte string."""
-        return ctypes.string_at(ctypes.addressof(self._c_pkt), self.byte_size)
+        return ctypes.string_at(ctypes.addressof(self.__c_pkt), self.byte_size)
 
     @classmethod
     def from_bytes(cls, buf):
         """Creates a Packet from a byte string"""
         cstring = ctypes.create_string_buffer(buf)
-        c_pkt = ctypes.cast(ctypes.pointer(cstring), ctypes.POINTER(cls._c_struct)).contents
-        pkt = cls()
-        pkt._c_pkt = c_pkt
+        c_pkt = ctypes.cast(ctypes.pointer(cstring), ctypes.POINTER(cls.__c_struct)).contents
+        pkt = cls(c_pkt)
 
         return pkt
 
@@ -454,3 +443,12 @@ class Packet():
             return False
 
         return self.to_bytes() == other.to_bytes()
+
+    def _set_c_field(self, field_name, val):
+        try:
+            setattr(self.__c_pkt, field_name, val)
+        except AttributeError as e:
+            raise AttributeError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
+
+    def _get_c_field(self, field_name):
+        getattr(self.__c_pkt, field_name)
