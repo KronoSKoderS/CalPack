@@ -161,46 +161,44 @@ class Field(object):
     bit_len = typed_property('bit_len', int, 16)
 
     def __init__(self, default_val=None):
+        super(Field, self).__init__()
         self.default_val = default_val
 
         self.creation_counter = Field.creation_counter
         Field.creation_counter += 1
 
-    def __eq__(self, other):
-        if isinstance(other, Field):
-            return self.val == other.val
-        return self.val == other
+    #def __eq__(self, other):
+    #    if isinstance(other, Field):
+    #        return self.val == other.val
+    #    return self.val == other
 
-    def __ne__(self, other):
-        if isinstance(other, Field):
-            return self.val != other.val
-        return self.val != other
+    #def __ne__(self, other):
+    #    if isinstance(other, Field):
+    #        return self.val != other.val
+    #    return self.val != other
 
-    def __lt__(self, other):
-        if isinstance(other, Field):
-            return self.val < other.val
-        return self.val < other
+    #def __lt__(self, other):
+    #    if isinstance(other, Field):
+    #        return self.val < other.val
+    #    return self.val < other
 
-    def __gt__(self, other):
-        return other < self
+    #def __gt__(self, other):
+    #    return other < self
 
-    def __ge__(self, other):
-        return not self < other
+    #def __ge__(self, other):
+    #    return not self < other
 
-    def __le__(self, other):
-        return not other < self
+    #def __le__(self, other):
+    #    return not other < self
 
-    def __get__(self, obj, objowner):
-        if isinstance(obj, Packet):
-            self.val = self.get_c_field_val(obj._get_c_field(self.field_name))
-        return self
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        return self.get_c_field_val(instance._get_c_field(self.field_name))
 
-    def __set__(self, obj, val):
-        new_val = val
-        if isinstance(val, Field):
-            new_val = obj.val
-
-        obj._set_c_field(self.field_name, new_val)
+    def __set__(self, instance, val):
+        c_val = self.set_c_field_val(val)
+        instance._set_c_field(self.field_name, c_val)
 
     def set_c_field_val(self, val):
         return val
@@ -230,6 +228,7 @@ class IntField(Field):
     def __init__(self, bit_len=16, signed=False, default_val=0, little_endian=False):
         super(IntField, self).__init__(default_val)
 
+        self.default_val = default_val
         self.bit_len = bit_len
         self.little_endian = little_endian
         self.signed = signed
@@ -239,7 +238,7 @@ class IntField(Field):
         else:
             self.c_type = ctypes.c_uint64
 
-    def set_c_field_value(self, val):
+    def set_c_field_val(self, val):
         if not self.signed and val < 0:
             raise TypeError("Signed valued cannot be set for an unsiged IntField!")
         return val
@@ -251,22 +250,34 @@ class IntField(Field):
 class PacketField(Field):
     """A custom field for handling another packet as a field."""
 
+    packet_cls = None
+
     def __init__(self, packet_cls):
         super(PacketField, self).__init__()
 
         self.packet_cls = packet_cls
+        self.packet = packet_cls()
 
     @property
     def bit_len(self):
         return self.packet_cls.bit_len
 
     def create_field_c_tuple(self, name):
-        return (name, self.packet_cls._c_struct)
+        return (name, self.packet_cls._Packet__c_struct)
 
-    def get_c_field_val(self, c_field):
-        return self.packet_cls(c_pkt = c_pkt)
+    def __setattr__(self, arg, value):
+        if self.packet_cls is not None and arg in self.packet_cls.fields_order:
+            setattr(self.packet_cls, arg, value)
+        else:
+            super(PacketField, self).__setattr__(arg, value)
 
-class ArrayField(Field):
+    def set_c_field_val(self, val):
+        if not isinstance(val, self.packet_cls):
+            raise TypeError("Must be of type {p}".format(type(p=self.packet_cls)))
+        return val.c_pkt
+
+
+class ArrayField(Field, list):
     """A custom field for handling an array of fields"""
     def __init__(self, array_cls, array_size, default_val=None):
         super(ArrayField, self).__init__(default_val)
@@ -320,6 +331,7 @@ class _MetaPacket(type):
         
         order = []
         fields_tuple = []
+        fields_dict = {}
 
         num_bits_used = 0
 
@@ -383,30 +395,21 @@ class Packet():
     def get_field_instance(cls, field_name):
         return getattr(cls, field_name)
 
-    def __new__(cls, *args, **kwargs):
-        obj = super(Packet, cls).__new__(cls, *args, **kwargs)
-
-        for field_name in obj.fields_order:
-            setattr(obj, field_name, copy.deepcopy(getattr(cls, field_name)))
-
-        return obj
-
     def __init__(self, c_pkt = None, **kwargs):
-
         # create an internal c structure instance for us to interface with.
-        self.__c_pkt = self.__c_struct()
-        if c_pkt is not None:
-            self.__c_pkt = c_pkt
+        self.__c_pkt = c_pkt
+        if c_pkt is  None:
+            self.__c_pkt = self.__c_struct()
 
         # This allows for pre-definition of a field value after packet definition.  We only do this
         #   if the packet isn't from another packet instantiation (i.e. c_pkt was already defined).  
         if c_pkt is None:
             for name in self.fields_order:
-                d_val = getattr(getattr(self, name), 'default_val', None)
+                d_val = getattr(self.__class__.__dict__[name], 'default_val', None)
                 if d_val is not None:
                     setattr(self, name, d_val)
 
-        # This allows for pre-definition of a field value at instantiation
+        # This allows for pre-definition of a field value at instantiation.  Note this DOES overwrite any values passed in from c_pkt
         for key, val in kwargs.items():
             # Only set the keyword args associated with fields.  If it isn't found, then we'll process like normal.
             if key in self.fields_order:
@@ -415,6 +418,14 @@ class Packet():
     @property
     def c_pkt(self):
         return self.__c_pkt
+
+    @c_pkt.setter
+    def c_pkt(self, val):
+        self.__c_pkt = val
+
+    @property
+    def c_struct(self):
+        return self._Packet__c_struct
 
     @property
     def num_words(self):
@@ -451,4 +462,4 @@ class Packet():
             raise AttributeError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
 
     def _get_c_field(self, field_name):
-        getattr(self.__c_pkt, field_name)
+        return getattr(self.__c_pkt, field_name)
