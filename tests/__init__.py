@@ -14,12 +14,14 @@ def full_suite():
     from tests.BasicPackets_Test import Test_BasicPacket
     from tests.ArrayField_Test import Test_ArrayField
     from tests.PacketField_Test import Test_PacketField
+    from tests.Utilities_Test import Test_Utilities
 
     return unittest.TestSuite([
         unittest.TestLoader().loadTestsFromTestCase(Test_BasicPacket),
         unittest.TestLoader().loadTestsFromTestCase(Test_IntField),
         unittest.TestLoader().loadTestsFromTestCase(Test_ArrayField),
-        unittest.TestLoader().loadTestsFromTestCase(Test_PacketField)
+        unittest.TestLoader().loadTestsFromTestCase(Test_PacketField),
+        unittest.TestLoader().loadTestsFromTestCase(Test_Utilities),
     ])
 
 if __name__ == "__main__":
