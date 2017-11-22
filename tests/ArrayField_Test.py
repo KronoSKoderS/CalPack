@@ -18,6 +18,7 @@ class Test_ArrayField(unittest.TestCase):
         p.list_int_field = expected_vals
 
         self.assertEqual(p.list_int_field, expected_vals)
+        self.assertEqual(p._Packet__c_pkt.list_int_field[:], expected_vals)
 
     def test_arrayfield_set_invalid_type_multi_field(self):
 
@@ -41,6 +42,7 @@ class Test_ArrayField(unittest.TestCase):
 
         for i, val in enumerate(expected_vals):
             self.assertEquals(p.list_int_field[i], val)
+            self.assertEquals(p._Packet__c_pkt.list_int_field[i], val)
 
     def test_arrayfield_compare_two_arrayfields(self):
         class multi_int_field_packet(models.Packet):

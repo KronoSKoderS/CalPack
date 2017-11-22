@@ -49,8 +49,8 @@ class Test_BasicPacket(unittest.TestCase):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
 
-        v1 = randint(0, 65535)
-        v2 = randint(-32768, 32767)
+        v1 = 34
+        v2 = -12
         vals = [v1, v2]
         b_val = struct.pack('Hh', *vals)
 
@@ -103,8 +103,8 @@ class Test_BasicPacket(unittest.TestCase):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
 
-        v1 = randint(0, 65535)
-        v2 = randint(-32768, 32767)
+        v1 = 54
+        v2 = -23
         vals = [v1, v2]
         b_val = struct.pack('Hh', *vals)
 
@@ -121,8 +121,8 @@ class Test_BasicPacket(unittest.TestCase):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
 
-        v1 = randint(0, 65535)
-        v2 = randint(-32768, 32767)
+        v1 = 96
+        v2 = -3
         vals = [v1, v2]
 
         p = two_int_field_packet()

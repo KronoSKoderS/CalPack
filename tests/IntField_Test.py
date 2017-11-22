@@ -18,9 +18,8 @@ class Test_IntField(unittest.TestCase):
 
     def test_intfield_set_valid_values(self):
         """
-        This test verifies that setting an integer field of a packet is done correctly.  This
-        also tests the comparison operator `__eq__`.  Finally, it checks that the types of the
-        field isn't altered.  
+        This test verifies that setting an integer field of a packet is done correctly. This also verifies that the 
+        internal c structure is propertly setup as well.  
         """
         p = self.two_int_field_packet()
 
@@ -84,6 +83,10 @@ class Test_IntField(unittest.TestCase):
         self.assertEqual(p2._Packet__c_pkt.int_field, v1)
 
     def test_intfield_with_variable_bit_lenth(self):
+        """
+        This test verifies that setting an integer value of variable size is correctly exported to the to_bytes 
+        function.  This also tests the ability to set a value for the packet upon instantiation.  
+        """
         class int_packet_with_varied_sized_int_fields(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
