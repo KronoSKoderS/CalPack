@@ -24,17 +24,17 @@ class Test_IntField(unittest.TestCase):
         """
         p = self.two_int_field_packet()
 
-        v1 = randint(0, 65535)
-        v2 = randint(-32768, 32767)
+        v1 = 100
+        v2 = -100
 
         p.int_field = v1
         p.int_field_signed = v2
 
         self.assertEqual(p.int_field, v1)
-        self.assertEqual(p.int_field_signed, v2)
+        self.assertEqual(p._Packet__c_pkt.int_field, v1)
 
-        self.assertEqual(type(p.int_field), models.IntField)
-        self.assertEqual(type(p.int_field), models.IntField)
+        self.assertEqual(p.int_field_signed, v2)
+        self.assertEqual(p._Packet__c_pkt.int_field_signed, v2)
 
     def test_intfield_raises_TypeError_when_setting_non_int_value(self):
         """
@@ -56,7 +56,6 @@ class Test_IntField(unittest.TestCase):
         with self.assertRaises(TypeError):
             p.int_field = [0] * 12
 
-
     def test_intfield_raises_TypeError_when_setting_signed_to_nonsigned(self):
         """
         This test verifies that a "TypeErorr" is raised when setting a non-signed value to a
@@ -75,15 +74,14 @@ class Test_IntField(unittest.TestCase):
         p = self.two_int_field_packet()
         p2 = self.two_int_field_packet()
 
-        v1 = randint(0, 65535)
+        v1 = 123
         
         p.int_field = v1
 
         p2.int_field = p.int_field
 
         self.assertEqual(p.int_field, p2.int_field)
-
-        self.assertEqual(type(p.int_field), models.IntField)
+        self.assertEqual(p2._Packet__c_pkt.int_field, v1)
 
     def test_intfield_with_variable_bit_lenth(self):
         class int_packet_with_varied_sized_int_fields(models.Packet):
@@ -116,30 +114,6 @@ class Test_IntField(unittest.TestCase):
         b_str = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_pkt))
 
         self.assertEquals(b_str, pkt.to_bytes())
-
-    def test_intfield_comparitors(self):
-        p = self.two_int_field_packet()
-
-        p.field1 = 10
-        p.field2 = -10
-
-        self.assertTrue(p.field1 < 100)
-        self.assertTrue(p.field1 > 0)
-        self.assertTrue(p.field1 != 100)
-        self.assertTrue(p.field1 <= 10)
-        self.assertTrue(p.field1 >= 10)
-        self.assertTrue(p.field1 == 10)
-        self.assertTrue(p.field1 <= 11)
-        self.assertTrue(p.field1 >= 9)
-
-        self.assertTrue(p.field2 < 0)
-        self.assertTrue(p.field2 > -100)
-        self.assertTrue(p.field2 != 100)
-        self.assertTrue(p.field2 <= -10)
-        self.assertTrue(p.field2 <= -9)
-        self.assertTrue(p.field2 >= -10)
-        self.assertTrue(p.field2 >= -11)
-        self.assertTrue(p.field2 == -10)
 
 
 if __name__ == '__main__':

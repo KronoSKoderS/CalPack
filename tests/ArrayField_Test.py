@@ -19,8 +19,6 @@ class Test_ArrayField(unittest.TestCase):
 
         self.assertEqual(p.list_int_field, expected_vals)
 
-        self.assertEqual(type(p.list_int_field), models.ArrayField)
-
     def test_arrayfield_set_invalid_type_multi_field(self):
 
         class multi_int_field_packet(models.Packet):

@@ -21,8 +21,7 @@ class Test_PacketField(unittest.TestCase):
          p.field2.field1 = 100
 
          self.assertEquals(p.field2.field1, 100)
-         self.assertTrue(isinstance(p.field2, models.Packet))
-         self.assertEquals(type(p.field2.field1), models.IntField)
+         self.assertEquals(p._Packet__c_pkt.field2.field1, 100)
 
          sp = simple_pkt()
          sp.field1 = 200
@@ -30,8 +29,6 @@ class Test_PacketField(unittest.TestCase):
          p.field2 = sp
 
          self.assertEquals(p.field2.field1, 200)
-         self.assertTrue(isinstance(p.field2, models.Packet))
-         self.assertEquals(type(p.field2.field1), models.IntField)
 
     def test_pktfield_raises_typeerror_when_not_pktclas(self):
         class simple_pkt(models.Packet):
