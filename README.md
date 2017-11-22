@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/KronoSKoderS/CalPack.svg?branch=prod)](https://travis-ci.org/KronoSKoderS/CalPack) [![Coverage Status](https://coveralls.io/repos/github/KronoSKoderS/CalPack/badge.svg?branch=prod)](https://coveralls.io/github/KronoSKoderS/CalPack?branch=dev) [![Documentation Status](https://readthedocs.org/projects/concorde/badge/?version=latest)](http://concorde.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/KronoSKoderS/CalPack.svg?branch=prod)](https://travis-ci.org/KronoSKoderS/CalPack) 
+[![Coverage Status](https://coveralls.io/repos/github/KronoSKoderS/CalPack/badge.svg?branch=prod)](https://coveralls.io/github/KronoSKoderS/CalPack?branch=dev) 
+[![Documentation Status](https://readthedocs.org/projects/concorde/badge/?version=latest)](http://concorde.readthedocs.io/en/latest/?badge=latest)
 
 # CalPack
 Packets in Python Simplified.  
@@ -7,8 +9,9 @@ This python package is everything you need to transmorgrify your packets:
 
 [![Calvin and Hobbes Strip](http://assets.amuniversal.com/8d40c700deba01317193005056a9545d)](http://www.gocomics.com/calvinandhobbes/1987/03/23)
 
-This package is intended to make creating and/or parsing packets on the fly quick and easy.  This is a wrapper around the [`ctypes` module](https://docs.python.org/dev/library/ctypes.html) built-in to python. 
-This package is designed with influence from Django's modeling and will look familar to those that have used it. 
+This package is intended to make creating and/or parsing packets on the fly quick and easy.  This is a wrapper around 
+the [`ctypes` module](https://docs.python.org/dev/library/ctypes.html) built-in to python. This package is designed 
+with influence from Django's modeling and will look familar to those that have used it. 
 
 ## Why `CalPack`?
 
@@ -43,7 +46,6 @@ Creating custom packets is as easy as defining the fields:
         field2 = -12
     )
 
-
 ### Converting to bytes
 
     b_str = pkt.to_bytes()
@@ -59,8 +61,8 @@ Creating custom packets is as easy as defining the fields:
 
 ## Upcoming Features:
 
-The following list is a set of major features that is planned to be worked on.  For a more exhautive list, view the issues page, or if you have ZenHub
-installed, view our current board. 
+The following list is a set of major features that is planned to be worked on.  For a more exhautive list, view the 
+issues page, or if you have ZenHub installed, view our current board. 
 
 - [x] Ability to create a field with multiple words (i.e. a Data Array Field)
 - [x] Set the specific bitfield length for the `IntField` (in progress)
@@ -68,3 +70,8 @@ installed, view our current board.
 - [x] Ability to set an already defined packet as a field for another packet
 - [ ] Builtin packet for commonly used packets, such as TCP/IP, UDP, etc,.
 - [ ] Adding other Field types (Float, String, etc,.)
+
+
+## Python 2 and 3
+Currently this module is designed to work for both Python 2 and 3.  However, with the term of life for Python 2 in the 
+near future, further develpment of this package will eventually port entirely over to Python 3.  
