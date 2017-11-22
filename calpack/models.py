@@ -167,30 +167,6 @@ class Field(object):
         self.creation_counter = Field.creation_counter
         Field.creation_counter += 1
 
-    #def __eq__(self, other):
-    #    if isinstance(other, Field):
-    #        return self.val == other.val
-    #    return self.val == other
-
-    #def __ne__(self, other):
-    #    if isinstance(other, Field):
-    #        return self.val != other.val
-    #    return self.val != other
-
-    #def __lt__(self, other):
-    #    if isinstance(other, Field):
-    #        return self.val < other.val
-    #    return self.val < other
-
-    #def __gt__(self, other):
-    #    return other < self
-
-    #def __ge__(self, other):
-    #    return not self < other
-
-    #def __le__(self, other):
-    #    return not other < self
-
     def __get__(self, instance, cls):
         if instance is None:
             return self
@@ -391,10 +367,6 @@ class Packet():
 
     __c_struct = None
 
-    @classmethod
-    def get_field_instance(cls, field_name):
-        return getattr(cls, field_name)
-
     def __init__(self, c_pkt = None, **kwargs):
         # create an internal c structure instance for us to interface with.
         self.__c_pkt = c_pkt
@@ -418,14 +390,6 @@ class Packet():
     @property
     def c_pkt(self):
         return self.__c_pkt
-
-    @c_pkt.setter
-    def c_pkt(self, val):
-        self.__c_pkt = val
-
-    @property
-    def c_struct(self):
-        return self._Packet__c_struct
 
     @property
     def num_words(self):
@@ -458,6 +422,8 @@ class Packet():
     def _set_c_field(self, field_name, val):
         try:
             setattr(self.__c_pkt, field_name, val)
+
+        # we should never encounter this situation but just in case
         except AttributeError as e:
             raise AttributeError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
 
