@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-version = "0.0.3"
+version = "0.1.0"
 
 try:
     import pypandoc
@@ -22,10 +22,24 @@ setup(
     classifiers=[
         'License :: OSI Approved :: MIT License',
 
+        'Development Status :: 4 - Beta',
+
+        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: System Administrators',
+        'Intended Audience :: Telecommunications Industry',
+
+        'Natural Language :: English',
+
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+
+        'Topic :: Utilities', 
     ],
     test_suite="tests.get_tests",
     packages=find_packages(exclude=['tests'])
