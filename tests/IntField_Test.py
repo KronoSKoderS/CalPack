@@ -118,6 +118,16 @@ class Test_IntField(unittest.TestCase):
 
         self.assertEquals(b_str, pkt.to_bytes())
 
+    def test_IntField_raises_ValueError_with_invalid_bit_len(self):
+        with self.assertRaises(ValueError):
+            int_field = models.IntField(bit_len=0)
+
+        with self.assertRaises(ValueError):
+            int_field = models.IntField(bit_len=-1)
+
+        with self.assertRaises(ValueError):
+            int_field = models.IntField(bit_len=65)
+
 
 if __name__ == '__main__':
     unittest.main()

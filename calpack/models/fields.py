@@ -55,7 +55,7 @@ class Field(object):
         simply returns :code:`c_field` directly from the ctypes.Structure object.  It's up to the other :code:`Field`'s
         to define this if further formating is required in order to turn the cyptes value into something user friendly.
 
-        :param c_field: a ctypes object from the packet's internal `ctypes.Structure` object
+        :param c_field: a ctypes object from the packet's internal :code:`ctypes.Structure` object
         """
         return c_field
 
@@ -64,6 +64,9 @@ class Field(object):
         create_field_c_tuple - A function used to create the required an field in the :code:`ctypes.Structure._fields_` 
         tuple.  This must return a tuple that is acceptable for one of the items in the :code:`_fields_` list of the
         :code:`cytpes.Structure`.  
+
+        The first value in the tuple MUST be :code:`self.field_name` as this is used to access the internal c 
+        structure.  
         """
         return (self.field_name, self.c_type)
 
@@ -73,9 +76,9 @@ class IntField(Field):
     An Integer field.  This field can be configured to be signed or unsinged.  It's bit length can also be set, 
     however the max bit length for this field is 64.  
 
-    :param bit_len: the length in bits of the integer.  Max value of 64. (default 16)
-    :param signed: whether to treat the int as an signed integer or unsigned integer (default unsigned)
-    :param default_val: the default value of the field (default 0)
+    :param int bit_len: the length in bits of the integer.  Max value of 64. (default 16)
+    :param bool signed: whether to treat the int as an signed integer or unsigned integer (default unsigned)
+    :param int default_val: the default value of the field (default 0)
     """
 
     signed = typed_property('signed', bool, False)
@@ -85,6 +88,9 @@ class IntField(Field):
 
     def __init__(self, bit_len=16, signed=False, default_val=0, little_endian=False):
         super(IntField, self).__init__(default_val)
+
+        if bit_len <= 0 or bit_len > 64:
+            raise ValueError("bit_len must be between 1 and 64")
 
         self.default_val = default_val
         self.bit_len = bit_len
@@ -142,7 +148,7 @@ class ArrayField(Field, list):
 
     :param array_cls: a :code:`calpack.models.Field` subclass **object** that represent the Field the array will be 
         filled with.  
-    :param array_size: the length of the array.  
+    :param int array_size: the length of the array.  
     """
     def __init__(self, array_cls, array_size, default_val=None):
         super(ArrayField, self).__init__(default_val)
