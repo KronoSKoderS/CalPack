@@ -140,7 +140,7 @@ class PacketField(Field):
 
     def py_to_c(self, val):
         if not isinstance(val, self.packet_cls):
-            raise TypeError("Must be of type {p}".format(type(p=self.packet_cls)))
+            raise TypeError("Must be of type {p}".format(p=type(self.packet_cls)))
         return val.c_pkt
 
 
