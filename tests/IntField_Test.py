@@ -19,7 +19,7 @@ class Test_IntField(unittest.TestCase):
     def test_intfield_set_valid_values(self):
         """
         This test verifies that setting an integer field of a packet is done correctly. This also verifies that the 
-        internal c structure is propertly setup as well.  
+        internal c structure is properly setup as well.
         """
         p = self.two_int_field_packet()
 
@@ -57,7 +57,7 @@ class Test_IntField(unittest.TestCase):
 
     def test_intfield_raises_TypeError_when_setting_signed_to_nonsigned(self):
         """
-        This test verifies that a "TypeErorr" is raised when setting a non-signed value to a
+        This test verifies that a "TypeError" is raised when setting a non-signed value to a
         signed value.  
         """
         p = self.two_int_field_packet()
@@ -82,7 +82,7 @@ class Test_IntField(unittest.TestCase):
         self.assertEqual(p.int_field, p2.int_field)
         self.assertEqual(p2._Packet__c_pkt.int_field, v1)
 
-    def test_intfield_with_variable_bit_lenth(self):
+    def test_intfield_with_variable_bit_length(self):
         """
         This test verifies that setting an integer value of variable size is correctly exported to the to_bytes 
         function.  This also tests the ability to set a value for the packet upon instantiation.  

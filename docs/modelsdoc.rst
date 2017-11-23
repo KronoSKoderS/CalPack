@@ -76,7 +76,7 @@ Packet fields can be easily copied from and/or compared to other packets of the 
     my_pkt.dest == my_pkt2.dest
     False
 
-Packets themself can also be compared::
+Packets themselves can also be compared::
 
     my_pkt = Header()
     my_pkt.source = 123
@@ -271,7 +271,7 @@ There are a few things to consider before creating a custom Field:
 
     1. There are specific properties that **must** be defined within the class
     2. Any methods defined must be a class method and cannot be used as an instance method
-    3. You must have a basic understanding of the :code:`cyptes` module specifically how to use the 
+    3. You must have a basic understanding of the :code:`ctypes` module specifically how to use the
         :code:`ctypes.Structure` class.  
 
 It is recommended that you study the way that `Structures <https://docs.python.org/3/library/ctypes.html#structures-and-unions/>`_
@@ -326,7 +326,7 @@ appropriate.  By default this function does exactly that::
     def py_to_c(self, val):
         return val
 
-However in certain cases additional formatting, transformation or validation might be requried.  Use this function
+However in certain cases additional formatting, transformation or validation might be required.  Use this function
 to override the behavior as needed.  
 
 :code:`c_to_py`
