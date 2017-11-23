@@ -73,5 +73,5 @@ issues page, or if you have ZenHub installed, view our current board.
 
 
 ## Python 2 and 3
-Currently this module is designed to work for both Python 2 and 3.  However, with the term of life for Python 2 in the 
+Currently this module is designed to work for both Python 2.7+ and 3.3+, however, with the term of life for Python 2 in the 
 near future, further develpment of this package will eventually port entirely over to Python 3.  

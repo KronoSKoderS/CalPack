@@ -104,7 +104,7 @@ This is easy to do within :code:`calpack` through the use of the :code:`ArrayFie
 
 Creating an Array of :code:`IntField`'s
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Given the following packet::
+When deal with a lot of fields that are the same it can become a bear to create each field::
 
     class my_long_packet(models.Packet):
         data1 = models.IntField()
@@ -116,10 +116,15 @@ Given the following packet::
         data7 = models.IntField()
         data8 = models.IntField()
 
-This can be simplified by using the following syntax::
+This can be simplified by using the :code: syntax::
 
     class my_array_packet(models.Packet):
         data = models.ArrayField(models.IntField(), 8)
+
+
+Encapsulating another Packet within a Packet
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 
 
 
