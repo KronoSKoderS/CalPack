@@ -1,3 +1,8 @@
+"""
+A collection of built-in :code:`Field`'s for creating packets.  This module also contains the building blocks for 
+creating custom FieldTypes as well.  
+"""
+
 import ctypes
 
 from calpack.models.utils import typed_property
@@ -13,7 +18,6 @@ class Field(object):
     """
     c_type = None
     field_name = None
-    val = None
 
     creation_counter = 0
     
@@ -38,47 +42,47 @@ class Field(object):
     def py_to_c(self, val):
         """
         py_to_c - A function used to convert a python object into a valid ctypes assignable object.  As a default 
-        this function simply returns `val`.  It's up to the other `Field`'s to define this if further formating
-        is reuqired in order to set the internal structure of the packet.  
+        this function simply returns :code:`val`.  It's up to the other :code:`Field`'s to define this if further 
+        formating is reuqired in order to set the internal structure of the packet.  
 
-        :param val: the value the user is attempting to set the packet field to.  This can be any python object
+        :param val: the value the user is attempting to set the packet field to.  This can be any python object.
         """
         return val
 
     def c_to_py(self, c_field):
         """
         c_to_py - A function used to convert the cytpes object into a python object.  As a default this function
-        simply returns `c_field` directly from the ctypes.Structure object.  It's up to the other `Field`'s to 
-        define this if further formating is required in order to turn the cyptes value into something user friendly.
+        simply returns :code:`c_field` directly from the ctypes.Structure object.  It's up to the other :code:`Field`'s
+        to define this if further formating is required in order to turn the cyptes value into something user friendly.
 
         :param c_field: a ctypes object from the packet's internal `ctypes.Structure` object
         """
         return c_field
 
-    def create_field_c_tuple(self, name):
+    def create_field_c_tuple(self):
         """
-        create_field_c_tuple - A function used to create the required an field in the `ctypes.Structure._fields_` 
-        tuple.  This must return a tuple that is acceptable for one of the items in the `_fields_` list of the
-        `cytpes.Structure`.  
+        create_field_c_tuple - A function used to create the required an field in the :code:`ctypes.Structure._fields_` 
+        tuple.  This must return a tuple that is acceptable for one of the items in the :code:`_fields_` list of the
+        :code:`cytpes.Structure`.  
         """
-        return (name, self.c_type)
+        return (self.field_name, self.c_type)
 
 
 class IntField(Field):
     """
-    An Integer field.
+    An Integer field.  This field can be configured to be signed or unsinged.  It's bit length can also be set, 
+    however the max bit length for this field is 64.  
 
-    valid keyword arguments:
-
-    - bit_len: the length in bits of the integer.  Max value of 64. (default 16)
-    - signed: whether to treat the int as an signed integer or unsigned integer (default unsigned)
+    :param bit_len: the length in bits of the integer.  Max value of 64. (default 16)
+    :param signed: whether to treat the int as an signed integer or unsigned integer (default unsigned)
+    :param default_val: the default value of the field (default 0)
     """
 
     signed = typed_property('signed', bool, False)
 
     # TODO: Implement endianess processing
     little_endian = typed_property('little_endian', bool)
-    
+
     def __init__(self, bit_len=16, signed=False, default_val=0, little_endian=False):
         super(IntField, self).__init__(default_val)
 
@@ -102,7 +106,11 @@ class IntField(Field):
 
 
 class PacketField(Field):
-    """A custom field for handling another packet as a field."""
+    """
+    A custom Field for handling another packet as a field.
+
+    :param packet_cls: A :code:`calpack.models.Packet` subclass that represents another packet
+    """
 
     packet_cls = None
 
@@ -111,10 +119,7 @@ class PacketField(Field):
 
         self.packet_cls = packet_cls
         self.packet = packet_cls()
-
-    @property
-    def bit_len(self):
-        return self.packet_cls.bit_len
+        self.bit_len = self.packet_cls.bit_len
 
     def create_field_c_tuple(self, name):
         return (name, self.packet_cls._Packet__c_struct)
@@ -132,16 +137,19 @@ class PacketField(Field):
 
 
 class ArrayField(Field, list):
-    """A custom field for handling an array of fields"""
+    """
+    A custom field for handling an array of fields
+
+    :param array_cls: a :code:`calpack.models.Field` subclass **object** that represent the Field the array will be 
+        filled with.  
+    :param array_size: the length of the array.  
+    """
     def __init__(self, array_cls, array_size, default_val=None):
         super(ArrayField, self).__init__(default_val)
         self.array_cls = array_cls()
         self.array_size = array_size
         self.c_type = (self.array_cls.c_type * self.array_size)
-
-    @property
-    def bit_len(self):
-        return self.array_cls.bit_len * self.array_size
+        self.bit_len = self.array_cls.bit_len * self.array_size
 
     def c_to_py(self, c_field):
         return c_field[:]
