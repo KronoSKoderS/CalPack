@@ -15,6 +15,8 @@ __all__ = ['Packet']
 # This was taken from the six.py source code.  Reason being that I only needed a small part of six
 #   and didn't want to rely on the third-party installation just for this package.  I highly recommend
 #   looking at them for Python 2/3 compatible coding:  https://github.com/benjaminp/six
+#
+# WARNING: When I finally decide to migrate away from Python 2 this will be removed.  
 def add_metaclass(metaclass):
     """Class decorator for creating a class with a metaclass."""
     def wrapper(cls):
@@ -35,7 +37,7 @@ class _MetaPacket(type):
     """
     _MetaPacket - A class used to generate the classes defined by the user into a usable class.
 
-    This class is the magic for Turning the ``Packet`` class definitions into actual operating packets.
+    This class is the magic for Turning the :code:`Packet` class definitions into actual operating packets.
 
     The process of how this all works is a little convoluted, however here is a basic overview:
 
@@ -44,16 +46,15 @@ class _MetaPacket(type):
             - The ctype is created based on bit width and ctypes type
             - The order in which it was defined is saved
             - The bit width of the field is summed
-            - A `_field_property` is created.  This function, monkey pactches the class
-                to enable setting the value directly (i.e. pkt.field = some_val) while
-                still enabling access to the other Field methods and properties.  
-        3. A `ctypes.Structure` is created with `_fields_` in order and type of the Fields.
+        3. A `ctypes.Structure` is created with :code:`_fields_` in order and type of the Fields.
 
-    In order for this to work, the following are assumed about the defined `Field` classes:
+    In order for this to work, the following are assumed about the defined :code:`Field` classes:
 
         * c_type is defined with a `ctypes.c_<type>`
         * bit_len
         * create_field_c_tuple
+        * py_to_c
+        * c_to_py
     """
     def __new__(mcs, clsname, bases, clsdict):
         class_dict = dict(clsdict)
@@ -114,13 +115,17 @@ class Packet(object):
             dest = models.IntField()
             data1 = models.IntField()
             data2 = models.IntField()
+
+
+    :param c_pkt: (Optional) a :code:`ctypes.Structure` object that will be used at the internal c structure.  This
+        MUST have the same :code:`_feilds_` as the Packet would normally have in order for it to work properly.  
     """
     word_size = typed_property('word_size', int, 16)
     fields_order = None
 
     __c_struct = None
 
-    def __init__(self, c_pkt = None, **kwargs):
+    def __init__(self, c_pkt=None, **kwargs):
         # create an internal c structure instance for us to interface with.
         self.__c_pkt = c_pkt
         if c_pkt is  None:
@@ -142,23 +147,36 @@ class Packet(object):
 
     @property
     def c_pkt(self):
+        """returns the internal c structure object being used"""
         return self.__c_pkt
 
     @property
     def num_words(self):
+        """The number of words in the packet"""
         return ceil(self.bit_len / self.word_size)
 
     @property
     def byte_size(self):
+        """The byte size (assuming 8 bits to a byte) of the packet."""
         return int(ceil(self.bit_len / 8))
     
     def to_bytes(self):
-        """Converts the packet into a byte string."""
+        """
+        Converts the packet into a bytes string
+        
+        :return: the packet as a byte string
+        :rtype: bytes
+        """
         return ctypes.string_at(ctypes.addressof(self.__c_pkt), self.byte_size)
 
     @classmethod
     def from_bytes(cls, buf):
-        """Creates a Packet from a byte string"""
+        """
+        Creates a Packet from a bytes string
+        
+        :param bytes buf: the bytes buffer that will be used to create the packet
+        :returns: an Instance of the Packet as parsed from the bytes string
+        """
         cstring = ctypes.create_string_buffer(buf)
         c_pkt = ctypes.cast(ctypes.pointer(cstring), ctypes.POINTER(cls.__c_struct)).contents
         pkt = cls(c_pkt)
@@ -176,8 +194,9 @@ class Packet(object):
         try:
             setattr(self.__c_pkt, field_name, val)
 
-        # we should never encounter this situation but just in case
-        except AttributeError as e:
+        # We should never encounter this situation unless the user has intentionally messed with the internal
+        #   structure of the packet.
+        except AttributeError:
             raise AttributeError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
 
     def _get_c_field(self, field_name):

@@ -79,6 +79,7 @@ class IntField(Field):
     :param int bit_len: the length in bits of the integer.  Max value of 64. (default 16)
     :param bool signed: whether to treat the int as an signed integer or unsigned integer (default unsigned)
     :param int default_val: the default value of the field (default 0)
+    :raises ValueError: if the :code:`bit_len` is less than or equal to 0 or greater than 64
     """
 
     signed = typed_property('signed', bool, False)
@@ -126,6 +127,7 @@ class PacketField(Field):
         self.packet_cls = packet_cls
         self.packet = packet_cls()
         self.bit_len = self.packet_cls.bit_len
+        self.c_type = self.packet._Packet__c_struct
 
     def create_field_c_tuple(self, name):
         return (name, self.packet_cls._Packet__c_struct)
@@ -152,7 +154,7 @@ class ArrayField(Field, list):
     """
     def __init__(self, array_cls, array_size, default_val=None):
         super(ArrayField, self).__init__(default_val)
-        self.array_cls = array_cls()
+        self.array_cls = array_cls
         self.array_size = array_size
         self.c_type = (self.array_cls.c_type * self.array_size)
         self.bit_len = self.array_cls.bit_len * self.array_size
