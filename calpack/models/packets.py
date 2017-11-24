@@ -166,7 +166,7 @@ class Packet(object):
     def byte_size(self):
         """The byte size (assuming 8 bits to a byte) of the packet."""
         return int(ceil(self.bit_len / 8))
-    
+
     def to_bytes(self):
         """
         Converts the packet into a bytes string
