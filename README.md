@@ -11,7 +11,7 @@ This python package is everything you need to transmorgrify your packets:
 
 This package is intended to make creating and/or parsing packets on the fly quick and easy.  This is a wrapper around 
 the [`ctypes` module](https://docs.python.org/dev/library/ctypes.html) built-in to python. This package is designed 
-with influence from Django's modeling and will look familar to those that have used it. 
+with influence from Django's modeling and will look familiar to those that have used it.
 
 ## Why `CalPack`?
 
@@ -61,7 +61,7 @@ Creating custom packets is as easy as defining the fields:
 
 ## Upcoming Features:
 
-The following list is a set of major features that is planned to be worked on.  For a more exhautive list, view the 
+The following list is a set of major features that is planned to be worked on.  For a more exhaustive list, view the
 issues page, or if you have ZenHub installed, view our current board. 
 
 - [x] Ability to create a field with multiple words (i.e. a Data Array Field)
@@ -74,4 +74,4 @@ issues page, or if you have ZenHub installed, view our current board.
 
 ## Python 2 and 3
 Currently this module is designed to work for both Python 2.7+ and 3.3+, however, with the term of life for Python 2 in the 
-near future, further develpment of this package will eventually port entirely over to Python 3.  
+near future, further development of this package will eventually port entirely over to Python 3.

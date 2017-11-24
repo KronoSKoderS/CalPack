@@ -43,7 +43,7 @@ class Field(object):
         """
         py_to_c - A function used to convert a python object into a valid ctypes assignable object.  As a default 
         this function simply returns :code:`val`.  It's up to the other :code:`Field`'s to define this if further 
-        formating is reuqired in order to set the internal structure of the packet.  
+        formatting is required in order to set the internal structure of the packet.
 
         :param val: the value the user is attempting to set the packet field to.  This can be any python object.
         """
@@ -51,9 +51,9 @@ class Field(object):
 
     def c_to_py(self, c_field):
         """
-        c_to_py - A function used to convert the cytpes object into a python object.  As a default this function
+        c_to_py - A function used to convert the ctypes object into a python object.  As a default this function
         simply returns :code:`c_field` directly from the ctypes.Structure object.  It's up to the other :code:`Field`'s
-        to define this if further formating is required in order to turn the cyptes value into something user friendly.
+        to define this if further formatting is required in order to turn the ctypes value into something user friendly.
 
         :param c_field: a ctypes object from the packet's internal :code:`ctypes.Structure` object
         """
@@ -63,7 +63,7 @@ class Field(object):
         """
         create_field_c_tuple - A function used to create the required an field in the :code:`ctypes.Structure._fields_` 
         tuple.  This must return a tuple that is acceptable for one of the items in the :code:`_fields_` list of the
-        :code:`cytpes.Structure`.  
+        :code:`ctypes.Structure`.
 
         The first value in the tuple MUST be :code:`self.field_name` as this is used to access the internal c 
         structure.  
@@ -73,7 +73,7 @@ class Field(object):
 
 class IntField(Field):
     """
-    An Integer field.  This field can be configured to be signed or unsinged.  It's bit length can also be set, 
+    An Integer field.  This field can be configured to be signed or unsigned.  It's bit length can also be set,
     however the max bit length for this field is 64.  
 
     :param int bit_len: the length in bits of the integer.  Max value of 64. (default 16)
@@ -84,7 +84,7 @@ class IntField(Field):
 
     signed = typed_property('signed', bool, False)
 
-    # TODO: Implement endianess processing
+    # TODO: Implement endianness processing
     little_endian = typed_property('little_endian', bool)
 
     def __init__(self, bit_len=16, signed=False, default_val=0, little_endian=False):
@@ -105,7 +105,7 @@ class IntField(Field):
 
     def py_to_c(self, val):
         if not self.signed and val < 0:
-            raise TypeError("Signed valued cannot be set for an unsiged IntField!")
+            raise TypeError("Signed valued cannot be set for an unsigned IntField!")
         return val
 
     def create_field_c_tuple(self, name):
