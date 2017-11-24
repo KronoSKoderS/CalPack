@@ -1,3 +1,7 @@
+"""
+a set of utility functions for use within the models module.  
+"""
+
 _NO_TYPE = object()
 
 

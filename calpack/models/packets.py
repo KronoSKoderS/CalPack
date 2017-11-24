@@ -1,13 +1,15 @@
-import sys
-import ctypes
-import copy
-
+"""
+A collection of classes and function for creating custom :code:`Packet`s.
+"""
 from collections import OrderedDict
 from math import ceil
 
 from calpack import PY2
 from calpack.models.utils import typed_property
 from calpack.models.fields import Field
+
+import ctypes
+
 
 __all__ = ['Packet']
 
@@ -16,7 +18,7 @@ __all__ = ['Packet']
 #   and didn't want to rely on the third-party installation just for this package.  I highly recommend
 #   looking at them for Python 2/3 compatible coding:  https://github.com/benjaminp/six
 #
-# WARNING: When I finally decide to migrate away from Python 2 this will be removed.  
+# WARNING: When I finally decide to migrate away from Python 2 this will be removed.
 def add_metaclass(metaclass):
     """Class decorator for creating a class with a metaclass."""
     def wrapper(cls):
@@ -61,11 +63,14 @@ class _MetaPacket(type):
         
         order = []
         fields_tuple = []
-        fields_dict = {}
 
         num_bits_used = 0
 
-        fields = [(field_name, clsdict.get(field_name)) for field_name, obj in clsdict.items() if isinstance(obj, Field)]
+        fields = [
+            (field_name, clsdict.get(field_name))
+            for field_name, obj in clsdict.items()
+            if isinstance(obj, Field)
+        ]
 
         if PY2:
             fields.sort(lambda x, y: cmp(x[1].creation_counter, y[1].creation_counter))
@@ -76,7 +81,7 @@ class _MetaPacket(type):
 
             obj.field_name = name
 
-            field_tuple = obj.create_field_c_tuple(name)
+            field_tuple = obj.create_field_c_tuple()
             num_bits_used += obj.bit_len
 
             fields_tuple.append(field_tuple)
@@ -121,9 +126,10 @@ class Packet(object):
         MUST have the same :code:`_fields_` as the Packet would normally have in order for it to work properly.
     """
     word_size = typed_property('word_size', int, 16)
-    fields_order = None
+    fields_order = []
+    bit_len = 0
 
-    __c_struct = None
+    __c_struct = ctypes.Structure
 
     def __init__(self, c_pkt=None, **kwargs):
         # create an internal c structure instance for us to interface with.
@@ -132,14 +138,15 @@ class Packet(object):
             self.__c_pkt = self.__c_struct()
 
         # This allows for pre-definition of a field value after packet definition.  We only do this
-        #   if the packet isn't from another packet instantiation (i.e. c_pkt was already defined).  
+        #   if the packet isn't from another packet instantiation (i.e. c_pkt was already defined).
         if c_pkt is None:
             for name in self.fields_order:
                 d_val = getattr(self.__class__.__dict__[name], 'default_val', None)
                 if d_val is not None:
                     setattr(self, name, d_val)
 
-        # This allows for pre-definition of a field value at instantiation.  Note this DOES overwrite any values passed in from c_pkt
+        # This allows for pre-definition of a field value at instantiation.  Note this DOES overwrite any values
+        #   passed in from c_pkt
         for key, val in kwargs.items():
             # Only set the keyword args associated with fields.  If it isn't found, then we'll process like normal.
             if key in self.fields_order:
@@ -190,7 +197,13 @@ class Packet(object):
 
         return self.to_bytes() == other.to_bytes()
 
-    def _set_c_field(self, field_name, val):
+    def set_c_field(self, field_name, val):
+        """
+        sets the value of the internal c structure.
+
+        :param str field_name: the name of the field to set
+        :param val: a cytpes compatible value to set the field to
+        """
         try:
             setattr(self.__c_pkt, field_name, val)
 
@@ -199,5 +212,10 @@ class Packet(object):
         except AttributeError:
             raise AttributeError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
 
-    def _get_c_field(self, field_name):
+    def get_c_field(self, field_name):
+        """
+        gets the value of the field value of the internal c structure.  
+        :param str field_name: the name of the field to get
+        :returns: the field value
+        """
         return getattr(self.__c_pkt, field_name)
