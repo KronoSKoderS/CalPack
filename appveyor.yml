@@ -20,6 +20,7 @@ environment:
     - PYTHON: "C:\\Python36-x64"
 
 install:
+  - "%PYTHON%\\python.exe -m pip install coverage"
   - "%PYTHON%\\python.exe -m pip install coveralls"
   - "%PYTHON%\\python.exe -m pip install codacy-coverage"
 
