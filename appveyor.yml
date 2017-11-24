@@ -34,9 +34,4 @@ test_script:
   # Note that you must use the environment variable %PYTHON% to refer to
   # the interpreter you're using - Appveyor does not do anything special
   # to put the Python version you want to use on PATH.
-  - "%PYTHON%\\python.exe -m coverage run --source=calpack setup.py test"
-  - "%PYTHON%\\python.exe -m coverage xml"
-
-after_test:
-  - "%PYTHON%\\Scripts\\coveralls"
-  - "%PYTHON%\\Scripts\\python-codacy-coverage -c $APPVEYOR_REPO_COMMIT -d $APPVEYOR_BUILD_FOLDER -r coverage.xml"
+  - "%PYTHON%\\python.exe setup.py test"
