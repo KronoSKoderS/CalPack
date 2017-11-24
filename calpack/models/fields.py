@@ -20,7 +20,7 @@ class Field(object):
     field_name = None
 
     creation_counter = 0
-    
+
     bit_len = typed_property('bit_len', int, 16)
 
     def __init__(self, default_val=None):

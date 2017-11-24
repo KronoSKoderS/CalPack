@@ -60,7 +60,7 @@ class _MetaPacket(type):
     """
     def __new__(mcs, clsname, bases, clsdict):
         class_dict = dict(clsdict)
-        
+
         order = []
         fields_tuple = []
 
@@ -214,7 +214,7 @@ class Packet(object):
 
     def get_c_field(self, field_name):
         """
-        gets the value of the field value of the internal c structure.  
+        gets the value of the field value of the internal c structure.
         :param str field_name: the name of the field to get
         :returns: the field value
         """
