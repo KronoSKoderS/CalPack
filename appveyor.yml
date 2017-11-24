@@ -38,5 +38,5 @@ test_script:
   - "%PYTHON%\\python.exe -m coverage xml"
 
 after_test:
-  - "coveralls"
+  - "%PYTHON%\\Scripts\\coveralls"
   - "python-codacy-coverage -c $APPVEYOR_REPO_COMMIT -d $APPVEYOR_BUILD_FOLDER -r coverage.xml"
