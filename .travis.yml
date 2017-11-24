@@ -1,4 +1,5 @@
 language: python
+
 python:
 - 2.7
 - 3.3
@@ -8,10 +9,12 @@ python:
 - pypy
 - pypy3
 - nightly
+
 install:
 - pip install -r requirements.txt
 - pip install coveralls
 - pip install codacy-coverage
+
 script:
 - coverage run --source=calpack setup.py test
 - coverage xml

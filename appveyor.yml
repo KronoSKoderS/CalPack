@@ -20,6 +20,7 @@ environment:
     - PYTHON: "C:\\Python36-x64"
 
 install:
+  - "%PYTHON%\\python.exe -m pip install coveralls"
   - "%PYTHON%\\python.exe -m pip install codacy-coverage"
 
 build: off
@@ -32,7 +33,9 @@ test_script:
   # Note that you must use the environment variable %PYTHON% to refer to
   # the interpreter you're using - Appveyor does not do anything special
   # to put the Python version you want to use on PATH.
-  - "%PYTHON%\\python.exe setup.py test"
+  - "coverage run --source=calpack setup.py test"
+  - "coverage xml"
 
 after_test:
-  python-codacy-coverage -c $APPVEYOR_REPO_COMMIT -d $APPVEYOR_BUILD_FOLDER -r coverage.xml
+  - "coveralls"
+  - "python-codacy-coverage -c $APPVEYOR_REPO_COMMIT -d $APPVEYOR_BUILD_FOLDER -r coverage.xml"
