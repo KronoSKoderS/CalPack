@@ -1,37 +1,77 @@
-## Welcome to GitHub Pages
+[![Build Status](https://travis-ci.org/KronoSKoderS/CalPack.svg?branch=prod)](https://travis-ci.org/KronoSKoderS/CalPack) 
+[![Coverage Status](https://coveralls.io/repos/github/KronoSKoderS/CalPack/badge.svg?branch=prod)](https://coveralls.io/github/KronoSKoderS/CalPack?branch=dev) 
+[![Documentation Status](https://readthedocs.org/projects/concorde/badge/?version=latest)](http://concorde.readthedocs.io/en/latest/?badge=latest)
 
-You can use the [editor on GitHub](https://github.com/KronoSKoderS/Concorde/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+# CalPack
+Packets in Python Simplified.  
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+This python package is everything you need to transmorgrify your packets:  
 
-### Markdown
+[![Calvin and Hobbes Strip](http://assets.amuniversal.com/8d40c700deba01317193005056a9545d)](http://www.gocomics.com/calvinandhobbes/1987/03/23)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+This package is intended to make creating and/or parsing packets on the fly quick and easy.  This is a wrapper around 
+the [`ctypes` module](https://docs.python.org/dev/library/ctypes.html) built-in to python. This package is designed 
+with influence from Django's modeling and will look familar to those that have used it. 
 
-```markdown
-Syntax highlighted code block
+## Why `CalPack`?
 
-# Header 1
-## Header 2
-### Header 3
+Because `Transmorgrifier` takes a REALLY long time to type out.  
 
-- Bulleted
-- List
+## Installation
 
-1. Numbered
-2. List
+This package is maintained in [GitHub](https://github.com/KronoSKoderS/CalPack) and packaged for deployment on [PyPi](https://pypi.python.org/pypi/calpack).  
 
-**Bold** and _Italic_ and `Code` text
+Simply using `pip install calpack` will get this installed.  
+ 
+## Examples
+### Creating Custom Packets
 
-[Link](url) and ![Image](src)
-```
+Creating custom packets is as easy as defining the fields:
+    
+    from calpack import models
+    
+    
+    class my_pkt(models.Packet):
+        field1 = models.IntField()
+        field2 = models.IntField(signed=True)
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
-### Jekyll Themes
+    pkt = my_pkt()
+    pkt.field1 = 12
+    pkt.field2 = -12
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/KronoSKoderS/Concorde/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+    # OR directly set the field values:
+    other_pkt = my_pkt(
+        field1 = 12,
+        field2 = -12
+    )
 
-### Support or Contact
+### Converting to bytes
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+    b_str = pkt.to_bytes()
+    print(b_str)
+
+### Parsing a byte string into a packet
+
+    pkt2 = my_pkt.from_bytes(b_str)
+
+    print(pkt2.field1)  # 12
+    print(pkt2.field2)  # -12
+
+
+## Upcoming Features:
+
+The following list is a set of major features that is planned to be worked on.  For a more exhautive list, view the 
+issues page, or if you have ZenHub installed, view our current board. 
+
+- [x] Ability to create a field with multiple words (i.e. a Data Array Field)
+- [x] Set the specific bitfield length for the `IntField` (in progress)
+- [x] Ability to compare packets for equality
+- [x] Ability to set an already defined packet as a field for another packet
+- [ ] Builtin packet for commonly used packets, such as TCP/IP, UDP, etc,.
+- [ ] Adding other Field types (Float, String, etc,.)
+
+
+## Python 2 and 3
+Currently this module is designed to work for both Python 2.7+ and 3.3+, however, with the term of life for Python 2 in the 
+near future, further develpment of this package will eventually port entirely over to Python 3.  
