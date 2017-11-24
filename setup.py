@@ -39,7 +39,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
 
-        'Topic :: Utilities', 
+        'Topic :: Utilities',
     ],
     test_suite="tests.get_tests",
     packages=find_packages(exclude=['tests'])

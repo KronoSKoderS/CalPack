@@ -36,7 +36,7 @@ class Field(object):
         if isinstance(instance, Packet):
             return self.c_to_py(instance.get_c_field(self.field_name))
         return self
-        
+
     def __set__(self, instance, val):
         from calpack.models import Packet
         if isinstance(instance, Packet):

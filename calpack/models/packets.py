@@ -93,7 +93,7 @@ class _MetaPacket(type):
         # Here we create the internal structure
         class Cstruct(ctypes.Structure):
             pass
-        
+
         Cstruct._fields_ = fields_tuple
         class_dict['_Packet__c_struct'] = Cstruct
 
