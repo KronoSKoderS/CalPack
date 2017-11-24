@@ -11,10 +11,13 @@ python:
 install:
 - pip install -r requirements.txt
 - pip install coveralls
+- pip install codacy-coverage
 script:
 - coverage run --source=calpack setup.py test
+
 after_success:
 - coveralls
+- python-codacy-coverage -r coverage.xml
 
 notifications:
   slack:

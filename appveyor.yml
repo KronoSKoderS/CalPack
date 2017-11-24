@@ -30,3 +30,6 @@ test_script:
   # the interpreter you're using - Appveyor does not do anything special
   # to put the Python version you want to use on PATH.
   - "%PYTHON%\\python.exe setup.py test"
+
+after_test:
+  python-codacy-coverage -c $APPVEYOR_REPO_COMMIT -d $APPVEYOR_BUILD_FOLDER -r coverage.xml
