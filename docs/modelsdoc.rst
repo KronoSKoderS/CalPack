@@ -20,6 +20,9 @@ they are expected to be seen::
         data1 = models.IntField()
         data2 = models.IntField()
 
+.. Note:: The order in which the fields are set is also the order in which the fields are set within the internal c 
+structure.
+
 Once a packet is defined, creating an instance of that packet allows you to manipulate it::
 
     my_pkt = Header()
