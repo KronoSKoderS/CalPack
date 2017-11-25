@@ -17,7 +17,7 @@ class Test_PacketField(unittest.TestCase):
 
          p = adv_pkt()
 
-         # Verify abilily to access and set encap packets fields
+         # Verify ability to access and set encap packets fields
          p.field2.field1 = 100
 
          self.assertEquals(p.field2.field1, 100)

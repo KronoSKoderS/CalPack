@@ -1,5 +1,3 @@
-import sys
-
 from calpack.models.fields import *
 from calpack.models.fields import __all__ as fields_all
 from calpack.models.packets import *

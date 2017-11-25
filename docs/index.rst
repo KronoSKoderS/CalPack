@@ -6,7 +6,7 @@
 CalPack: Packets in Python Simplified
 =====================================
 CalPack is the only package you'll need to create, generate and parse packets in an easy to use way.  This module wraps
-the :code:`cytpes` module into an easier to use interface and enabling more features specific to working with Packets.  
+the :code:`ctypes` module into an easier to use interface and enabling more features specific to working with Packets.
 
 
 Examples
@@ -35,7 +35,7 @@ Since :code:`calpak` is a wrapper to :code:`ctypes`, the above class is equivale
             ('checksum', ctypes.c_uint64, 16),
         ]
 
-Interactiong with the packet and it's field is also simple::
+Interacting with the packet and it's field is also simple::
 
     p = UDP()
     p.source_port = 80
@@ -54,6 +54,7 @@ Index
 
 
    modelsdoc
+   devdoc
 
 
 Indices and tables
