@@ -1,0 +1,13 @@
+output-format: json
+
+strictness: medium
+test-warnings: true
+doc-warnings: false
+
+ignore-paths:
+  - docs
+  - tests
+
+pep8:
+  options:
+    max-line-length: 120

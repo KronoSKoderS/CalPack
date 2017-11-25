@@ -1,4 +1,5 @@
 language: python
+
 python:
 - 2.7
 - 3.3
@@ -8,13 +9,19 @@ python:
 - pypy
 - pypy3
 - nightly
+
 install:
 - pip install -r requirements.txt
 - pip install coveralls
+- pip install codacy-coverage
+
 script:
 - coverage run --source=calpack setup.py test
+- coverage xml
+
 after_success:
 - coveralls
+- python-codacy-coverage -r coverage.xml
 
 notifications:
   slack:
@@ -41,10 +48,4 @@ deploy:
     on:
       repo: KronoSKoderS/CalPack
       branch: tags
-
-  - provider: pages
-    skip_cleanup: true
-    github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
-    on:
-      branch: master
 

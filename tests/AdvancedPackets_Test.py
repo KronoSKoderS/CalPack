@@ -71,4 +71,13 @@ class Test_AdvancedPacket(unittest.TestCase):
             self.assertEqual(pkt.points_two.points[i].y, 50)
             self.assertEqual(pkt._Packet__c_pkt.points_two.points[i].y, 50)
 
+    def test_verify_AttributeError_invalid_field_name_set_c_field(self):
+        class Point(models.Packet):
+            x = models.IntField()
+            y = models.IntField()
+
+        p = Point()
+        with self.assertRaises(AttributeError):
+            p.set_c_field('bad_name', 100)
+
 
