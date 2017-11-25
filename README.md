@@ -21,7 +21,7 @@ Because `Transmorgrifier` takes a REALLY long time to type out.
 
 This package is maintained in [GitHub](https://github.com/KronoSKoderS/CalPack) and packaged for deployment on [PyPi](https://pypi.python.org/pypi/calpack).  
 
-Simply using `pip install calpack` will get this installed.  
+Simply using `pip install calpack` will get this installed.
  
 ## Examples
 ### Creating Custom Packets
@@ -30,11 +30,9 @@ Creating custom packets is as easy as defining the fields:
     
     from calpack import models
     
-    
     class my_pkt(models.Packet):
         field1 = models.IntField()
         field2 = models.IntField(signed=True)
-
 
     pkt = my_pkt()
     pkt.field1 = 12
@@ -58,9 +56,11 @@ Creating custom packets is as easy as defining the fields:
     print(pkt2.field1)  # 12
     print(pkt2.field2)  # -12
 
+## SHOW ME THE DOCS!
+Documentation is host on [read the docs](https://readthedocs.org/projects/concorde/)
+
 
 ## Upcoming Features:
-
 The following list is a set of major features that is planned to be worked on.  For a more exhaustive list, view the
 issues page, or if you have ZenHub installed, view our current board. 
 
