@@ -204,13 +204,11 @@ class Packet(object):
         :param str field_name: the name of the field to set
         :param val: a cytpes compatible value to set the field to
         """
-        try:
-            setattr(self.__c_pkt, field_name, val)
-
-        # We should never encounter this situation unless the user has intentionally messed with the internal
-        #   structure of the packet.
-        except AttributeError:
+        if field_name not in self.fields_order:
             raise AttributeError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
+        
+        setattr(self.__c_pkt, field_name, val)
+            
 
     def get_c_field(self, field_name):
         """
