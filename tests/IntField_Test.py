@@ -116,7 +116,7 @@ class Test_IntField(unittest.TestCase):
 
         b_str = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_pkt))
 
-        self.assertEquals(b_str, pkt.to_bytes())
+        self.assertEqual(b_str, pkt.to_bytes())
 
     def test_IntField_raises_ValueError_with_invalid_bit_len(self):
         with self.assertRaises(ValueError):
