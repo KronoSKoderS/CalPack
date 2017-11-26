@@ -21,7 +21,7 @@ class Field(object):
 
     creation_counter = 0
 
-    bit_len = typed_property('bit_len', int, 16)
+    bit_len = typed_property('bit_len', int, 0)
 
     def __init__(self, default_val=None):
         super(Field, self).__init__()
@@ -183,6 +183,10 @@ class FlagField(Field):
     :param bool default_val: the default value of the field (default False)
     """
     c_type = ctypes.c_uint8
+
+    def __init__(self, default_val=False):
+        super(FlagField, self).__init__(default_val)
+        self.bit_len = 1
 
     def c_to_py(self, c_field):
         return bool(c_field)
