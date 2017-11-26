@@ -1,10 +1,5 @@
-from random import randint
 from calpack import models
-
-from tests import PY2, PY3
-
 import unittest
-import struct
 
 
 class Test_AdvancedPacket(unittest.TestCase):
@@ -32,7 +27,6 @@ class Test_AdvancedPacket(unittest.TestCase):
             self.assertEqual(pkt.points[i].y, 50)
             self.assertEqual(pkt._Packet__c_pkt.points[i].y, 50)
 
-
     def test_advpkt_inception_enc_pkt(self):
         class Point(models.Packet):
             x = models.IntField()
@@ -47,7 +41,6 @@ class Test_AdvancedPacket(unittest.TestCase):
         class TwoTenPoints(models.Packet):
             points_one = models.PacketField(TenPoints)
             points_two = models.PacketField(TenPoints)
-
 
         pkt = TwoTenPoints()
 
@@ -79,5 +72,3 @@ class Test_AdvancedPacket(unittest.TestCase):
         p = Point()
         with self.assertRaises(AttributeError):
             p.set_c_field('bad_name', 100)
-
-

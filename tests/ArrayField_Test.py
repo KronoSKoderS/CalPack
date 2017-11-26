@@ -1,9 +1,4 @@
 import unittest
-import struct
-
-from random import randint
-
-from tests import PY2, PY3
 from calpack import models
 
 
@@ -25,12 +20,11 @@ class Test_ArrayField(unittest.TestCase):
         class multi_int_field_packet(models.Packet):
             list_int_field = models.ArrayField(models.IntField(), 10)
 
-        expected_vals = list(range(10))
+        # expected_vals = list(range(10))
         p = multi_int_field_packet()
 
         with self.assertRaises(TypeError):
             p.list_int_field = 100
-
 
     def test_arrayfield_access_individual_members(self):
         class multi_int_field_packet(models.Packet):
@@ -55,7 +49,7 @@ class Test_ArrayField(unittest.TestCase):
 
         p1 = multi_int_field_packet()
         p1.list_int_field = expected_vals
-        
+
         p2 = multi_int_field_packet2()
         p2.list_int_field = list(reversed(expected_vals))
 
@@ -64,6 +58,7 @@ class Test_ArrayField(unittest.TestCase):
         p2.list_int_field = expected_vals
 
         self.assertEqual(p1.list_int_field, p2.list_int_field)
+
 
 if __name__ == '__main__':
     unittest.main()
