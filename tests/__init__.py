@@ -16,6 +16,7 @@ def full_suite():
     from tests.PacketField_Test import Test_PacketField
     from tests.Utilities_Test import Test_Utilities
     from tests.AdvancedPackets_Test import Test_AdvancedPacket
+    from tests.FlagField_Test import Test_FlagField
 
     return unittest.TestSuite([
         unittest.TestLoader().loadTestsFromTestCase(Test_BasicPacket),
@@ -24,6 +25,7 @@ def full_suite():
         unittest.TestLoader().loadTestsFromTestCase(Test_PacketField),
         unittest.TestLoader().loadTestsFromTestCase(Test_Utilities),
         unittest.TestLoader().loadTestsFromTestCase(Test_AdvancedPacket),
+        unittest.TestLoader().loadTestsFromTestCase(Test_FlagField),
     ])
 
 if __name__ == "__main__":

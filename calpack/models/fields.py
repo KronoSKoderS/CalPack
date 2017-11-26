@@ -7,7 +7,7 @@ import ctypes
 
 from calpack.models.utils import typed_property
 
-__all__ = ['Field', 'IntField', 'ArrayField', 'PacketField']
+__all__ = ['Field', 'IntField', 'ArrayField', 'PacketField', 'FlagField']
 
 class Field(object):
     """
@@ -148,7 +148,7 @@ class PacketField(Field):
         return val.c_pkt
 
 
-class ArrayField(Field, list):
+class ArrayField(Field):
     """
     A custom field for handling an array of fields
 
@@ -174,3 +174,24 @@ class ArrayField(Field, list):
 
     def create_field_c_tuple(self):
         return (self.field_name, self.array_cls.c_type * self.array_size)
+
+
+class FlagField(Field):
+    """
+    A custom field for handling single bit 'flags'.
+
+    :param bool default_val: the default value of the field (default False)
+    """
+    c_type = ctypes.c_uint8
+
+    def c_to_py(self, c_field):
+        return bool(c_field)
+
+    def py_to_c(self, val):
+        if not isinstance(val, FlagField) and not isinstance(val, bool):
+            raise TypeError("Must be of type `FlagField` or `bool`")
+
+        return int(val)
+
+    def create_field_c_tuple(self):
+        return (self.field_name, self.c_type, 1)
