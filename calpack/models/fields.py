@@ -7,7 +7,7 @@ import ctypes
 
 from calpack.models.utils import typed_property
 
-__all__ = ['Field', 'IntField', 'ArrayField', 'PacketField', 'FlagField']
+__all__ = ['Field', 'IntField', 'ArrayField', 'PacketField', 'FlagField', 'FloatField']
 
 class Field(object):
     """
@@ -199,3 +199,14 @@ class FlagField(Field):
 
     def create_field_c_tuple(self):
         return (self.field_name, self.c_type, 1)
+
+
+class FloatField(Field):
+    """
+    A custom field for handling floating point numbers.
+    """
+    c_type = ctypes.c_float
+
+    def __init__(self, default_val=0.0):
+        super(FloatField, self).__init__(default_val)
+        self.bit_len = ctypes.sizeof(self.c_type) * 4
