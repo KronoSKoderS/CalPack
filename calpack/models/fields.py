@@ -7,7 +7,10 @@ import ctypes
 
 from calpack.models.utils import typed_property
 
-__all__ = ['Field', 'IntField', 'ArrayField', 'PacketField']
+__all__ = [
+    'Field', 'IntField', 'ArrayField', 'PacketField', 'FlagField', 'FloatField', 'DoubleField', 'LongDoubleField',
+    'BoolField',
+]
 
 class Field(object):
     """
@@ -21,7 +24,7 @@ class Field(object):
 
     creation_counter = 0
 
-    bit_len = typed_property('bit_len', int, 16)
+    bit_len = typed_property('bit_len', int, 0)
 
     def __init__(self, default_val=None):
         super(Field, self).__init__()
@@ -148,7 +151,7 @@ class PacketField(Field):
         return val.c_pkt
 
 
-class ArrayField(Field, list):
+class ArrayField(Field):
     """
     A custom field for handling an array of fields
 
@@ -174,3 +177,72 @@ class ArrayField(Field, list):
 
     def create_field_c_tuple(self):
         return (self.field_name, self.array_cls.c_type * self.array_size)
+
+
+class FlagField(Field):
+    """
+    A custom field for handling single bit 'flags'.
+
+    :param bool default_val: the default value of the field (default False)
+    """
+    c_type = ctypes.c_uint8
+
+    def __init__(self, default_val=False):
+        super(FlagField, self).__init__(default_val)
+        self.bit_len = 1
+
+    def c_to_py(self, c_field):
+        return bool(c_field)
+
+    def py_to_c(self, val):
+        if not isinstance(val, FlagField) and not isinstance(val, bool):
+            raise TypeError("Must be of type `FlagField` or `bool`")
+
+        return int(val)
+
+    def create_field_c_tuple(self):
+        return (self.field_name, self.c_type, 1)
+
+
+class FloatField(Field):
+    """
+    A custom field for handling floating point numbers.
+    """
+    c_type = ctypes.c_float
+
+    def __init__(self, default_val=0.0):
+        super(FloatField, self).__init__(default_val)
+        self.bit_len = ctypes.sizeof(self.c_type) * 4
+
+
+class DoubleField(FloatField):
+    """
+    A custom field for handling double floating point numbers
+    """
+    c_type = ctypes.c_double
+
+
+class LongDoubleField(FloatField):
+    """
+    A custom field for handling long double floating point numbers
+    """
+    c_type = ctypes.c_longdouble
+
+
+class BoolField(Field):
+    """
+    A custom field for handling Boolean types
+    """
+    c_type = ctypes.c_bool
+
+    def __init__(self, default_val=False):
+        super(BoolField, self).__init__(default_val)
+
+        self.bit_len = ctypes.sizeof(self.c_type)
+
+
+    def py_to_c(self, val):
+        if not isinstance(val, bool) and not isinstance(val, BoolField):
+            raise TypeError("Must be of type `bool` or `BoolField`!")
+
+        return super(BoolField, self).py_to_c(val)

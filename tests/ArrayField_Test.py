@@ -60,5 +60,19 @@ class Test_ArrayField(unittest.TestCase):
         self.assertEqual(p1.list_int_field, p2.list_int_field)
 
 
+
+    def test_arrayfield_set_val_from_other_arrayfield(self):
+        class multi_int_field_packet(models.Packet):
+            list_int_field = models.ArrayField(models.IntField(), 10)
+
+        expected_vals = list(range(10))
+
+        p1 = multi_int_field_packet(list_int_field=expected_vals)
+
+        p2 = multi_int_field_packet()
+        p2.list_int_field = p1.list_int_field
+
+        self.assertEquals(p2.list_int_field, expected_vals)
+
 if __name__ == '__main__':
     unittest.main()
