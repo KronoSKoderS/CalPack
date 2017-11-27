@@ -7,7 +7,9 @@ import ctypes
 
 from calpack.models.utils import typed_property
 
-__all__ = ['Field', 'IntField', 'ArrayField', 'PacketField', 'FlagField', 'FloatField']
+__all__ = [
+    'Field', 'IntField', 'ArrayField', 'PacketField', 'FlagField', 'FloatField', 'DoubleField', 'LongDoubleField'
+]
 
 class Field(object):
     """
@@ -210,3 +212,17 @@ class FloatField(Field):
     def __init__(self, default_val=0.0):
         super(FloatField, self).__init__(default_val)
         self.bit_len = ctypes.sizeof(self.c_type) * 4
+
+
+class DoubleField(FloatField):
+    """
+    A custom field for handling double floating point numbers
+    """
+    c_type = ctypes.c_double
+
+
+class LongDoubleField(FloatField):
+    """
+    A custom field for handling long double floating point numbers
+    """
+    c_type = ctypes.c_longdouble
