@@ -31,6 +31,7 @@ Creating custom packets is as easy as defining the fields:
     from calpack import models
     
     class my_pkt(models.Packet):
+        # Note: `IntField` bit lengths are configurable!  (See docs for more details)
         field1 = models.IntField()
         field2 = models.IntField(signed=True)
 
