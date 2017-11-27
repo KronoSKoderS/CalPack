@@ -8,7 +8,8 @@ import ctypes
 from calpack.models.utils import typed_property
 
 __all__ = [
-    'Field', 'IntField', 'ArrayField', 'PacketField', 'FlagField', 'FloatField', 'DoubleField', 'LongDoubleField'
+    'Field', 'IntField', 'ArrayField', 'PacketField', 'FlagField', 'FloatField', 'DoubleField', 'LongDoubleField',
+    'BoolField',
 ]
 
 class Field(object):
@@ -226,3 +227,22 @@ class LongDoubleField(FloatField):
     A custom field for handling long double floating point numbers
     """
     c_type = ctypes.c_longdouble
+
+
+class BoolField(Field):
+    """
+    A custom field for handling Boolean types
+    """
+    c_type = ctypes.c_bool
+
+    def __init__(self, default_val=False):
+        super(BoolField, self).__init__(default_val)
+
+        self.bit_len = ctypes.sizeof(self.c_type)
+
+
+    def py_to_c(self, val):
+        if not isinstance(val, bool) and not isinstance(val, BoolField):
+            raise TypeError("Must be of type `bool` or `BoolField`!")
+
+        return super(BoolField, self).py_to_c(val)
