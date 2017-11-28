@@ -20,7 +20,6 @@ class Test_ArrayField(unittest.TestCase):
         class multi_int_field_packet(models.Packet):
             list_int_field = models.ArrayField(models.IntField(), 10)
 
-        # expected_vals = list(range(10))
         p = multi_int_field_packet()
 
         with self.assertRaises(TypeError):

@@ -35,7 +35,7 @@ class Test_BasicPacket(unittest.TestCase):
     def test_pkt_create_class_from_bytes_string(self):
         """
         This test verifies that a class can be created from a byte string and
-        hat the values are properly parsed.
+        that the values are properly parsed.
         """
 
         class two_int_field_packet(models.Packet):
