@@ -1,10 +1,5 @@
-from random import randint
 from calpack import models
-
-from tests import PY2, PY3
-
 import unittest
-import struct
 import ctypes
 
 
@@ -33,7 +28,6 @@ class Test_AdvancedPacket(unittest.TestCase):
             self.assertEqual(pkt.points[i].y, 50)
             self.assertEqual(pkt._Packet__c_pkt.points[i].y, 50)
 
-
     def test_advpkt_inception_enc_pkt(self):
         class Point(models.Packet):
             x = models.IntField()
@@ -48,7 +42,6 @@ class Test_AdvancedPacket(unittest.TestCase):
         class TwoTenPoints(models.Packet):
             points_one = models.PacketField(TenPoints)
             points_two = models.PacketField(TenPoints)
-
 
         pkt = TwoTenPoints()
 
@@ -147,4 +140,3 @@ class Test_AdvancedPacket(unittest.TestCase):
         self.assertAlmostEqual(parsed_pkt.long_double_field, 123.456, places=5)
         self.assertEqual(parsed_pkt.flags_field, [True] * 16)
         self.assertEqual(parsed_pkt.bool_field, True)
-

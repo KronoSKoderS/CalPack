@@ -1,10 +1,5 @@
 import unittest
-import struct
 import ctypes
-
-from random import randint
-
-from tests import PY2, PY3
 from calpack import models
 
 
@@ -18,8 +13,9 @@ class Test_IntField(unittest.TestCase):
 
     def test_intfield_set_valid_values(self):
         """
-        This test verifies that setting an integer field of a packet is done correctly. This also verifies that the 
-        internal c structure is properly setup as well.
+        This test verifies that setting an integer field of a packet is done
+        correctly. This also verifies that the internal c structure is properly
+        setup as well.
         """
         p = self.two_int_field_packet()
 
@@ -37,15 +33,15 @@ class Test_IntField(unittest.TestCase):
 
     def test_intfield_raises_TypeError_when_setting_non_int_value(self):
         """
-        This test verifies that a "TypeError" is raised when setting a value other than
-        an integer for the IntField.  The following types are checked:
+        This test verifies that a "TypeError" is raised when setting a value
+        other than an integer for the IntField. The following types are checked
 
             * String
             * Float
             * list
         """
         p = self.two_int_field_packet()
-        
+
         with self.assertRaises(TypeError):
             p.int_field = ""
 
@@ -57,8 +53,8 @@ class Test_IntField(unittest.TestCase):
 
     def test_intfield_raises_TypeError_when_setting_signed_to_nonsigned(self):
         """
-        This test verifies that a "TypeError" is raised when setting a non-signed value to a
-        signed value.  
+        This test verifies that a "TypeError" is raised when setting a
+        non-signed value to a signed value.
         """
         p = self.two_int_field_packet()
 
@@ -67,14 +63,14 @@ class Test_IntField(unittest.TestCase):
 
     def test_intfield_set_valid_value_from_other_field(self):
         """
-        This test verifies that setting an integer field from another field is done properly
-        and doesn't change the field type.  
+        This test verifies that setting an integer field from another field is
+        done properly and doesn't change the field type.
         """
         p = self.two_int_field_packet()
         p2 = self.two_int_field_packet()
 
         v1 = 123
-        
+
         p.int_field = v1
 
         p2.int_field = p.int_field
@@ -84,8 +80,9 @@ class Test_IntField(unittest.TestCase):
 
     def test_intfield_with_variable_bit_length(self):
         """
-        This test verifies that setting an integer value of variable size is correctly exported to the to_bytes 
-        function.  This also tests the ability to set a value for the packet upon instantiation.  
+        This test verifies that setting an integer value of variable size is
+        correctly exported to the to_bytes function.  This also tests the
+        ability to set a value for the packet upon instantiation.
         """
         class int_packet_with_varied_sized_int_fields(models.Packet):
             int_field = models.IntField()
@@ -94,10 +91,10 @@ class Test_IntField(unittest.TestCase):
             int_field_12_bits = models.IntField(bit_len=12)
 
         pkt = int_packet_with_varied_sized_int_fields(
-            int_field = 0xbeef,
-            int_field_signed = 0xdead,
-            int_field_4_bits = 0xa,
-            int_field_12_bits = 0xbc
+            int_field=0xbeef,
+            int_field_signed=0xdead,
+            int_field_4_bits=0xa,
+            int_field_12_bits=0xbc
         )
 
         class c_pkt_struct(ctypes.Structure):
@@ -116,7 +113,7 @@ class Test_IntField(unittest.TestCase):
 
         b_str = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_pkt))
 
-        self.assertEquals(b_str, pkt.to_bytes())
+        self.assertEqual(b_str, pkt.to_bytes())
 
     def test_IntField_raises_ValueError_with_invalid_bit_len(self):
         with self.assertRaises(ValueError):

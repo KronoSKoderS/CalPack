@@ -1,9 +1,4 @@
 import unittest
-import struct
-
-from random import randint
-
-from tests import PY2, PY3
 from calpack import models
 
 
@@ -25,7 +20,6 @@ class Test_ArrayField(unittest.TestCase):
         class multi_int_field_packet(models.Packet):
             list_int_field = models.ArrayField(models.IntField(), 10)
 
-        expected_vals = list(range(10))
         p = multi_int_field_packet()
 
         with self.assertRaises(TypeError):
@@ -40,8 +34,8 @@ class Test_ArrayField(unittest.TestCase):
         p.list_int_field = expected_vals
 
         for i, val in enumerate(expected_vals):
-            self.assertEquals(p.list_int_field[i], val)
-            self.assertEquals(p._Packet__c_pkt.list_int_field[i], val)
+            self.assertEqual(p.list_int_field[i], val)
+            self.assertEqual(p._Packet__c_pkt.list_int_field[i], val)
 
     def test_arrayfield_compare_two_arrayfields(self):
         class multi_int_field_packet(models.Packet):
@@ -54,15 +48,16 @@ class Test_ArrayField(unittest.TestCase):
 
         p1 = multi_int_field_packet()
         p1.list_int_field = expected_vals
-        
+
         p2 = multi_int_field_packet2()
         p2.list_int_field = list(reversed(expected_vals))
 
-        self.assertNotEquals(p1.list_int_field, p2.list_int_field)
+        self.assertNotEqual(p1.list_int_field, p2.list_int_field)
 
         p2.list_int_field = expected_vals
 
-        self.assertEquals(p1.list_int_field, p2.list_int_field)
+        self.assertEqual(p1.list_int_field, p2.list_int_field)
+
 
 
     def test_arrayfield_set_val_from_other_arrayfield(self):
