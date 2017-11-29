@@ -87,8 +87,8 @@ class Test_IntField(unittest.TestCase):
         class int_packet_with_varied_sized_int_fields(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
-            int_field_4_bits = models.IntField(bit_len=4)
-            int_field_12_bits = models.IntField(bit_len=12)
+            int_field_4_bits = models.IntField16(bit_len=4)
+            int_field_12_bits = models.IntField16(bit_len=12)
 
         pkt = int_packet_with_varied_sized_int_fields(
             int_field=0xbeef,
@@ -99,8 +99,8 @@ class Test_IntField(unittest.TestCase):
 
         class c_pkt_struct(ctypes.Structure):
             _fields_ = (
-                ('int_field', ctypes.c_uint16),
-                ('int_field_signed', ctypes.c_int16),
+                ('int_field', ctypes.c_uint),
+                ('int_field_signed', ctypes.c_int),
                 ('int_field_4_bits', ctypes.c_uint16, 4),
                 ('int_field_12_bits', ctypes.c_uint16, 12),
             )

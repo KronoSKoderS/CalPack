@@ -64,8 +64,6 @@ class _MetaPacket(type):
         order = []
         fields_tuple = []
 
-        num_bits_used = 0
-
         fields = [
             (field_name, clsdict.get(field_name))
             for field_name, obj in clsdict.items()
@@ -82,7 +80,6 @@ class _MetaPacket(type):
             obj.field_name = name
 
             field_tuple = obj.create_field_c_tuple()
-            num_bits_used += obj.bit_len
 
             fields_tuple.append(field_tuple)
             class_dict[name] = obj
@@ -96,9 +93,6 @@ class _MetaPacket(type):
 
         Cstruct._fields_ = fields_tuple
         class_dict['_Packet__c_struct'] = Cstruct
-
-        # finally we store the number of words
-        class_dict['bit_len'] = num_bits_used
 
         return type.__new__(mcs, clsname, bases, class_dict)
 
@@ -170,17 +164,17 @@ class Packet(object):
     def to_bytes(self):
         """
         Converts the packet into a bytes string
-        
+
         :return: the packet as a byte string
         :rtype: bytes
         """
-        return ctypes.string_at(ctypes.addressof(self.__c_pkt), self.byte_size)
+        return ctypes.string_at(ctypes.addressof(self.__c_pkt), ctypes.sizeof(self.__c_struct))
 
     @classmethod
     def from_bytes(cls, buf):
         """
         Creates a Packet from a bytes string
-        
+
         :param bytes buf: the bytes buffer that will be used to create the packet
         :returns: an Instance of the Packet as parsed from the bytes string
         """
