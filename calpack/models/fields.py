@@ -235,7 +235,13 @@ class ArrayField(Field):
         super(ArrayField, self).__init__(default_val)
         self.array_cls = array_cls
         self.array_size = array_size
-        self.c_type = (self.array_cls.c_type * self.array_size)
+
+        array_cls_tuple = self.array_cls.create_field_c_tuple()
+        if len(array_cls_tuple) == 3:
+            raise TypeError(
+                "ArrayField does not support Fields with non-byte aligned field tuples!"
+            )
+        self.c_type = (array_cls_tuple[1] * self.array_size)
 
     def c_to_py(self, c_field):
         return c_field[:]
@@ -245,9 +251,6 @@ class ArrayField(Field):
             raise TypeError("Must be of type ArrayField or list")
 
         return self.c_type(*val)
-
-    def create_field_c_tuple(self):
-        return (self.field_name, self.array_cls.c_type * self.array_size)
 
 
 class FlagField(Field):
