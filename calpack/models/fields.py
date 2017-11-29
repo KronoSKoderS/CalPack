@@ -78,7 +78,7 @@ class Field(object):
 
     def create_field_c_tuple(self):
         """
-        create_field_c_tuple - A function used to create the required an field in the 
+        create_field_c_tuple - A function used to create the required an field in the
         :code:`ctypes.Structure._fields_` tuple.  This must return a tuple that is acceptable for
         one of the items in the :code:`_fields_` list of the :code:`ctypes.Structure`.
 
@@ -99,7 +99,7 @@ class IntField(Field):
     :param bool signed: whether to treat the int as an signed integer or unsigned integer (default
         unsigned)
     :param int default_val: the default value of the field (default 0)
-    :raises ValueError: if the :code:`bit_len` is less than or equal to 0 or greater than 
+    :raises ValueError: if the :code:`bit_len` is less than or equal to 0 or greater than
         :code:`ctypes.sizeof(ctypes.c_int) * 8`
     """
 

@@ -200,9 +200,9 @@ class Packet(object):
         """
         if field_name not in self.fields_order:
             raise AttributeError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
-        
+
         setattr(self.__c_pkt, field_name, val)
-            
+
 
     def get_c_field(self, field_name):
         """
