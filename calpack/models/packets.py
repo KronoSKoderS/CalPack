@@ -15,8 +15,8 @@ __all__ = ['Packet']
 
 
 # This was taken from the six.py source code.  Reason being that I only needed a small part of six
-#   and didn't want to rely on the third-party installation just for this package.  I highly recommend
-#   looking at them for Python 2/3 compatible coding:  https://github.com/benjaminp/six
+#   and didn't want to rely on the third-party installation just for this package.  I highly
+#   recommend looking at them for Python 2/3 compatible coding:  https://github.com/benjaminp/six
 #
 # WARNING: When I finally decide to migrate away from Python 2 this will be removed.
 def add_metaclass(metaclass):
@@ -39,7 +39,8 @@ class _MetaPacket(type):
     """
     _MetaPacket - A class used to generate the classes defined by the user into a usable class.
 
-    This class is the magic for Turning the :code:`Packet` class definitions into actual operating packets.
+    This class is the magic for Turning the :code:`Packet` class definitions into actual operating
+    packets.
 
     The process of how this all works is a little convoluted, however here is a basic overview:
 
@@ -104,8 +105,8 @@ class _MetaPacket(type):
 @add_metaclass(_MetaPacket)
 class Packet(object):
     """
-    A super class that custom packet classes MUST inherit from.  This class is NOT intended to be used directly, but
-    as a super class.
+    A super class that custom packet classes MUST inherit from.  This class is NOT intended to be
+    used directly, but as a super class.
 
     Example::
 
@@ -116,8 +117,9 @@ class Packet(object):
             data2 = models.IntField()
 
 
-    :param c_pkt: (Optional) a :code:`ctypes.Structure` object that will be used at the internal c structure.  This
-        MUST have the same :code:`_fields_` as the Packet would normally have in order for it to work properly.
+    :param c_pkt: (Optional) a :code:`ctypes.Structure` object that will be used at the internal c
+    structure.  This MUST have the same :code:`_fields_` as the Packet would normally have in order
+    for it to work properly.
     """
     word_size = typed_property('word_size', int, 16)
     fields_order = []
@@ -139,10 +141,11 @@ class Packet(object):
                 if d_val is not None:
                     setattr(self, name, d_val)
 
-        # This allows for pre-definition of a field value at instantiation.  Note this DOES overwrite any values
-        #   passed in from c_pkt
+        # This allows for pre-definition of a field value at instantiation.  Note this DOES 
+        #   overwrite any values passed in from c_pkt
         for key, val in kwargs.items():
-            # Only set the keyword args associated with fields.  If it isn't found, then we'll process like normal.
+            # Only set the keyword args associated with fields.  If it isn't found, then we'll
+            #   process like normal.
             if key in self.fields_order:
                 setattr(self, key, val)
 
@@ -150,16 +153,6 @@ class Packet(object):
     def c_pkt(self):
         """returns the internal c structure object being used"""
         return self.__c_pkt
-
-    @property
-    def num_words(self):
-        """The number of words in the packet"""
-        return ceil(self.bit_len / self.word_size)
-
-    @property
-    def byte_size(self):
-        """The byte size (assuming 8 bits to a byte) of the packet."""
-        return int(ceil(self.bit_len / 8))
 
     def to_bytes(self):
         """
