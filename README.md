@@ -1,5 +1,6 @@
-[![Build Status](https://travis-ci.org/KronoSKoderS/CalPack.svg?branch=prod)](https://travis-ci.org/KronoSKoderS/CalPack) 
-[![Coverage Status](https://coveralls.io/repos/github/KronoSKoderS/CalPack/badge.svg?branch=prod)](https://coveralls.io/github/KronoSKoderS/CalPack?branch=dev) 
+[![Build Status](https://travis-ci.org/KronoSKoderS/CalPack.svg?branch=prod)](https://travis-ci.org/KronoSKoderS/CalPack)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d9b9123821ad408aaf1bd09ba15bbe6c)](https://www.codacy.com/app/kronoskoders/CalPack?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=KronoSKoderS/CalPack&amp;utm_campaign=Badge_Grade)
+[![Coverage Status](https://coveralls.io/repos/github/KronoSKoderS/CalPack/badge.svg?branch=prod)](https://coveralls.io/github/KronoSKoderS/CalPack?branch=dev)
 [![Documentation Status](https://readthedocs.org/projects/concorde/badge/?version=latest)](http://concorde.readthedocs.io/en/latest/?badge=latest)
 
 # CalPack
@@ -70,7 +71,7 @@ issues page, or if you have ZenHub installed, view our current board.
 - [x] Ability to compare packets for equality
 - [x] Ability to set an already defined packet as a field for another packet
 - [ ] Builtin packet for commonly used packets, such as TCP/IP, UDP, etc,.
-- [ ] Adding other Field types (Float, String, etc,.)
+- [x] Adding other Field types (Float, String, etc,.)
 
 
 ## Python 2 and 3
