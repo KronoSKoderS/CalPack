@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dfdbaae52c7e42298e3e2d3387b86daa)](https://www.codacy.com/app/kronoskoders/CalPack?utm_source=github.com&utm_medium=referral&utm_content=KronoSKoderS/CalPack&utm_campaign=badger)
 [![Build Status](https://travis-ci.org/KronoSKoderS/CalPack.svg?branch=prod)](https://travis-ci.org/KronoSKoderS/CalPack) 
 [![Coverage Status](https://coveralls.io/repos/github/KronoSKoderS/CalPack/badge.svg?branch=prod)](https://coveralls.io/github/KronoSKoderS/CalPack?branch=dev) 
 [![Documentation Status](https://readthedocs.org/projects/concorde/badge/?version=latest)](http://concorde.readthedocs.io/en/latest/?badge=latest)
