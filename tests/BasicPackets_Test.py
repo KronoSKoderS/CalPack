@@ -1,18 +1,9 @@
 import unittest
-import struct
+import ctypes
 from calpack import models
 
 
 class Test_BasicPacket(unittest.TestCase):
-
-    def test_pkt_check_word_size(self):
-
-        class two_int_field_packet(models.Packet):
-            int_field = models.IntField()
-            int_field_signed = models.IntField(signed=True)
-
-        p = two_int_field_packet()
-        self.assertEqual(p.num_words, 2)
 
     def test_pkt_create_packet_object_with_defined_values(self):
         class two_int_field_packet(models.Packet):
@@ -42,15 +33,27 @@ class Test_BasicPacket(unittest.TestCase):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
 
-        v1 = 34
-        v2 = -12
-        vals = [v1, v2]
-        b_val = struct.pack('Hh', *vals)
+        class c_two_int_field_packet(ctypes.Structure):
+            _fields_ = (
+                ('int_field', ctypes.c_uint),
+                ('int_field_signed', ctypes.c_int)
+            )
 
-        p = two_int_field_packet.from_bytes(b_val)
+        val_1 = 34
+        val_2 = -12
 
-        self.assertEqual(p.int_field, vals[0])
-        self.assertEqual(p.int_field_signed, vals[1])
+        c_pkt = c_two_int_field_packet()
+        c_pkt.int_field = val_1
+        c_pkt.int_field_signed = val_2
+
+        b_val = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_two_int_field_packet))
+
+        pkt = two_int_field_packet.from_bytes(b_val)
+
+        self.assertEqual(pkt.int_field, val_1)
+        self.assertEqual(pkt._Packet__c_pkt.int_field, val_1)
+        self.assertEqual(pkt.int_field_signed, val_2)
+        self.assertEqual(pkt._Packet__c_pkt.int_field_signed, val_2)
 
     def test_pkt_compare_two_same_packets(self):
         class two_int_field_packet(models.Packet):
@@ -106,16 +109,26 @@ class Test_BasicPacket(unittest.TestCase):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
 
-        v1 = 54
-        v2 = -23
-        vals = [v1, v2]
-        b_val = struct.pack('Hh', *vals)
+        class c_two_int_field_packet(ctypes.Structure):
+            _fields_ = (
+                ('int_field', ctypes.c_uint),
+                ('int_field_signed', ctypes.c_int),
+            )
 
-        p = two_int_field_packet()
-        p.int_field = vals[0]
-        p.int_field_signed = vals[1]
+        val_1 = 54
+        val_2 = -23
 
-        pkt_bin = p.to_bytes()
+        c_pkt = c_two_int_field_packet()
+        c_pkt.int_field = val_1
+        c_pkt.int_field_signed = val_2
+
+        b_val = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_two_int_field_packet))
+
+        pkt = two_int_field_packet()
+        pkt.int_field = val_1
+        pkt.int_field_signed = val_2
+
+        pkt_bin = pkt.to_bytes()
 
         self.assertEqual(pkt_bin, b_val)
 
@@ -124,13 +137,12 @@ class Test_BasicPacket(unittest.TestCase):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
 
-        v1 = 96
-        v2 = -3
-        vals = [v1, v2]
+        val_1 = 96
+        val_2 = -3
 
         p = two_int_field_packet()
-        p.int_field = vals[0]
-        p.int_field_signed = vals[1]
+        p.int_field = val_1
+        p.int_field_signed = val_2
 
         p2 = two_int_field_packet.from_bytes(p.to_bytes())
 
