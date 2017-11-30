@@ -228,7 +228,7 @@ class ArrayField(Field):
     A custom field for handling an array of fields
 
     :param array_cls: a :code:`calpack.models.Field` subclass **object** that represent the Field
-    the array will be filled with.
+        the array will be filled with.
     :param int array_size: the length of the array.
     """
     def __init__(self, array_cls, array_size, default_val=None):
