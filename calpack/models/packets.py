@@ -1,14 +1,13 @@
 """
 A collection of classes and function for creating custom :code:`Packet`s.
 """
+import ctypes
+
 from collections import OrderedDict
-from math import ceil
 
 from calpack import PY2
 from calpack.models.utils import typed_property
 from calpack.models.fields import Field
-
-import ctypes
 
 
 __all__ = ['Packet']
@@ -141,7 +140,7 @@ class Packet(object):
                 if d_val is not None:
                     setattr(self, name, d_val)
 
-        # This allows for pre-definition of a field value at instantiation.  Note this DOES 
+        # This allows for pre-definition of a field value at instantiation.  Note this DOES
         #   overwrite any values passed in from c_pkt
         for key, val in kwargs.items():
             # Only set the keyword args associated with fields.  If it isn't found, then we'll
