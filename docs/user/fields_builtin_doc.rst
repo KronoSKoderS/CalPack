@@ -3,35 +3,119 @@ Packet Fields
 :code:`calpack` comes with some built-in :code:`Field` classes that can be used right away.
 
 .. todo:: Update fields with newly created fields
+.. todo:: Talk about the `defaul_val` param for all fields
 
 :code:`IntField`
 ----------------
-The :code:`IntField` is used to represent an integer.  In the backend, this field uses the :code:`ctypes.c_int64` or 
-:code:`ctypes.c_uint64` depending on whether the field is configured as signed or not.  This is done by passing the 
+The :code:`IntField` is used to represent an integer.  In the backend, this field uses the :code:`ctypes.c_int` or 
+:code:`ctypes.c_uint` depending on whether the field is configured as signed or not.  This is done by passing the 
 :code:`signed` parameter to the :code:`IntField`::
 
     int_field = models.IntField(signed=True)
 
-.. Note:: :code:`IntField` is unsigned as a default. 
+.. Note:: :code:`IntField` is unsigned as a default.
 .. Warning:: If a signed value is set to an unsigned value (e.g any value less than 0) a :code:`TypeError` will be raised.
 .. Warning:: although the example above defines a field outside of a Packet, this **cannot** be done in practice as each field
-    within the packet **must** be a new instance of a Field.  
+    within the packet **must** be a new instance of a Field.
+
+There are also four other :code:`IntField` builtins that can be used to define a specific bit size:
+
+    * :code:`IntField8`
+    * :code:`IntField16`
+    * :code:`IntField32`
+    * :code:`IntField64`
 
 If a specific bit length is desired, passing the :code:`bit_len` parameter to the desired length::
 
     int_field = models.IntField(bit_len=8)
 
-.. Note:: the default value for :code:`bit_len` is 16
-.. Warning:: If bit_len is less than or equal 0 or greater than 64 a :code:`ValueError` will be raised.  
+.. Note:: the default value for :code:`bit_len` is the size of the :code:`ctypes` data object.
+.. Warning:: If bit_len is less than or equal 0 or greater than the size of the :code:`ctypes` data object
+             a :code:`ValueError` will be raised.
 .. Warning:: although the example above defines a field outside of a Packet, this **cannot** be done in practice as each field
-    within the packet **must** be a new instance of a Field. 
+    within the packet **must** be a new instance of a Field.
+
+Unused Bits
+^^^^^^^^^^^
+When creating packets with the :code:`IntField` and using the :code:`bit_len` param, certain circumstances may lead
+to unexpected behavior, specifically with the sizing of the packet.  This is due to the way that :code:`ctypes` 
+handles byte alignement.  For example::
+
+    class simple(models.Packet):
+        A = models.IntField8(bit_len=4)
+        B = models.IntField8(bit_len=4)
+        C = models.IntField8()
+
+Will yield the following structure:
+
++---------------------------------------------------------------+
+|                         bit locations                         |
++-------------------------------+-------------------------------+
+|               Byte 0          |               Byte 1          |
++===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+
+| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+| A | A | A | A | A | B | B | B | C | C | C | C | C | C | C | C |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+However, if not all bits of the Byte are not used, "spare" bits may be introduced::
+
+    class simple(models.Packet):
+        A = models.IntField8(bit_len=2)
+        B = models.IntField8(bit_len=4)
+        C = models.IntField8()
+
++---------------------------------------------------------------+
+|                         bit locations                         |
++-------------------------------+-------------------------------+
+|             Byte 0            |             Byte 1            |
++===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+
+| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+| A | A | B | B | B | B |   |   | C | C | C | C | C | C | C | C |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+Notice that the last two bits of the first Byte are empty and won't be used!
+
+It is recommended that if you use the :code:`bit_len` param for :code:`IntField`, to make sure your
+field bits are byte aligned.
+
+:code:`FloatField`
+-------------------
+
+.. todo:: Include how to use Float, Double and LongDouble fields
+
+:code:`BoolField`
+-----------------
+
+.. todo:: Include how to use the Boolean Field
+
+:code:`FlagField`
+-----------------
+
+.. todo:: Include how to use the FlagField
+
+:code:`PacketField`
+-------------------
+The :code:`PacketField` is used to encapsulate another already defined packet.  The encapsulation of packets can be 
+done multiple times as well::
+
+    class Point(models.Packet):
+        x = models.IntField(bit_len=8)
+        y = models.IntField(bit_len=8)
+
+    class Rectangle(models.Packet):
+        top_left = models.PacketField(Point)
+        top_right = models.PacketField(Point)
+        bot_left = models.PacketField(Point)
+        bot_right = models.PacketField(Point)
+
+    class TwoRectangles(models.Packet):
+        first_rect = models.PacketField(Rectangle)
+        second_rect = models.PacketField(Rectangle)
 
 :code:`ArrayField`
 ------------------
-
-.. todo:: Warn user that certain types of fields can't be used in an ArrayField
-.. todo:: explain the workaround for the fields that can't be used
-.. todo:: update example with a valid one
 
 The :code:`ArrayField` is used to create an array of fields.  When creating the :code:`ArrayField` two parameters must
 be passed:
@@ -43,7 +127,7 @@ Example::
 
     array_field = models.ArrayField(
         # Note that this is an **instance** of the IntField
-        models.IntField(bit_len=8, signed=True)  
+        models.IntField(signed=True)
         12
     )
 
@@ -56,8 +140,8 @@ access can be done.  The Field instance for the first parameter of the :code:`Ar
 :code:`PacketField`::
 
     class Point(models.Packet):
-        x = models.IntField(bit_len=8)
-        y = models.IntField(bit_len=8)
+        x = models.IntField8()
+        y = models.IntField8()
 
     class ArrayPacket(models.Packet):
         points = models.ArrayField(
@@ -89,21 +173,24 @@ of those packets::
     print(pkt.points[0].y)
     0  # default value of IntField
 
-:code:`PacketField`
--------------------
-The :code:`PacketField` is used to encapsulate another already defined packet.  The encapsulation of packets can be 
-done multiple times as well::
+ArrayField limitations and Workaround
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+When using ArrayFields, there are limitations of what types of Fields can be used.  Any Field that returns a 
+tuple size greater than 2 from the :code:`create_field_c_tuple` method, cannot be used.  An example Field is 
+:code:`IntField` with the :code:`bit_len` set to a non byte aligned value.  This is due to the complications 
+of bit fields and arrays.
 
-    class Point(models.Packet):
-        x = models.IntField(bit_len=8)
-        y = models.IntField(bit_len=8)
+As a workaround to this, create a seperate Packet to be used as a PacketField within the Array.  For Example::
 
-    class Rectangle(models.Packet):
-        top_left = models.PacketField(Point)
-        top_right = models.PacketField(Point)
-        bot_left = models.PacketField(Point)
-        bot_right = models.PacketField(Point)
+    from calpack import models
 
-    class TwoRectangles(models.Packet):
-        first_rect = models.PacketField(Rectangle)
-        second_rect = models.PacketField(Rectangle)
+    class simple_pkt(models.Packet):
+        x = models.IntField8(bit_len=4)
+        y = models.IntField8(bit_len=4)
+
+    class adv_pkt(models.Packet):
+        simple_pkts = models.ArrayField(models.PacketField(simple_pkt), 8)
+
+.. note:: is is recommended that you use byte aligned fields within the PacketField otherwise some bits might 
+          become unused.
+
