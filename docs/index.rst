@@ -8,6 +8,9 @@ CalPack: Packets in Python Simplified
 CalPack is the only package you'll need to create, generate and parse packets in an easy to use way.  This module wraps
 the :code:`ctypes` module into an easier to use interface and enabling more features specific to working with Packets.
 
+.. image:: http://assets.amuniversal.com/8d40c700deba01317193005056a9545d
+   :target: http://www.gocomics.com/calvinandhobbes/1987/03/23
+   :alt: Calvin and Hobbes - Transmorgrifier
 
 Examples
 --------
@@ -29,10 +32,10 @@ Since :code:`calpak` is a wrapper to :code:`ctypes`, the above class is equivale
 
     class UDP(ctypes.Structure):
         _fields_ = [
-            ('source_port', ctypes.c_uint64, 16),
-            ('dest_port', ctypes.c_uint64, 16),
-            ('length', ctypes.c_uint64, 16),
-            ('checksum', ctypes.c_uint64, 16),
+            ('source_port', ctypes.c_uint),
+            ('dest_port', ctypes.c_uint),
+            ('length', ctypes.c_uint),
+            ('checksum', ctypes.c_uint),
         ]
 
 Interacting with the packet and it's field is also simple::
@@ -46,15 +49,38 @@ Interacting with the packet and it's field is also simple::
    --------
 
 
-Index
------
+User Guide
+----------
+Here you'll find an extensive guide on how to use :code:`calpack`.  
 
 .. toctree::
    :maxdepth: 2
 
+   user/intro_and_install_doc
+   user/packets_basics_doc
+   user/packets_adv_doc
+   user/fields_builtin_doc
+   user/fields_custom_doc
 
-   modelsdoc
-   devdoc
+CalPack documentation
+---------------------
+If you're looking for detailed documenation for CalPack's classes and modules then look no further!  You found it!
+
+.. toctree::
+   :maxdepth: 2
+
+   modules/models_doc
+
+Contributing
+------------
+If you're interested in contributing to CalPack here is where you can learn how
+
+.. toctree::
+   :maxdepth: 2
+
+   dev/intro_dev_doc
+   dev/tools_doc
+   dev/contributions_doc
 
 
 Indices and tables

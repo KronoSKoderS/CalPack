@@ -1,11 +1,5 @@
-Development
-===========
-We assume that if you're here, you're interested in helping develop CalPack.  This page will go over the details of 
-branching, sprint planning, CI and CM Tools.  
-
-
 GitHub, Issue Tracking and Branching
-------------------------------------
+====================================
 Development of CalPack is done within `GitHub <https://github.com/KronoSKoderS/CalPack>`_.  Any issues that are encountered
 or reported are tracked within GitHub's internal issues tracking.
 
