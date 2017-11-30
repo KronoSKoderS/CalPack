@@ -115,7 +115,7 @@ class Test_IntField(unittest.TestCase):
 
         self.assertEqual(b_str, pkt.to_bytes())
 
-    def test_IntField_raises_ValueError_with_invalid_bit_len(self):
+    def test_intfield_raises_ValueError_with_invalid_bit_len(self):
         with self.assertRaises(ValueError):
             int_field = models.IntField(bit_len=0)
 
@@ -124,6 +124,32 @@ class Test_IntField(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             int_field = models.IntField(bit_len=65)
+
+    def test_intfield_multi_int_fields(self):
+        class all_int_fields(models.Packet):
+            int_field = models.IntField()
+            int_field8 = models.IntField8()
+            int_field16 = models.IntField16()
+            int_field32 = models.IntField32()
+            int_field64 = models.IntField64()
+
+        pkt = all_int_fields()
+        pkt.int_field = 1
+        pkt.int_field8 = 2
+        pkt.int_field16 = 3
+        pkt.int_field32 = 4
+        pkt.int_field64 = 5
+
+        self.assertEqual(pkt.int_field, 1)
+        self.assertEqual(pkt._Packet__c_pkt.int_field, 1)
+        self.assertEqual(pkt.int_field8, 2)
+        self.assertEqual(pkt._Packet__c_pkt.int_field8, 2)
+        self.assertEqual(pkt.int_field16, 3)
+        self.assertEqual(pkt._Packet__c_pkt.int_field16, 3)
+        self.assertEqual(pkt.int_field32, 4)
+        self.assertEqual(pkt._Packet__c_pkt.int_field32, 4)
+        self.assertEqual(pkt.int_field64, 5)
+        self.assertEqual(pkt._Packet__c_pkt.int_field64, 5)
 
 
 if __name__ == '__main__':
