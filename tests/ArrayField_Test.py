@@ -58,8 +58,6 @@ class Test_ArrayField(unittest.TestCase):
 
         self.assertEqual(p1.list_int_field, p2.list_int_field)
 
-
-
     def test_arrayfield_set_val_from_other_arrayfield(self):
         class multi_int_field_packet(models.Packet):
             list_int_field = models.ArrayField(models.IntField(), 10)
@@ -72,6 +70,11 @@ class Test_ArrayField(unittest.TestCase):
         p2.list_int_field = p1.list_int_field
 
         self.assertEquals(p2.list_int_field, expected_vals)
+
+    def test_arrayfield_raise_typeerror_non_byte_aligned_int_field(self):
+        with self.assertRaises(TypeError):
+            class multi_int_field(models.Packet):
+                list_int_field = models.ArrayField(models.IntField(bit_len=4), 10)
 
 if __name__ == '__main__':
     unittest.main()
