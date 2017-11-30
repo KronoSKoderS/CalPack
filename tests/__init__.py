@@ -10,7 +10,7 @@ def get_tests():
 
 def full_suite():
 
-    from tests.IntField_Test import Test_IntField
+    from tests.IntFields_Test import Test_IntField
     from tests.BasicPackets_Test import Test_BasicPacket
     from tests.ArrayField_Test import Test_ArrayField
     from tests.PacketField_Test import Test_PacketField
