@@ -198,7 +198,6 @@ class PacketField(Field):
 
     :param packet_cls: A :code:`calpack.models.Packet` subclass that represents another packet
     """
-
     packet_cls = None
 
     def __init__(self, packet_cls):
@@ -285,7 +284,6 @@ class FloatField(Field):
 
     def __init__(self, default_val=0.0):
         super(FloatField, self).__init__(default_val)
-        self.bit_len = ctypes.sizeof(self.c_type) * 4
 
 
 class DoubleField(FloatField):
