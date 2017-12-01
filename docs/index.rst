@@ -53,41 +53,33 @@ Interacting with the packet and it's field is also simple::
 
 User Guide
 ----------
-.. image:: http://assets.amuniversal.com/b86ec7f052ed0135dd55005056a9545d
-   :target: http://www.gocomics.com/calvinandhobbes/2017/11/30
-   :alt: Calvin and Hobbes - Manual
-
 If you've found yourself to be in a bind while using CalPack here is where you want to start.  This is a set of guides
 on how to get and use CalPack.  
 
-.. toctree::
-   :maxdepth: 2
-
-   user/intro_and_install_doc
-   user/packets_basics_doc
-   user/packets_adv_doc
-   user/fields_builtin_doc
-   user/fields_custom_doc
+:doc:`user/index`
 
 CalPack documentation
 ---------------------
 If you're looking for detailed documenation for CalPack's classes and modules then look no further!  You found it!
 
-.. toctree::
-   :maxdepth: 2
-
-   modules/models_doc
+:doc:`modules/index`
+   
 
 Contributing
 ------------
 If you're interested in contributing to CalPack here is where you can learn how
 
-.. toctree::
-   :maxdepth: 2
+:doc:`dev/index`
 
-   dev/intro_dev_doc
-   dev/tools_doc
-   dev/contributions_doc
+
+Table of Contents
+=================
+.. toctree::
+   :maxdepth: 1
+   
+   user/index
+   dev/index
+   modules/index
 
 
 Indices and tables

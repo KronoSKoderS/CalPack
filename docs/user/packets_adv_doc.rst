@@ -60,3 +60,5 @@ Access to the fields within the encapsulated packet is as simple as calling that
     pkt = CustomPacket()
     pkt.header.source = 1
     pkt.header.destination = 2
+
+Next Topic - :doc:`fields_builtin_doc`

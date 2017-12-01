@@ -139,3 +139,6 @@ In reverse, a packet can be created from a byte string array
     >>> # Show that the packets are two different objects
     >>> my_parsed_pkt is my_pkt
     False
+
+
+Next Topic - :doc:`packets_adv_doc`
