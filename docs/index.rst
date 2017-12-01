@@ -5,8 +5,10 @@
 
 CalPack: Packets in Python Simplified
 =====================================
-CalPack is the only package you'll need to create, generate and parse packets in an easy to use way.  This module wraps
-the :code:`ctypes` module into an easier to use interface and enabling more features specific to working with Packets.
+CalPack is a module that makes creating and parsing packets easy to do.  This module wraps the 
+:code:`ctypes` module into an easier to use interface and enabling more features specific to 
+working with Packets.  Think of it as a way to "Transmogrify" your byte data into Packets and 
+vice versa:
 
 .. image:: http://assets.amuniversal.com/8d40c700deba01317193005056a9545d
    :target: http://www.gocomics.com/calvinandhobbes/1987/03/23
@@ -16,34 +18,34 @@ Examples
 --------
 Creating a new packet is as simple as creating a python class::
     
-    from calpack import models
+    >>> from calpack import models
 
-    class UDP(models.Packet):
-        source_port = models.IntField()
-        dest_port = models.IntField()
-        length = models.IntField()
-        checksum = models.IntField()
+    >>> class UDP(models.Packet):
+    >>>     source_port = models.IntField()
+    >>>     dest_port = models.IntField()
+    >>>     length = models.IntField()
+    >>>     checksum = models.IntField()
 
 
 Since :code:`calpak` is a wrapper to :code:`ctypes`, the above class is equivalent to the following 
 :code:`ctypes.Structure`::
 
-    import ctypes
+    >>> import ctypes
 
-    class UDP(ctypes.Structure):
-        _fields_ = [
-            ('source_port', ctypes.c_uint),
-            ('dest_port', ctypes.c_uint),
-            ('length', ctypes.c_uint),
-            ('checksum', ctypes.c_uint),
-        ]
+    >>> class UDP(ctypes.Structure):
+    >>>     _fields_ = [
+    >>>         ('source_port', ctypes.c_uint),
+    >>>         ('dest_port', ctypes.c_uint),
+    >>>         ('length', ctypes.c_uint),
+    >>>         ('checksum', ctypes.c_uint),
+    >>>     ]
 
 Interacting with the packet and it's field is also simple::
 
-    p = UDP()
-    p.source_port = 80
-    p.dest_port = 80
-    p.length = 8
+    >>> p = UDP()
+    >>> p.source_port = 80
+    >>> p.dest_port = 80
+    >>> p.length = 8
 
 .. Features
    --------
@@ -51,7 +53,12 @@ Interacting with the packet and it's field is also simple::
 
 User Guide
 ----------
-Here you'll find an extensive guide on how to use :code:`calpack`.  
+.. image:: http://assets.amuniversal.com/b86ec7f052ed0135dd55005056a9545d
+   :target: http://www.gocomics.com/calvinandhobbes/2017/11/30
+   :alt: Calvin and Hobbes - Manual
+
+If you've found yourself to be in a bind while using CalPack here is where you want to start.  This is a set of guides
+on how to get and use CalPack.  
 
 .. toctree::
    :maxdepth: 2

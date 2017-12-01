@@ -13,8 +13,10 @@ When developing code we use the following 3 major branches:
     * :code:`dev` - Main development happens here.  Any Pull Requests from developers should be against this branch.  
 
 Any new Pull Request should be against the :code:`dev` branch.  When working on specific features, branch from the :code:`dev` branch
-using the branch name :code:`dev/<feature-topic>`.  When a critical issue is identified that needs to be fixed immediately, branch
-from the :code:`integ` branch using the branch name :code:`integ/hotfix-<hotfix-topic>`
+using the branch name :code:`feature/<feature-topic>`.  When a critical issue is identified that needs to be fixed immediately, branch
+from the :code:`integ` branch using the branch name :code:`hotfix/<hotfix-topic>`
+
+When we do releases, brances from the :code:`integ` branch will be done using the branch name :code:`v<version number>`.  
 
 After each push into any branch a `Travis CI <https://travis-ci.org/KronoSKoderS/CalPack>`_ and 
 `Appveyor <https://ci.appveyor.com/project/KronoSKoderS/calpack>`_ to run tests on differing python versions on linux and Windows.  
