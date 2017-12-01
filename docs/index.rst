@@ -76,10 +76,10 @@ Table of Contents
 =================
 .. toctree::
    :maxdepth: 1
-   
+
    user/index
-   dev/index
    modules/index
+   dev/index
 
 
 Indices and tables
