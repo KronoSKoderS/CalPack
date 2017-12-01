@@ -117,8 +117,8 @@ class Packet(object):
 
 
     :param c_pkt: (Optional) a :code:`ctypes.Structure` object that will be used at the internal c
-    structure.  This MUST have the same :code:`_fields_` as the Packet would normally have in order
-    for it to work properly.
+        structure.  This MUST have the same :code:`_fields_` as the Packet would normally have in 
+        order for it to work properly.
     """
     word_size = typed_property('word_size', int, 16)
     fields_order = []

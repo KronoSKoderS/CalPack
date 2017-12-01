@@ -10,5 +10,3 @@ Here are a few of my favorite tools that I use for development on CalPack;
       creation over pipenv
 
     
-
-Next Topic - :doc:`code_of_conduct_doc`

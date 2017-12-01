@@ -1,6 +1,9 @@
-**************************************
-Source Code Module/Class Documentation
-**************************************
+*********************
+CalPack Documentation
+*********************
+
+Documentation Contents
+======================
 
 .. toctree:: 
    :maxdepth: 2

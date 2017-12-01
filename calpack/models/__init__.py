@@ -3,7 +3,6 @@ models
 ======
 
 A collection of classes and functions for creating custom packets.
-
 """
 
 from calpack.models.fields import *

@@ -1,4 +1,7 @@
 """
+fields
+======
+
 A collection of built-in :code:`Field`'s for creating packets.  This module also contains the
 building blocks for creating custom FieldTypes as well.
 """
@@ -26,6 +29,8 @@ class Field(object):
 
     When creating a custom field you MUST define the :code:`c_type` property with a valid
     :code:`ctypes` data class.
+
+    :param default_val: the default value of the field.  This is set at instantiation of the Field
     """
     c_type = None
     field_name = None
@@ -95,6 +100,11 @@ class IntField(Field):
     :code:`ctypes.sizeof(ctypes.c_int) * 8`.  This wraps around the :code:`ctypes.c_int` or
     :code:`ctypes.c_uint` data type.
 
+    .. warning:: A word of caution when using the :code:`bit_len`.  If the combination of IntFields
+        with the bit_len set are not byte aligned, there is the possibility of "spare" bits not
+        accessible but used in the overall strucuture.  See :ref:`Unused Bits`
+        for more information
+
     :param int bit_len: the length in bits of the integer.
     :param bool signed: whether to treat the int as an signed integer or unsigned integer (default
         unsigned)
@@ -138,6 +148,11 @@ class IntField8(IntField):
     also be set, however the max bit length for this field is 8.  This wraps around the
     :code:`ctypes.c_int8` or :code:`ctypes.c_uint8` data type.
 
+    .. warning:: A word of caution when using the :code:`bit_len`.  If the combination of IntFields
+        with the bit_len set are not byte aligned, there is the possibility of "spare" bits not
+        accessible but used in the overall strucuture.  See :ref:`Unused Bits`
+        for more information
+
     :param int bit_len: the length in bits of the integer.
     :param bool signed: whether to treat the int as an signed integer or unsigned integer (default
         unsigned)
@@ -152,6 +167,11 @@ class IntField16(IntField):
     An Integer field.  This field can be configured to be signed or unsigned.  It's bit length can
     also be set, however the max bit length for this field is 16.  This wraps around the
     :code:`ctypes.c_int16` or :code:`ctypes.c_uint16` data type.
+
+    .. warning:: A word of caution when using the :code:`bit_len`.  If the combination of IntFields
+        with the bit_len set are not byte aligned, there is the possibility of "spare" bits not
+        accessible but used in the overall strucuture.  See :ref:`Unused Bits`
+        for more information
 
     :param int bit_len: the length in bits of the integer.
     :param bool signed: whether to treat the int as an signed integer or unsigned integer (default
@@ -168,6 +188,11 @@ class IntField32(IntField):
     also be set, however the max bit length for this field is 32.  This wraps around the
     :code:`ctypes.c_int32` or :code:`ctypes.c_uint32` data type.
 
+    .. warning:: A word of caution when using the :code:`bit_len`.  If the combination of IntFields
+        with the bit_len set are not byte aligned, there is the possibility of "spare" bits not
+        accessible but used in the overall strucuture.  See :ref:`Unused Bits`
+        for more information
+
     :param int bit_len: the length in bits of the integer.
     :param bool signed: whether to treat the int as an signed integer or unsigned integer (default
         unsigned)
@@ -182,6 +207,11 @@ class IntField64(IntField):
     An Integer field.  This field can be configured to be signed or unsigned.  It's bit length can
     also be set, however the max bit length for this field is 64.  This wraps around the
     :code:`ctypes.c_int64` or :code:`ctypes.c_uint64` data type.
+
+    .. warning:: A word of caution when using the :code:`bit_len`.  If the combination of IntFields
+        with the bit_len set are not byte aligned, there is the possibility of "spare" bits not
+        accessible but used in the overall strucuture.  See :ref:`Unused Bits`
+        for more information
 
     :param int bit_len: the length in bits of the integer.
     :param bool signed: whether to treat the int as an signed integer or unsigned integer (default

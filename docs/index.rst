@@ -58,8 +58,8 @@ on how to get and use CalPack.
 
 :doc:`user/index`
 
-CalPack documentation
----------------------
+CalPack Module Docs
+-------------------
 If you're looking for detailed documenation for CalPack's classes and modules then look no further!  You found it!
 
 :doc:`modules/index`

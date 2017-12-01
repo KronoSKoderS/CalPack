@@ -6,7 +6,8 @@ CalPack User Guide
    :target: http://www.gocomics.com/calvinandhobbes/2017/11/30
    :alt: Calvin and Hobbes - Manual
 
-This guide will help you get started on using CalPack.  This guide is broken up into the following sections:
+This guide will help you get started on using CalPack.  This guide is broken up into the following 
+sections:
 
 .. toctree::
    :maxdepth: 2
