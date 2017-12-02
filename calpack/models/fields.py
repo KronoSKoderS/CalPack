@@ -254,7 +254,7 @@ class PacketField(Field):
 
 class ArrayField(Field):
     """
-    A custom field for handling an array of fields.  Only tuples or other ArrayFields can be written to the 
+    A custom field for handling an array of fields.  Only tuples or other ArrayFields can be written to the
 
     :param array_cls: a :code:`calpack.models.Field` subclass **object** that represent the Field
         the array will be filled with.
