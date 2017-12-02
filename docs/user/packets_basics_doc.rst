@@ -23,26 +23,30 @@ In this section we cover the basics of how to create a packet and manipulate it 
 Creating a Packet
 -----------------
 Creating a custom packet requires inheriting the :code:`Packet` class and then defining the Fields within the order 
-they are expected to be seen::
+they are expected to be seen
+
+.. doctest:: basic
 
     >>> from calpack import models
 
     >>> class UDP_Header(models.Packet):
-    >>>    source_port = models.IntField16()
-    >>>    dest_port = models.IntField16()
-    >>>    length = models.IntField16()
-    >>>    checksum = models.IntField16()
+    ...    source_port = models.IntField16()
+    ...    dest_port = models.IntField16()
+    ...    length = models.IntField16()
+    ...    checksum = models.IntField16()
 
 .. Note:: The order in which the fields are defined is also the order in which the fields are set within the internal c
           structure.
 
-If you desired to have a default value for a particular field, simply use the :code:`default_val` param for the Field::
+If you desired to have a default value for a particular field, simply use the :code:`default_val` param for the Field
+
+.. doctest:: basic
 
     >>> class UDP_Header(models.Packet):
-    >>>     source_port = models.IntField16(default_val=8888)
-    >>>     dest_port = models.IntField16(default_val=8000)
-    >>>     length = models.IntField16()
-    >>>     checksum = models.IntField16()
+    ...     source_port = models.IntField16(default_val=8888)
+    ...     dest_port = models.IntField16(default_val=8000)
+    ...     length = models.IntField16()
+    ...     checksum = models.IntField16()
 
 Upon creation of the Packet instance, any fields that haven't been set but have a default value will be automatically set 
 to that default value.  
@@ -68,7 +72,12 @@ An instance of a packet can also be created with fields already populated
 
 .. doctest:: basic
 
-    >>> my_pkt = UDP_Header(source_port=8080, dest_port=8080, length=0x2, checksum=0x0)
+    >>> my_pkt = UDP_Header(
+    ...     source_port=8080, 
+    ...     dest_port=8080, 
+    ...     length=0x2, 
+    ...     checksum=0x0
+    ... )
 
     >>> print(my_pkt.source_port, my_pkt.dest_port, my_pkt.length, my_pkt.checksum)
     8080 8080 2 0
