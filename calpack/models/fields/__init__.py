@@ -32,9 +32,9 @@ __all__ = [
     'BYTE_SIZE',
 ]
 
-__all__.append(fields_all)
-__all__.append(array_all)
-__all__.append(bool_all)
-__all__.append(float_all)
-__all__.append(int_all)
-__all__.append(packet_all)
+__all__ += fields_all
+__all__ += array_all
+__all__ += bool_all
+__all__ += float_all
+__all__ += int_all
+__all__ += packet_all
