@@ -10,7 +10,7 @@ from calpack.models.utils import typed_property
 from calpack.models.fields import Field
 
 
-__all__ = ['Packet']
+__all__ = ['Packet', 'PacketLittleEndian', 'PacketBigEndian']
 
 
 # This was taken from the six.py source code.  Reason being that I only needed a small part of six
@@ -87,8 +87,10 @@ class _MetaPacket(type):
         # Here we save the order
         class_dict['fields_order'] = order
 
+        c_struct_type = class_dict.get("_Packet__c_struct", ctypes.Structure)
+
         # Here we create the internal structure
-        class Cstruct(ctypes.Structure):
+        class Cstruct(c_struct_type):
             pass
 
         Cstruct._fields_ = fields_tuple
@@ -203,3 +205,11 @@ class Packet(object):
         :returns: the field value
         """
         return getattr(self.__c_pkt, field_name)
+
+
+class PacketBigEndian(Packet):
+    __c_struct = ctypes.BigEndianStructure
+
+
+class PacketLittleEndian(Packet):
+    __c_struct = ctypes.LittleEndianStructure

@@ -1,5 +1,6 @@
 import unittest
 import ctypes
+import struct
 from calpack import models
 
 
@@ -169,6 +170,33 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertNotEqual(p1.int_field, p2.int_field)
         self.assertNotEqual(p1.int_field_signed, p2.int_field_signed)
 
+
+class Test_EndianPacket(unittest.TestCase):
+
+    def test_little_endian_packet(self):
+        class little_packet(models.PacketLittleEndian):
+            field1 = models.IntField()
+            field2 = models.IntField()
+
+        b_val = struct.pack("<II", 0xdeadbeef, 0xbeefcafe)
+
+        pkt = little_packet.from_bytes(b_val)
+
+        self.assertEqual(pkt.field1, 0xdeadbeef)
+        self.assertEqual(pkt.field2, 0xbeefcafe)
+
+
+    def test_big_endian_packet(self):
+        class big_packet(models.PacketBigEndian):
+            field1 = models.IntField()
+            field2 = models.IntField()
+
+        b_val = struct.pack(">II", 0xefbeadde, 0xfecaefbe)
+
+        pkt = big_packet.from_bytes(b_val)
+
+        self.assertEqual(pkt.field1, 0xdeadbeef)
+        self.assertEqual(pkt.field2, 0xbeefcafe)
 
 if __name__ == '__main__':
     unittest.main()
