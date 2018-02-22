@@ -173,7 +173,7 @@ class Test_BasicPacket(unittest.TestCase):
 
 class Test_EndianPacket(unittest.TestCase):
 
-    def test_little_endian_packet(self):
+    def test_little_endian_packet_from_bytes(self):
         class little_packet(models.PacketLittleEndian):
             field1 = models.IntField()
             field2 = models.IntField()
@@ -186,17 +186,47 @@ class Test_EndianPacket(unittest.TestCase):
         self.assertEqual(pkt.field2, 0xbeefcafe)
 
 
-    def test_big_endian_packet(self):
+    def test_little_endian_packet_to_bytes(self):
+        class little_packet(models.PacketLittleEndian):
+            field1 = models.IntField()
+            field2 = models.IntField()
+
+        expected_b_val = struct.pack("<II", 0xdeadbeef, 0xbeefcafe)
+
+        pkt = little_packet(
+            field1 = 0xdeadbeef,
+            field2 = 0xbeefcafe
+        )
+
+        self.assertEqual(pkt.to_bytes(), expected_b_val)
+
+
+    def test_big_endian_packet_from_bytes(self):
         class big_packet(models.PacketBigEndian):
             field1 = models.IntField()
             field2 = models.IntField()
 
-        b_val = struct.pack(">II", 0xefbeadde, 0xfecaefbe)
+        b_val = struct.pack(">II", 0xdeadbeef, 0xbeefcafe)
 
         pkt = big_packet.from_bytes(b_val)
 
         self.assertEqual(pkt.field1, 0xdeadbeef)
         self.assertEqual(pkt.field2, 0xbeefcafe)
+
+
+    def test_big_endian_packet_to_bytes(self):
+        class big_packet(models.PacketBigEndian):
+            field1 = models.IntField()
+            field2 = models.IntField()
+
+        expected_b_val = struct.pack(">II", 0xdeadbeef, 0xbeefcafe)
+
+        pkt = big_packet(
+            field1 = 0xdeadbeef,
+            field2 = 0xbeefcafe
+        )
+
+        self.assertEqual(pkt.to_bytes(), expected_b_val)
 
 if __name__ == '__main__':
     unittest.main()
