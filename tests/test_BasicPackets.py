@@ -1,6 +1,8 @@
 import unittest
 import ctypes
 import struct
+import sys
+
 from calpack import models
 
 
@@ -202,6 +204,9 @@ class Test_EndianPacket(unittest.TestCase):
 
 
     def test_big_endian_packet_from_bytes(self):
+        if "PyPy" in sys.version:
+            return True
+
         class big_packet(models.PacketBigEndian):
             field1 = models.IntField()
             field2 = models.IntField()
@@ -215,6 +220,9 @@ class Test_EndianPacket(unittest.TestCase):
 
 
     def test_big_endian_packet_to_bytes(self):
+        if "PyPy" in sys.version:
+            return True
+
         class big_packet(models.PacketBigEndian):
             field1 = models.IntField()
             field2 = models.IntField()

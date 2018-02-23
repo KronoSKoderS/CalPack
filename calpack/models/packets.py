@@ -2,6 +2,7 @@
 A collection of classes and function for creating custom :code:`Packet`s.
 """
 import ctypes
+import sys
 
 from collections import OrderedDict
 
@@ -10,7 +11,9 @@ from calpack.models.utils import typed_property
 from calpack.models.fields import Field
 
 
-__all__ = ['Packet', 'PacketLittleEndian', 'PacketBigEndian']
+__all__ = ['Packet']
+if "PyPy" not in sys.version:
+    __all__ += ['PacketLittleEndian', 'PacketBigEndian']
 
 
 # This was taken from the six.py source code.  Reason being that I only needed a small part of six
@@ -210,8 +213,16 @@ class Packet(object):
 
 
 class PacketBigEndian(Packet):
+    """
+    PacketBigEndian - a Super class used for dealing with data structures that are defined using
+    the Big Endian byte encoding.
+    """
     _c_struct_type = ctypes.BigEndianStructure
 
 
 class PacketLittleEndian(Packet):
+    """
+    PacketLittleEndian - a Super class used for dealing with data structures that are defined
+    using the Little Endian byte encoding.
+    """
     _c_struct_type = ctypes.LittleEndianStructure
