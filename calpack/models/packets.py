@@ -216,8 +216,10 @@ class Packet(object):
         return getattr(self.__c_pkt, field_name)
 
     def __repr__(self):
-        f_string = "{name}({field})"
-        vals_string = ", \n".join(["\t{}".format(repr(field)) for field in self.fields])
+        f_string = "{name}({fields})"
+        vals_string = ", ".join(
+            ["{}={}".format(name, repr(field)) for name, field in zip(self.fields_order, self.fields)]
+        )
         return f_string.format(name=self.__class__.__name__, fields=vals_string)
 
 
