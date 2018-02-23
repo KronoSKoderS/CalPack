@@ -21,5 +21,5 @@ class Test_Repr(unittest.TestCase):
         pkt.field2 = 5678
 
         expected_py3 = "two_int_pkt(field1=1234, field2=5678)"
-        expected_py2 = "two_int_pkt(field1=1234, field2=5678)"
+        expected_py2 = "two_int_pkt(field1=1234L, field2=5678L)"
         self.assertEqual(repr(pkt), expected_py2 if PY2 else expected_py3)
