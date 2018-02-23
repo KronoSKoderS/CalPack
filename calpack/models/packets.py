@@ -87,7 +87,11 @@ class _MetaPacket(type):
         # Here we save the order
         class_dict['fields_order'] = order
 
-        c_struct_type = class_dict.get("_Packet__c_struct", ctypes.Structure)
+        base_dicts = {}
+        for base in bases:
+            base_dicts.update(base.__dict__)
+
+        c_struct_type = base_dicts.get('_c_struct_type', ctypes.Structure)
 
         # Here we create the internal structure
         class Cstruct(c_struct_type):
@@ -125,8 +129,6 @@ class Packet(object):
     word_size = typed_property('word_size', int, 16)
     fields_order = []
     bit_len = 0
-
-    __c_struct = ctypes.Structure
 
     def __init__(self, c_pkt=None, **kwargs):
         # create an internal c structure instance for us to interface with.
@@ -208,8 +210,8 @@ class Packet(object):
 
 
 class PacketBigEndian(Packet):
-    __c_struct = ctypes.BigEndianStructure
+    _c_struct_type = ctypes.BigEndianStructure
 
 
 class PacketLittleEndian(Packet):
-    __c_struct = ctypes.LittleEndianStructure
+    _c_struct_type = ctypes.LittleEndianStructure
