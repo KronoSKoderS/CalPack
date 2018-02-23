@@ -1,6 +1,7 @@
 import unittest
 
 from calpack import models
+from calpack.utils import PY2
 
 
 class Test_Repr(unittest.TestCase):
@@ -12,11 +13,13 @@ class Test_Repr(unittest.TestCase):
 
         pkt = two_int_pkt()
 
-        expected = "two_int_pkt(field1=0, field2=0)"
-        self.assertEqual(repr(pkt), expected)
+        expected_py3 = "two_int_pkt(field1=0, field2=0)"
+        expected_py2 = "two_int_pkt(field1=0L, field2=0L)"
+        self.assertEqual(repr(pkt), expected_py2 if PY2 else expected_py3)
 
         pkt.field1 = 1234
         pkt.field2 = 5678
 
-        expected = "two_int_pkt(field1=1234, field2=5678)"
-        self.assertEqual(repr(pkt), expected)
+        expected_py3 = "two_int_pkt(field1=1234, field2=5678)"
+        expected_py2 = "two_int_pkt(field1=1234, field2=5678)"
+        self.assertEqual(repr(pkt), expected_py2 if PY2 else expected_py3)
