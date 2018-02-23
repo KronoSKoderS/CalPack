@@ -4,7 +4,7 @@
 import ctypes
 
 from calpack.models.fields import Field, BYTE_SIZE
-from calpack.models.utils import typed_property
+from calpack.utils import typed_property
 
 __all__ = [
     'IntField', 'IntField8', 'IntField16', 'IntField32', 'IntField64'

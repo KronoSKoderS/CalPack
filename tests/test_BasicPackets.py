@@ -4,6 +4,7 @@ import struct
 import sys
 
 from calpack import models
+from calpack.utils import PYPY
 
 
 class Test_BasicPacket(unittest.TestCase):
@@ -178,7 +179,7 @@ class Test_EndianPacket(unittest.TestCase):
     def test_little_endian_packet_from_bytes(self):
 
         # As of 22 Feb '18, PyPy does not support non-native endianess
-        if "PyPy" in sys.version:
+        if PYPY:
             return True
 
         class little_packet(models.PacketLittleEndian):
@@ -196,7 +197,7 @@ class Test_EndianPacket(unittest.TestCase):
     def test_little_endian_packet_to_bytes(self):
 
         # As of 22 Feb '18, PyPy does not support non-native endianess
-        if "PyPy" in sys.version:
+        if PYPY:
             return True
 
         class little_packet(models.PacketLittleEndian):
@@ -216,7 +217,7 @@ class Test_EndianPacket(unittest.TestCase):
     def test_big_endian_packet_from_bytes(self):
 
         # As of 22 Feb '18, PyPy does not support non-native endianess
-        if "PyPy" in sys.version:
+        if PYPY:
             return True
 
         class big_packet(models.PacketBigEndian):
@@ -234,7 +235,7 @@ class Test_EndianPacket(unittest.TestCase):
     def test_big_endian_packet_to_bytes(self):
 
         # As of 22 Feb '18, PyPy does not support non-native endianess
-        if "PyPy" in sys.version:
+        if PYPY:
             return True
 
         class big_packet(models.PacketBigEndian):

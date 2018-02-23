@@ -8,8 +8,6 @@ building blocks for creating custom FieldTypes as well.
 
 import ctypes
 
-from calpack.models.utils import typed_property
-
 BYTE_SIZE = 8
 
 from calpack.models.fields.Fields import *

@@ -6,13 +6,12 @@ import sys
 
 from collections import OrderedDict
 
-from calpack import PY2
-from calpack.models.utils import typed_property
+from calpack.utils import typed_property, PY2, PYPY
 from calpack.models.fields import Field
 
 
 __all__ = ['Packet']
-if "PyPy" not in sys.version:
+if not PYPY:
     __all__ += ['PacketLittleEndian', 'PacketBigEndian']
 
 
