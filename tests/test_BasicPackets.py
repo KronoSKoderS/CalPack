@@ -176,6 +176,11 @@ class Test_BasicPacket(unittest.TestCase):
 class Test_EndianPacket(unittest.TestCase):
 
     def test_little_endian_packet_from_bytes(self):
+
+        # As of 22 Feb '18, PyPy does not support non-native endianess
+        if "PyPY" in sys.version:
+            return True
+
         class little_packet(models.PacketLittleEndian):
             field1 = models.IntField()
             field2 = models.IntField()
@@ -189,6 +194,10 @@ class Test_EndianPacket(unittest.TestCase):
 
 
     def test_little_endian_packet_to_bytes(self):
+
+        # As of 22 Feb '18, PyPy does not support non-native endianess
+        if "PyPy" in sys.version:
+            return True
         class little_packet(models.PacketLittleEndian):
             field1 = models.IntField()
             field2 = models.IntField()
@@ -204,6 +213,8 @@ class Test_EndianPacket(unittest.TestCase):
 
 
     def test_big_endian_packet_from_bytes(self):
+
+        # As of 22 Feb '18, PyPy does not support non-native endianess
         if "PyPy" in sys.version:
             return True
 
@@ -220,6 +231,8 @@ class Test_EndianPacket(unittest.TestCase):
 
 
     def test_big_endian_packet_to_bytes(self):
+
+        # As of 22 Feb '18, PyPy does not support non-native endianess
         if "PyPy" in sys.version:
             return True
 
