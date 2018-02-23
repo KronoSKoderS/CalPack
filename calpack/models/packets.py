@@ -89,7 +89,7 @@ class _MetaPacket(type):
         class_dict['fields_order'] = order
 
         # Get all of the attributes of the base classes and see if the Structure is defined
-        #   if so, then update to the base C Structure to this one.  
+        #   if so, then update to the base C Structure to this one.
         base_dicts = {}
         for base in bases:
             base_dicts.update(base.__dict__)
@@ -192,6 +192,9 @@ class Packet(object):
 
     @property
     def fields(self):
+        """
+        return the fields as a list in the order they were defined.
+        """
         return [getattr(self, f_name) for f_name in self.fields_order]
 
     def set_c_field(self, field_name, val):
@@ -217,9 +220,8 @@ class Packet(object):
 
     def __repr__(self):
         f_string = "{name}({fields})"
-        vals_string = ", ".join(
-            ["{}={}".format(name, repr(field)) for name, field in zip(self.fields_order, self.fields)]
-        )
+        field_pairs = zip(self.fields_order, self.fields)
+        vals_string = ", ".join(["{}={}".format(name, repr(field)) for name, field in field_pairs])
         return f_string.format(name=self.__class__.__name__, fields=vals_string)
 
 
@@ -227,7 +229,7 @@ class PacketBigEndian(Packet):
     """
     A super class that custom packet can inherit from.  This class is NOT intended to be
     used directly, but as a super class.  This class configures the internal Packet
-    Structure to use Big Endian byte orientation.  
+    Structure to use Big Endian byte orientation.
 
     Example::
 
@@ -249,7 +251,7 @@ class PacketLittleEndian(Packet):
     """
     A super class that custom packet can inherit from.  This class is NOT intended to be
     used directly, but as a super class.  This class configures the internal Packet
-    Structure to use Little Endian byte orientation.  
+    Structure to use Little Endian byte orientation.
 
     Example::
 
