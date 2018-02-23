@@ -11,7 +11,7 @@ def get_tests():
 def full_suite():
 
     from tests.test_IntFields import Test_IntField
-    from tests.test_BasicPackets import Test_BasicPacket
+    from tests.test_BasicPackets import Test_BasicPacket, Test_EndianPacket
     from tests.test_ArrayField import Test_ArrayField
     from tests.test_PacketField import Test_PacketField
     from tests.test_Utilities import Test_Utilities
@@ -22,6 +22,7 @@ def full_suite():
 
     return unittest.TestSuite([
         unittest.TestLoader().loadTestsFromTestCase(Test_BasicPacket),
+        unittest.TestLoader().loadTestsFromTestCase(Test_EndianPacket),
         unittest.TestLoader().loadTestsFromTestCase(Test_IntField),
         unittest.TestLoader().loadTestsFromTestCase(Test_ArrayField),
         unittest.TestLoader().loadTestsFromTestCase(Test_PacketField),

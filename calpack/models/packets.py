@@ -2,6 +2,7 @@
 A collection of classes and function for creating custom :code:`Packet`s.
 """
 import ctypes
+import sys
 
 from collections import OrderedDict
 
@@ -11,6 +12,8 @@ from calpack.models.fields import Field
 
 
 __all__ = ['Packet']
+if "PyPy" not in sys.version:
+    __all__ += ['PacketLittleEndian', 'PacketBigEndian']
 
 
 # This was taken from the six.py source code.  Reason being that I only needed a small part of six
@@ -87,8 +90,14 @@ class _MetaPacket(type):
         # Here we save the order
         class_dict['fields_order'] = order
 
+        base_dicts = {}
+        for base in bases:
+            base_dicts.update(base.__dict__)
+
+        c_struct_type = base_dicts.get('_c_struct_type', ctypes.Structure)
+
         # Here we create the internal structure
-        class Cstruct(ctypes.Structure):
+        class Cstruct(c_struct_type):
             pass
 
         Cstruct._fields_ = fields_tuple
@@ -123,8 +132,6 @@ class Packet(object):
     word_size = typed_property('word_size', int, 16)
     fields_order = []
     bit_len = 0
-
-    __c_struct = ctypes.Structure
 
     def __init__(self, c_pkt=None, **kwargs):
         # create an internal c structure instance for us to interface with.
@@ -203,3 +210,19 @@ class Packet(object):
         :returns: the field value
         """
         return getattr(self.__c_pkt, field_name)
+
+
+class PacketBigEndian(Packet):
+    """
+    PacketBigEndian - a Super class used for dealing with data structures that are defined using
+    the Big Endian byte encoding.
+    """
+    _c_struct_type = ctypes.BigEndianStructure
+
+
+class PacketLittleEndian(Packet):
+    """
+    PacketLittleEndian - a Super class used for dealing with data structures that are defined
+    using the Little Endian byte encoding.
+    """
+    _c_struct_type = ctypes.LittleEndianStructure
