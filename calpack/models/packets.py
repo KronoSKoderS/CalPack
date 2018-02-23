@@ -2,7 +2,6 @@
 A collection of classes and function for creating custom :code:`Packet`s.
 """
 import ctypes
-import sys
 
 from collections import OrderedDict
 
@@ -89,6 +88,8 @@ class _MetaPacket(type):
         # Here we save the order
         class_dict['fields_order'] = order
 
+        # Get all of the attributes of the base classes and see if the Structure is defined
+        #   if so, then update to the base C Structure to this one.  
         base_dicts = {}
         for base in bases:
             base_dicts.update(base.__dict__)
@@ -112,7 +113,7 @@ class _MetaPacket(type):
 @add_metaclass(_MetaPacket)
 class Packet(object):
     """
-    A super class that custom packet classes MUST inherit from.  This class is NOT intended to be
+    A super class that custom packet classes can inherit from.  This class is NOT intended to be
     used directly, but as a super class.
 
     Example::
@@ -189,6 +190,10 @@ class Packet(object):
 
         return self.to_bytes() == other.to_bytes()
 
+    @property
+    def fields(self):
+        return [getattr(self, f_name) for f_name in self.fields_order]
+
     def set_c_field(self, field_name, val):
         """
         sets the value of the internal c structure.
@@ -210,18 +215,51 @@ class Packet(object):
         """
         return getattr(self.__c_pkt, field_name)
 
+    def __repr__(self):
+        f_string = "{name}({field})"
+        vals_string = ", \n".join(["\t{}".format(repr(field)) for field in self.fields])
+        return f_string.format(name=self.__class__.__name__, fields=vals_string)
+
 
 class PacketBigEndian(Packet):
     """
-    PacketBigEndian - a Super class used for dealing with data structures that are defined using
-    the Big Endian byte encoding.
+    A super class that custom packet can inherit from.  This class is NOT intended to be
+    used directly, but as a super class.  This class configures the internal Packet
+    Structure to use Big Endian byte orientation.  
+
+    Example::
+
+        class Header(models.PacketBigEndian):
+            source = models.IntField()
+            dest = models.IntField()
+            data1 = models.IntField()
+            data2 = models.IntField()
+
+
+    :param c_pkt: (Optional) a :code:`ctypes.Structure` object that will be used at the internal c
+        structure.  This MUST have the same :code:`_fields_` as the Packet would normally have in
+        order for it to work properly.
     """
     _c_struct_type = ctypes.BigEndianStructure
 
 
 class PacketLittleEndian(Packet):
     """
-    PacketLittleEndian - a Super class used for dealing with data structures that are defined
-    using the Little Endian byte encoding.
+    A super class that custom packet can inherit from.  This class is NOT intended to be
+    used directly, but as a super class.  This class configures the internal Packet
+    Structure to use Little Endian byte orientation.  
+
+    Example::
+
+        class Header(models.PacketLittleEndian):
+            source = models.IntField()
+            dest = models.IntField()
+            data1 = models.IntField()
+            data2 = models.IntField()
+
+
+    :param c_pkt: (Optional) a :code:`ctypes.Structure` object that will be used at the internal c
+        structure.  This MUST have the same :code:`_fields_` as the Packet would normally have in
+        order for it to work properly.
     """
     _c_struct_type = ctypes.LittleEndianStructure
