@@ -6,8 +6,6 @@ A collection of built-in :code:`Field`'s for creating packets.  This module also
 building blocks for creating custom FieldTypes as well.
 """
 
-import ctypes
-
 BYTE_SIZE = 8
 
 from calpack.models.fields.Fields import *
