@@ -19,6 +19,7 @@ def full_suite():
     from tests.test_FlagField import Test_FlagField
     from tests.test_FloatFields import Test_FloatField, Test_DoubleField, Test_LongDoubleField
     from tests.test_BoolField import Test_BoolField
+    from tests.test_Repr import Test_Repr
 
     return unittest.TestSuite([
         unittest.TestLoader().loadTestsFromTestCase(Test_BasicPacket),
@@ -33,6 +34,7 @@ def full_suite():
         unittest.TestLoader().loadTestsFromTestCase(Test_DoubleField),
         unittest.TestLoader().loadTestsFromTestCase(Test_LongDoubleField),
         unittest.TestLoader().loadTestsFromTestCase(Test_BoolField),
+        unittest.TestLoader().loadTestsFromTestCase(Test_Repr)
     ])
 
 if __name__ == "__main__":
