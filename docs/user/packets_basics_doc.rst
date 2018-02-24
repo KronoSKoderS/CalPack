@@ -217,7 +217,7 @@ endianess defined and NOT the system default.
     b'\x1f\x90\x1f\x90\x00\x02\x00\x00'
 
     >>> my_little_pkt = LittleUDP_Header.from_bytes(b'\x90\x1f\x90\x1f\x02\x00\x00\x00')
-    >>> my_lillte_pkt.source_port == 8080
+    >>> my_little_pkt.source_port == 8080
     True
 
     >>> my_little_pkt.dest_port == 8080
