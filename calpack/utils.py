@@ -1,6 +1,7 @@
 """
 a set of utility functions for use within the models module.
 """
+import sys
 
 _NO_TYPE = object()
 
@@ -36,3 +37,7 @@ def typed_property(name, expected_type, default_val=None):
         setattr(self, storage_name, value)
 
     return prop
+
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+PYPY = "PyPy" in sys.version

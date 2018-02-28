@@ -5,7 +5,10 @@ python:
 - 3.3
 - 3.4
 - 3.5
+- 3.5-dev  # 3.5 development branch
 - 3.6
+- 3.6-dev  # 3.6 development branch
+- 3.7-dev  # 3.7 development branch
 - pypy
 - pypy3
 - nightly
@@ -39,6 +42,7 @@ deploy:
       branch: prod
       distributions: sdist bdist_wheel
       repo: KronoSKoderS/CalPack
+      condition: TRAVIS_EVENT_TYPE != 'cron'
       
   - provider: releases
     skip_cleanup: true
@@ -48,4 +52,5 @@ deploy:
     on:
       repo: KronoSKoderS/CalPack
       branch: tags
+      condition: TRAVIS_EVENT_TYPE != 'cron'
 

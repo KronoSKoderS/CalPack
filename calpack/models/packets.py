@@ -5,12 +5,13 @@ import ctypes
 
 from collections import OrderedDict
 
-from calpack import PY2
-from calpack.models.utils import typed_property
+from calpack.utils import typed_property, PY2, PYPY
 from calpack.models.fields import Field
 
 
 __all__ = ['Packet']
+if not PYPY:
+    __all__ += ['PacketLittleEndian', 'PacketBigEndian']
 
 
 # This was taken from the six.py source code.  Reason being that I only needed a small part of six
@@ -87,8 +88,16 @@ class _MetaPacket(type):
         # Here we save the order
         class_dict['fields_order'] = order
 
+        # Get all of the attributes of the base classes and see if the Structure is defined
+        #   if so, then update to the base C Structure to this one.
+        base_dicts = {}
+        for base in bases:
+            base_dicts.update(base.__dict__)
+
+        c_struct_type = base_dicts.get('_c_struct_type', ctypes.Structure)
+
         # Here we create the internal structure
-        class Cstruct(ctypes.Structure):
+        class Cstruct(c_struct_type):
             pass
 
         Cstruct._fields_ = fields_tuple
@@ -104,7 +113,7 @@ class _MetaPacket(type):
 @add_metaclass(_MetaPacket)
 class Packet(object):
     """
-    A super class that custom packet classes MUST inherit from.  This class is NOT intended to be
+    A super class that custom packet classes can inherit from.  This class is NOT intended to be
     used directly, but as a super class.
 
     Example::
@@ -123,8 +132,6 @@ class Packet(object):
     word_size = typed_property('word_size', int, 16)
     fields_order = []
     bit_len = 0
-
-    __c_struct = ctypes.Structure
 
     def __init__(self, c_pkt=None, **kwargs):
         # create an internal c structure instance for us to interface with.
@@ -183,6 +190,13 @@ class Packet(object):
 
         return self.to_bytes() == other.to_bytes()
 
+    @property
+    def fields(self):
+        """
+        return the fields as a list in the order they were defined.
+        """
+        return [getattr(self, f_name) for f_name in self.fields_order]
+
     def set_c_field(self, field_name, val):
         """
         sets the value of the internal c structure.
@@ -203,3 +217,53 @@ class Packet(object):
         :returns: the field value
         """
         return getattr(self.__c_pkt, field_name)
+
+    def __repr__(self):
+        f_string = "{name}({fields})"
+        field_pairs = zip(self.fields_order, self.fields)
+        vals_string = ", ".join(["{}={}".format(name, repr(field)) for name, field in field_pairs])
+        return f_string.format(name=self.__class__.__name__, fields=vals_string)
+
+
+class PacketBigEndian(Packet):
+    """
+    A super class that custom packet can inherit from.  This class is NOT intended to be
+    used directly, but as a super class.  This class configures the internal Packet
+    Structure to use Big Endian byte orientation.
+
+    Example::
+
+        class Header(models.PacketBigEndian):
+            source = models.IntField()
+            dest = models.IntField()
+            data1 = models.IntField()
+            data2 = models.IntField()
+
+
+    :param c_pkt: (Optional) a :code:`ctypes.Structure` object that will be used at the internal c
+        structure.  This MUST have the same :code:`_fields_` as the Packet would normally have in
+        order for it to work properly.
+    """
+    _c_struct_type = ctypes.BigEndianStructure
+
+
+class PacketLittleEndian(Packet):
+    """
+    A super class that custom packet can inherit from.  This class is NOT intended to be
+    used directly, but as a super class.  This class configures the internal Packet
+    Structure to use Little Endian byte orientation.
+
+    Example::
+
+        class Header(models.PacketLittleEndian):
+            source = models.IntField()
+            dest = models.IntField()
+            data1 = models.IntField()
+            data2 = models.IntField()
+
+
+    :param c_pkt: (Optional) a :code:`ctypes.Structure` object that will be used at the internal c
+        structure.  This MUST have the same :code:`_fields_` as the Packet would normally have in
+        order for it to work properly.
+    """
+    _c_struct_type = ctypes.LittleEndianStructure

@@ -4,9 +4,9 @@
 [![Documentation Status](https://readthedocs.org/projects/concorde/badge/?version=latest)](http://concorde.readthedocs.io/en/latest/?badge=latest)
 
 # CalPack
-Packets in Python Simplified.  
+Packets in Python Simplified.
 
-This python package is everything you need to transmorgrify your packets:  
+This python package is everything you need to transmorgrify your packets:
 
 [![Calvin and Hobbes Strip](http://assets.amuniversal.com/8d40c700deba01317193005056a9545d)](http://www.gocomics.com/calvinandhobbes/1987/03/23)
 
@@ -16,11 +16,11 @@ with influence from Django's modeling and will look familiar to those that have 
 
 ## Why `CalPack`?
 
-Because `Transmorgrifier` takes a REALLY long time to type out.  
+Because `Transmorgrifier` takes a REALLY long time to type out.
 
 ## Installation
 
-This package is maintained in [GitHub](https://github.com/KronoSKoderS/CalPack) and packaged for deployment on [PyPi](https://pypi.python.org/pypi/calpack).  
+This package is maintained in [GitHub](https://github.com/KronoSKoderS/CalPack) and packaged for deployment on [PyPi](https://pypi.python.org/pypi/calpack).
 
 Simply using `pip install calpack` will get this installed.
  
@@ -28,9 +28,9 @@ Simply using `pip install calpack` will get this installed.
 ### Creating Custom Packets
 
 Creating custom packets is as easy as defining the fields:
-    
+
     from calpack import models
-    
+
     class my_pkt(models.Packet):
         # Note: `IntField` bit lengths are configurable!  (See docs for more details)
         field1 = models.IntField()
