@@ -1,15 +1,17 @@
 import unittest
+
 from calpack import models
+from calpack.utils import typed_property
 
 
 class Test_Utilities(unittest.TestCase):
     def test_util_invalid_typed_property(self):
         with self.assertRaises(TypeError):
             class temp(models.Field):
-                meh = models.typed_property('meh', str, 123)
+                meh = typed_property('meh', str, 123)
 
         class temp2(models.Field):
-            meh = models.typed_property('meh', str)
+            meh = typed_property('meh', str)
 
             def __init__(otherself, **kwargs):
                 super(temp2, otherself).__init__(**kwargs)
