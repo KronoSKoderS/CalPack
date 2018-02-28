@@ -42,6 +42,7 @@ deploy:
       branch: prod
       distributions: sdist bdist_wheel
       repo: KronoSKoderS/CalPack
+      condition: TRAVIS_EVENT_TYPE != 'cron'
       
   - provider: releases
     skip_cleanup: true
@@ -51,4 +52,5 @@ deploy:
     on:
       repo: KronoSKoderS/CalPack
       branch: tags
+      condition: TRAVIS_EVENT_TYPE != 'cron'
 
