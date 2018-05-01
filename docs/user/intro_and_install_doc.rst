@@ -13,10 +13,53 @@ using the syntax that :code:`ctypes` used was confusing and not easy to use.  Au
 of IDE's didn't pick up the field names and the reader had to have a basic knowledge of 
 :code:`ctypes`.  And then CalPack was born.  
 
-But why CalPack?  My first born is named Calvin and I wanted to name something after him as a
-tribute to him.  Secondly, typing out :code:`transmogrifier` is a nightmare.  Finally, who
-doesn't like Calvin and Hobbes?
+But why call it CalPack?  My first born is named Calvin and I wanted to name something after 
+him as a tribute to him.  Secondly, I'm a huge Calvin and Hobbes fan.  Finally, typing out 
+:code:`transmogrifier` is a nightmare.
 
+An Example
+----------
+
+If you're not familiar with custom packets and why CalPack was needed, here's a quick example.
+Let's imagine we want to "smartify" your washing machine.  If you're like me, there are probably
+multiple times where you've forgotten about the laundry load, opened it to load a new load and 
+realized the load was sour.  Wouldn't it be nice to have an app to send you a notification when 
+a load is done, and another at a preset time to remind you it might start getting sour?
+
+For this example, we won't worry about the actual app or the monitoring hardward, but to 
+communicate between the two, we're going to need to send some custom packets to do the following:
+    
+    * Packets sent to the machine called 'commands':
+        * Set the 'preset' time for warning that a load might go sour
+        * Query 'status' of the machine
+    * Return packets:
+        * Confirmation a command was accepted
+        * 'Status' or telemetry from the machine
+
+
+Let's also assume we use the .. _User Datagram Protocol (UDP): https://en.wikipedia.org/wiki/User_Datagram_Protocol#Packet_structure
+for structuring our packets.  This means we'll have a header that looks like this:
+
++-------------------------------------------------------------------------------------------------------------------------------+
+|                                                          UDP Packet Header                                                    |
++-------------------------------+-----------------------------------------------------------------------------------------------+
+|           Byte 0              |           Byte 1              |           Byte 2              |           Byte 3              |
++===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+===+
+| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+|                   Source Port                                 |                   Dest Port                                   |
++---------------------------------------------------------------+---------------------------------------------------------------+
+|                   Length                                      |                   Checksum                                    |
++---------------------------------------------------------------+---------------------------------------------------------------+
+|                                                             Data 1                                                            |
++-------------------------------------------------------------------------------------------------------------------------------+
+|                                                              ...                                                              |
++-------------------------------------------------------------------------------------------------------------------------------+
+|                                                             Data N                                                            |
++-------------------------------------------------------------------------------------------------------------------------------+
+
+
+Now let's fill in the Data words with things that have more meaning to our particular case.  Let's define 
 
 Installation
 ============
