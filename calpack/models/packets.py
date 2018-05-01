@@ -74,6 +74,18 @@ class _MetaPacket(type):
         if PY2:
             fields.sort(lambda x, y: cmp(x[1].creation_counter, y[1].creation_counter))
 
+        # Get all of the attributes of the base classes and see if the Structure is defined
+        #   if so, then update to the base C Structure to this one.  We also need to check
+        #   to see if any of the bases are other Packet types.  If so, then 'inherit' that
+        #   Packet's fields.  WARNING!  If inheriting from multiple Packet types, the fields
+        #   are appended in the order of inheritance.  
+        base_dicts = {}
+        for base in bases:
+            base_dicts.update(base.__dict__)
+            if '_Packet__c_struct' in dir(base):
+                fields_tuple += base._Packet__c_struct._fields_
+                order += base.fields_order
+
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, obj in fields:
             order.append(name)
@@ -87,12 +99,6 @@ class _MetaPacket(type):
 
         # Here we save the order
         class_dict['fields_order'] = order
-
-        # Get all of the attributes of the base classes and see if the Structure is defined
-        #   if so, then update to the base C Structure to this one.
-        base_dicts = {}
-        for base in bases:
-            base_dicts.update(base.__dict__)
 
         c_struct_type = base_dicts.get('_c_struct_type', ctypes.Structure)
 
