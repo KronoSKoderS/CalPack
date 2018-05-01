@@ -124,7 +124,7 @@ class Test_AdvancedPacket(unittest.TestCase):
         c_pkt.bool_field = True
 
         b_str = pkt.to_bytes()
-        c_b_str = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_pkt))
+        c_b_str = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_PrimaryPacket))
 
         self.assertEqual(b_str, c_b_str)
 
