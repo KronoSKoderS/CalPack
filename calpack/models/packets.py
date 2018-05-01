@@ -209,7 +209,6 @@ class Packet(object):
 
         setattr(self.__c_pkt, field_name, val)
 
-
     def get_c_field(self, field_name):
         """
         gets the value of the field value of the internal c structure.
@@ -223,6 +222,9 @@ class Packet(object):
         field_pairs = zip(self.fields_order, self.fields)
         vals_string = ", ".join(["{}={}".format(name, repr(field)) for name, field in field_pairs])
         return f_string.format(name=self.__class__.__name__, fields=vals_string)
+
+    def __len__(self):
+        return ctypes.sizeof(self.__c_struct)
 
 
 class PacketBigEndian(Packet):
