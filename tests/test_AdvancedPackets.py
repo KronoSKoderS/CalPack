@@ -176,6 +176,11 @@ class Test_AdvancedPacket(unittest.TestCase):
 
         m_pkt.PacketStatus = 0xbeefcafe
 
-        # Finally, let's check to make sure the output of the byte data
+        # check to make sure the output of the byte data
         # is the same
         self.assertEqual(t_pkt.to_bytes(), m_pkt.to_bytes())
+
+
+        # Check to make sure the PKT_UID's remain correct
+        self.assertEqual(t_pkt.PKT_UID, 0x00)
+        self.assertEqual(m_pkt.PKT_UID, 0x0E)

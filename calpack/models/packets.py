@@ -78,13 +78,17 @@ class _MetaPacket(type):
         #   if so, then update to the base C Structure to this one.  We also need to check
         #   to see if any of the bases are other Packet types.  If so, then 'inherit' that
         #   Packet's fields.  WARNING!  If inheriting from multiple Packet types, the fields
-        #   are appended in the order of inheritance.  
+        #   are appended in the order of inheritance.
         base_dicts = {}
         for base in bases:
             base_dicts.update(base.__dict__)
-            if '_Packet__c_struct' in dir(base):
-                fields_tuple += base._Packet__c_struct._fields_
-                order += base.fields_order
+            if getattr(base, '_IS_PKT_CLASS', False):
+                fields_tuple += getattr(base._Packet__c_struct, '_fields_', [])
+                base_order = getattr(base, 'fields_order', [])
+                order += base_order
+                for field_name in base_order:
+                    field = getattr(base, field_name)
+                    class_dict[field_name] = field
 
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, obj in fields:
@@ -135,6 +139,7 @@ class Packet(object):
         structure.  This MUST have the same :code:`_fields_` as the Packet would normally have in
         order for it to work properly.
     """
+    _IS_PKT_CLASS = True
     word_size = typed_property('word_size', int, 16)
     fields_order = []
     bit_len = 0
