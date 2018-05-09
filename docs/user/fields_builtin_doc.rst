@@ -102,7 +102,7 @@ The :code:`BoolField` is used to represent a :code:`bool` object in python.  Thi
 -----------------
 
 The :code:`FlagField` is used to represent a "flag" in the packet.  This is a single bit integer and
-can only store a value of 1 or 0.  This field is similar to :code:`IntField(bit_len=1)`.  
+can only store a value of 1 or 0.  This field is similar to :code:`IntField8(bit_len=1)`.  
 
 :code:`PacketField`
 -------------------
