@@ -13,10 +13,15 @@ python:
 - pypy3
 - nightly
 
+addons:
+  apt_packages:
+    - pandoc
+
 install:
 - pip install -r requirements.txt
 - pip install coveralls
 - pip install codacy-coverage
+- pip install pypandoc
 
 script:
 - coverage run --source=calpack setup.py test
@@ -44,14 +49,3 @@ deploy:
       repo: KronoSKoderS/CalPack
       condition: TRAVIS_EVENT_TYPE != 'cron'
       python: "3.6"
-      
-  - provider: releases
-    skip_cleanup: true
-    api_key:
-      secure: HloNBoprUIDLX7uK1LytFXk39+PEc4fx7hW9JDVGkj3uHEvPFYEvv+Ynhy3OlMMZMqQ0LAxfdI5UJVkhkDlmWkcQtudfAYyLwasafQ9fB0y4kruxS22GgLLkMKVkhI/n+SQZ29JA3WMSidZAkwYkqKODbrw2m3genlqt8D3gUh8pKKpE03vo+Eg4SygTZbG7N8RfpnRaFmGLidvhWUvHhBCIjtoiAtF0X3MNr7KnWXaZJk1Fb1Qz9MEUav9nYwKylXFMNyHFyEMHeQWd3oesgfi+rk/XdLdAd/QT23pVwtgUuOpBeXcI0Abq/3cCzvGhcbna/LOufGuWehm/ow4X5ITgi4JYeX1M2s2w2Bx4cJfbMJ+CWno7o35Lpbwx0C1Gs3My7mwZ4qjGlaGvf+XrLCzbVFmEhVyMdlDMU0Q45mCmzV6b0AZyq0hpBNgX2RG+PqHgn1HJgg5SIoNIjUY9R/JlM8tqCPDuEmlf7jbxOsmNuIN/Ve9dv757f5YZdf3fuBwBVfjxhTOKE9Dpe3t8wDCoY2pHUzm8AmV0qqdAFMcX1QulntBehA2jxDDVujUscAtP3pxPFj4+FZh7ctW5Krh5sFrc5XFQv/4xzojBkmqHIgFnklRmi6VySeQgQNXAk4WCODaTZpPBk6UPkah/li9VKrMzbiKKvJqhMRIr0rc=
-    file: $(build/*.tar.gz)
-    on:
-      repo: KronoSKoderS/CalPack
-      tags: true
-      condition: TRAVIS_EVENT_TYPE != 'cron'
-
