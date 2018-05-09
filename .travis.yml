@@ -13,6 +13,10 @@ python:
 - pypy3
 - nightly
 
+addons:
+  apt_packages:
+    - pandoc
+
 install:
 - pip install -r requirements.txt
 - pip install coveralls

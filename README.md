@@ -11,7 +11,7 @@ This python package is everything you need to "transmorgrify" your packets:
 
 [![Calvin and Hobbes Strip](http://assets.amuniversal.com/8d40c700deba01317193005056a9545d.png)](http://www.gocomics.com/calvinandhobbes/1987/03/23)
 
-This package is intended to make creating and/or parsing packets on the fly quick and easy.  This is a wrapper around
+This package is intended to make creating and/or parsing packets (structured bytecode) on the fly quick and easy.  This is a wrapper around
 the [`ctypes` module](https://docs.python.org/dev/library/ctypes.html) built-in to python. This package is designed
 with influence from Django's modeling and will look familiar to those that have used it.
 
