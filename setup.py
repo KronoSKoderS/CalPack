@@ -1,13 +1,17 @@
 from setuptools import setup, find_packages
 
 
-version = "2018.5.0"
+version = "2018.5.1"
 
 try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
 except ImportError:
-    long_description=''
+    long_description="""
+This package is intended to make creating and/or parsing packets (structured bytecode) on the fly quick and easy.  This is a wrapper around
+the .. _ctypes module: https://docs.python.org/dev/library/ctypes.html built-in to python. This package is designed
+with influence from Django's modeling and will look familiar to those that have used it.
+    """
 
 setup(
     name='calpack',
