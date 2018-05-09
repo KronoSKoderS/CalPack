@@ -1,23 +1,17 @@
 from setuptools import setup, find_packages
 
 
-version = "2018.5.1"
+version = "2018.5.2"
 
-try:
-    import pypandoc
-    long_description = pypandoc.convert('README.md', 'rst')
-except ImportError:
-    long_description="""
-This package is intended to make creating and/or parsing packets (structured bytecode) on the fly quick and easy.  This is a wrapper around
-the .. _ctypes module: https://docs.python.org/dev/library/ctypes.html built-in to python. This package is designed
-with influence from Django's modeling and will look familiar to those that have used it.
-    """
+with open('README.md', 'r') as readme:
+    long_description = readme.read()
 
 setup(
     name='calpack',
     version=version,
     description='Packets in Python made Simple',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/KronosKoderS/CalPack',
     download_url='https://github.com/KronosKoderS/CalPack/tarball/v' + version,
     author='KronoSKoderS',
