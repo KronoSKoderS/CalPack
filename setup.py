@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-version = "0.1.3"
+version = "2018.5.0"
 
 try:
     import pypandoc
@@ -42,5 +42,5 @@ setup(
         'Topic :: Utilities',
     ],
     test_suite="tests.get_tests",
-    packages=find_packages(exclude=['tests'])
+    packages=find_packages(exclude=['tests', 'docs'])
 )
