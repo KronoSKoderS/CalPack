@@ -6,6 +6,7 @@ __all__ = [
 ]
 
 from calpack.models.fields.Fields import Field
+from calpack.utils import InvalidArrayFieldSizeError
 
 class ArrayField(Field):
     """
@@ -35,7 +36,7 @@ class ArrayField(Field):
             raise TypeError("Must be of type ArrayField or list")
 
         if len(val) != self.array_size:
-            raise ValueError("The length of val must be {}!".format(self.array_size))
+            raise InvalidArrayFieldSizeError("The length of val must be {}!".format(self.array_size))
 
         return self.c_type(*val)
 
