@@ -233,3 +233,43 @@ class Test_AdvancedPacket(unittest.TestCase):
         # Check to make sure the PKT_UID's remain correct
         self.assertEqual(t_pkt.PKT_UID, 0x00)
         self.assertEqual(m_pkt.PKT_UID, 0x0E)
+
+
+    def test_advpkt_inheritance_with_additional_fields(self):
+        """
+        This test verifies that a `Packet` class can inherit from another class and have additional
+        fields defined within it.
+        """
+        class MyPacketTemplate(models.Packet):
+            PKT_TYPE = 0x0
+            int_field = models.IntField()
+
+        class MyPacket(MyPacketTemplate):
+            PKT_TYPE = 0xE
+            int_field2 = models.IntField()
+
+        pkt = MyPacket()
+
+        exptected_fields = ['int_field', 'int_field2']
+        self.assertEqual(pkt.fields_order, exptected_fields)
+
+        pkt.int_field = 1
+        pkt.int_field2 = 2
+
+        self.assertEqual(pkt.int_field, 1)
+        self.assertEqual(pkt.int_field2, 2)
+
+        class c_MyPacket(ctypes.Structure):
+            _fields_ = (
+                ('int_field', ctypes.c_uint),
+                ('int_field2', ctypes.c_uint)
+            )
+
+        c_pkt = c_MyPacket()
+        c_pkt.int_field = 1
+        c_pkt.int_field2 = 2
+
+        b_str = pkt.to_bytes()
+        c_b_str = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_MyPacket))
+
+        self.assertEqual(b_str, c_b_str)
