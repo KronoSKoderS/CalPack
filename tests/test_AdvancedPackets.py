@@ -1,5 +1,5 @@
 from calpack import models
-from calpack.utils import FieldNameError
+from calpack.utils import FieldNameError, FieldAlreadyExistsError
 import unittest
 import ctypes
 
@@ -273,3 +273,21 @@ class Test_AdvancedPacket(unittest.TestCase):
         c_b_str = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_MyPacket))
 
         self.assertEqual(b_str, c_b_str)
+
+    def test_advpkt_inheritance_with_same_field_name_raises_FieldAlreadyExistsError(self):
+        """
+        This test verifies that a packet that inherits from another packet will raise a 
+        FieldAlreadyExistsError when there are fields that have the same name.
+        """
+        class MyPacketTemplate(models.Packet):
+            field1 = models.IntField()
+
+        with self.assertRaises(FieldAlreadyExistsError):
+            class MyPacket(MyPacketTemplate):
+                field1 = models.IntField()
+
+        with self.assertRaises(FieldAlreadyExistsError):
+            class MyPacket(MyPacketTemplate):
+                field1 = models.FloatField()
+
+    

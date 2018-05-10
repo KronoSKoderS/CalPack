@@ -5,7 +5,7 @@ import ctypes
 
 from collections import OrderedDict
 
-from calpack.utils import typed_property, PY2, PYPY, FieldNameError
+from calpack.utils import typed_property, PY2, PYPY, FieldNameError, FieldAlreadyExistsError
 from calpack.models.fields import Field
 
 
@@ -88,6 +88,11 @@ class _MetaPacket(type):
                 order += base_order
                 for field_name in base_order:
                     field = getattr(base, field_name)
+
+                    # we don't want to override a field.  If it's already there, then we need to 
+                    # raise and error.
+                    if field_name in class_dict.keys():
+                        raise FieldAlreadyExistsError("{} field already exitsts!".format(field_name))
                     class_dict[field_name] = field
 
         # for each 'Field' type we're gonna save the order and prep for the c struct
@@ -99,6 +104,7 @@ class _MetaPacket(type):
             field_tuple = obj.create_field_c_tuple()
 
             fields_tuple.append(field_tuple)
+
             class_dict[name] = obj
 
         # Here we save the order

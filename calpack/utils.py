@@ -19,6 +19,10 @@ class FieldNameError(Exception):
     pass
 
 
+class FieldAlreadyExistsError(Exception):
+    pass
+
+
 def typed_property(name, expected_type, default_val=None):
     """
     Simple function used to ensure a specific type for a property defined within a class.  This can ONLY be used
