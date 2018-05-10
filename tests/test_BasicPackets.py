@@ -4,7 +4,7 @@ import struct
 import sys
 
 from calpack import models
-from calpack.utils import PYPY
+from calpack.utils import PYPY, FieldAlreadyExistsError
 
 
 class Test_BasicPacket(unittest.TestCase):
@@ -225,7 +225,7 @@ class Test_BasicPacket(unittest.TestCase):
 
 class Test_EndianPacket(unittest.TestCase):
 
-    def test_little_endian_packet_from_bytes(self):
+    def test_endian_little_endian_packet_from_bytes(self):
         """
         This test verifies that a PacketLittleEndian packet can be created from a properly formated
         little endian byte string.
@@ -247,7 +247,7 @@ class Test_EndianPacket(unittest.TestCase):
         self.assertEqual(pkt.field2, 0xbeefcafe)
 
 
-    def test_little_endian_packet_to_bytes(self):
+    def test_endian_little_endian_packet_to_bytes(self):
         """
         This test verifies that a PacketLittleEndian packet can be created and will create the
         properly formated byte string.
@@ -271,7 +271,7 @@ class Test_EndianPacket(unittest.TestCase):
         self.assertEqual(pkt.to_bytes(), expected_b_val)
 
 
-    def test_big_endian_packet_from_bytes(self):
+    def test_endian_big_endian_packet_from_bytes(self):
         """
         This test verifies that a PacketBigEndian packet can be created from a properly formated
         little endian byte string.
@@ -292,7 +292,7 @@ class Test_EndianPacket(unittest.TestCase):
         self.assertEqual(pkt.field2, 0xbeefcafe)
 
 
-    def test_big_endian_packet_to_bytes(self):
+    def test_endian_big_endian_packet_to_bytes(self):
         """
         This test verifies that a PacketBigEndian packet can be created and will create the
         properly formated byte string.
