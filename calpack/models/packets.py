@@ -5,7 +5,7 @@ import ctypes
 
 from collections import OrderedDict
 
-from calpack.utils import typed_property, PY2, PYPY
+from calpack.utils import typed_property, PY2, PYPY, FieldNameError
 from calpack.models.fields import Field
 
 
@@ -216,7 +216,7 @@ class Packet(object):
         :param val: a cytpes compatible value to set the field to
         """
         if field_name not in self.fields_order:
-            raise AttributeError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
+            raise FieldNameError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
 
         setattr(self.__c_pkt, field_name, val)
 
