@@ -4,7 +4,7 @@ a set of utility functions/classes for use within CalPack.
 import sys
 
 __all__ = [
-    'InvalidFieldTypeError', 'InvalidArrayFieldSizeError', 'FieldNameError', 'typed_property',
+    'InvalidArrayFieldSizeError', 'FieldNameError', 'typed_property',
     'PY2', 'PY3', 'PYPY'
 ]
 
