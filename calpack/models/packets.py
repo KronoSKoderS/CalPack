@@ -5,7 +5,7 @@ import ctypes
 
 from collections import OrderedDict
 
-from calpack.utils import typed_property, PY2, PYPY
+from calpack.utils import typed_property, PY2, PYPY, FieldNameError, FieldAlreadyExistsError
 from calpack.models.fields import Field
 
 
@@ -74,6 +74,27 @@ class _MetaPacket(type):
         if PY2:
             fields.sort(lambda x, y: cmp(x[1].creation_counter, y[1].creation_counter))
 
+        # Get all of the attributes of the base classes and see if the Structure is defined
+        #   if so, then update to the base C Structure to this one.  We also need to check
+        #   to see if any of the bases are other Packet types.  If so, then 'inherit' that
+        #   Packet's fields.  WARNING!  If inheriting from multiple Packet types, the fields
+        #   are appended in the order of inheritance.
+        base_dicts = {}
+        for base in bases:
+            base_dicts.update(base.__dict__)
+            if getattr(base, '_IS_PKT_CLASS', False):
+                fields_tuple += getattr(base._Packet__c_struct, '_fields_', [])
+                base_order = getattr(base, 'fields_order', [])
+                order += base_order
+                for field_name in base_order:
+                    field = getattr(base, field_name)
+
+                    # we don't want to override a field.  If it's already there, then we need to 
+                    # raise and error.
+                    if field_name in class_dict.keys():
+                        raise FieldAlreadyExistsError("{} field already exitsts!".format(field_name))
+                    class_dict[field_name] = field
+
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, obj in fields:
             order.append(name)
@@ -83,16 +104,11 @@ class _MetaPacket(type):
             field_tuple = obj.create_field_c_tuple()
 
             fields_tuple.append(field_tuple)
+
             class_dict[name] = obj
 
         # Here we save the order
         class_dict['fields_order'] = order
-
-        # Get all of the attributes of the base classes and see if the Structure is defined
-        #   if so, then update to the base C Structure to this one.
-        base_dicts = {}
-        for base in bases:
-            base_dicts.update(base.__dict__)
 
         c_struct_type = base_dicts.get('_c_struct_type', ctypes.Structure)
 
@@ -129,6 +145,7 @@ class Packet(object):
         structure.  This MUST have the same :code:`_fields_` as the Packet would normally have in
         order for it to work properly.
     """
+    _IS_PKT_CLASS = True
     word_size = typed_property('word_size', int, 16)
     fields_order = []
     bit_len = 0
@@ -205,10 +222,9 @@ class Packet(object):
         :param val: a cytpes compatible value to set the field to
         """
         if field_name not in self.fields_order:
-            raise AttributeError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
+            raise FieldNameError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
 
         setattr(self.__c_pkt, field_name, val)
-
 
     def get_c_field(self, field_name):
         """
@@ -223,6 +239,9 @@ class Packet(object):
         field_pairs = zip(self.fields_order, self.fields)
         vals_string = ", ".join(["{}={}".format(name, repr(field)) for name, field in field_pairs])
         return f_string.format(name=self.__class__.__name__, fields=vals_string)
+
+    def __len__(self):
+        return ctypes.sizeof(self.__c_struct)
 
 
 class PacketBigEndian(Packet):

@@ -1,9 +1,26 @@
 """
-a set of utility functions for use within the models module.
+a set of utility functions/classes for use within CalPack.
 """
 import sys
 
+__all__ = [
+    'InvalidArrayFieldSizeError', 'FieldNameError', 'typed_property',
+    'PY2', 'PY3', 'PYPY'
+]
+
 _NO_TYPE = object()
+
+
+class InvalidArrayFieldSizeError(Exception):
+    pass
+
+
+class FieldNameError(Exception):
+    pass
+
+
+class FieldAlreadyExistsError(Exception):
+    pass
 
 
 def typed_property(name, expected_type, default_val=None):
