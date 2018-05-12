@@ -289,5 +289,3 @@ class Test_AdvancedPacket(unittest.TestCase):
         with self.assertRaises(FieldAlreadyExistsError):
             class MyPacket(MyPacketTemplate):
                 field1 = models.FloatField()
-
-    
