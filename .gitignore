@@ -270,3 +270,4 @@ calpack.egg-info/
 .vscode/*
 
 \.pytest_cache\*
+.pytest_cache/
