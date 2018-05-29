@@ -1,6 +1,25 @@
 from calpack import models
 
+__all__ = [
+    'UDP_HEADER', 'UDP_HEADER_BIG', 'UDP_HEADER_LITTLE'
+]
 
+class UDP_HEADER(models.Packet):
+    """
+    UDP HEADER class.  A simple packet class representing the UDP Header.
+    """
+    source_port = models.IntField16()
+    dest_port = models.IntField16()
+    length = models.IntField16()
+    checksum = models.IntField16()
+
+
+class UDP_HEADER_BIG(UDP_HEADER, models.PacketBigEndian):
+    pass
+
+
+class UDP_HEADER_LITTLE(UDP_HEADER, models.PacketLittleEndian):
+    pass
 #class TCP_HEADER(models.Packet):
 #    _word_size = 32
 
