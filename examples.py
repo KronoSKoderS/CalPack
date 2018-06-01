@@ -9,14 +9,15 @@ import socket
 
 from calpack import models
 
+
 class WashingMachineTelemetry(models.Packet):
     status = models.BoolField()
     num_loads = models.IntField16()
 
 
 tlm = WashingMachineTelemetry(
-    status = False,
-    num_loads = 0
+    status=False,
+    num_loads=0
 )
 
 
@@ -29,3 +30,20 @@ client.recv(4096)
 server = socket.socket(socket.AF_INET, socket.SOCK_RAW)
 server.connect(("127.0.0.1", 8080))
 server.send(tlm.to_bytes())
+
+
+# Here's an example of appending the custom packet with the UDP Header
+
+from calpack.common.ip import UDP_HEADER
+
+class WashingMachinePacket(models.Packet):
+    udp_header = models.PacketField(UDP_HEADER)
+    telem = models.PacketField(WashingMachineTelemetry)
+
+tlm_pkt = WashingMachinePacket()
+tlm_pkt.udp_header.source_port = 8080
+tlm_pkt.udp_header.dest_port = 8080
+tlm_pkt.udp_header.length = len(tlm)
+
+# We directly set the tlm packet we used previously
+tlm_pkt.telem = tlm
