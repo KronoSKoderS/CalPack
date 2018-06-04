@@ -139,6 +139,7 @@ class Test_AdvancedPacket(unittest.TestCase):
             """
             A ctypes.Structure class that will mimic the `Point` class
             """
+            _pack_ = 1
             _fields_ = (
                 ('x', ctypes.c_uint8),
                 ('y', ctypes.c_uint8)
@@ -148,6 +149,7 @@ class Test_AdvancedPacket(unittest.TestCase):
             """
             A ctypes.Structure class that will mimc the `PrimaryPacket` class
             """
+            _pack_ = 1
             _fields_ = (
                 ('int_field', ctypes.c_uint),
                 ('float_field', ctypes.c_float),
