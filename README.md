@@ -32,27 +32,33 @@ across a network.  Let's say we want to know the following in our packet:
 
 To create this packet in `CalPack` is simple:
 
-    from calpack import models
+```python
+from calpack import models
 
-    class MachineStatus(models.Packet):
-        Status = models.BooleanField()
-        Num_Loads = models.IntField()
+class MachineStatus(models.Packet):
+    Status = models.BooleanField()
+    Num_Loads = models.IntField()
+```
 
 On our monitoring device (the Raspberry Pi), we can easily create the byte data for the packet by using our new packet:
 
-    status_pkt = MachineStatus(
-        Status=True,
-        Num_Loads=12
-    )
+```python
+status_pkt = MachineStatus(
+    Status=True,
+    Num_Loads=12
+)
 
-    # Send the byte data using an assumed custom `send` funcion
-    send(status_pkt.to_bytes())
+# Send the byte data using an assumed custom `send` funcion
+send(status_pkt.to_bytes())
+```
 
 And converting the recieved byte data is simple as well:
 
-    # assuming a `receive` function and returns the byte data of the sent packet
-    received_data = MachineSatus.from_bytes(receive())
-    print(received_data.status)
+```python
+# assuming a `receive` function and returns the byte data of the sent packet
+received_data = MachineSatus.from_bytes(receive())
+print(received_data.status)
+```
 
 ## Installation
 
