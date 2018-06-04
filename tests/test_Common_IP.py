@@ -80,7 +80,7 @@ class Test_TCP_HEADER(unittest.TestCase):
 
 
     def test_tcp_header_big(self):
-        header = TCP_HEADER(
+        header = TCP_HEADER_BIG(
             source_port = 8080,
             dest_port = 8080,
             seq_num = 0xbeefcafe,
@@ -100,7 +100,7 @@ class Test_TCP_HEADER(unittest.TestCase):
         )
 
         expected_data = [
-            8080, 8080, 0xbeefcafe, 0xcafebeef, int('10001111', 2), 0xff, 12, 0xffff
+            8080, 8080, 0xbeefcafe, 0xcafebeef, int('11110001', 2), 0xff, 12, 0xffff
         ]
 
         expected_val = struct.pack('>HHIIBBHH', *expected_data)
@@ -108,7 +108,7 @@ class Test_TCP_HEADER(unittest.TestCase):
         self.assertEqual(header.to_bytes(), expected_val)
 
     def test_tcp_header_little(self):
-        header = TCP_HEADER(
+        header = TCP_HEADER_LITTLE(
             source_port = 8080,
             dest_port = 8080,
             seq_num = 0xbeefcafe,
