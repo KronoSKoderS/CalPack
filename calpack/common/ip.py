@@ -1,9 +1,10 @@
 from calpack import models
+from calpack.utils import PYPY
 
-__all__ = [
-    'UDP_HEADER', 'UDP_HEADER_BIG', 'UDP_HEADER_LITTLE',
-    'TCP_HEADER', 'TCP_HEADER_BIG', 'TCP_HEADER_LITTLE'
-]
+__all__ = ['UDP_HEADER', 'TCP_HEADER']
+
+if not PYPY:
+    __all__ += ['UDP_HEADER_BIG', 'UDP_HEADER_LITTLE', 'TCP_HEADER_BIG', 'TCP_HEADER_LITTLE']
 
 
 class UDP_HEADER(models.Packet):
