@@ -4,7 +4,7 @@ a set of utility functions/classes for use within CalPack.
 import sys
 
 __all__ = [
-    'InvalidArrayFieldSizeError', 'FieldNameError', 'typed_property',
+    'InvalidArrayFieldSizeError', 'FieldNameError', 'FieldNameDoesntExistError', 'typed_property',
     'PY2', 'PY3', 'PYPY'
 ]
 
@@ -16,6 +16,10 @@ class InvalidArrayFieldSizeError(Exception):
 
 
 class FieldNameError(Exception):
+    pass
+
+
+class FieldNameDoesntExistError(Exception):
     pass
 
 

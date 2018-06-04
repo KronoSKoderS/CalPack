@@ -5,7 +5,8 @@ import ctypes
 
 from collections import OrderedDict
 
-from calpack.utils import typed_property, PY2, PYPY, FieldNameError, FieldAlreadyExistsError
+from calpack.utils import typed_property, PY2, PYPY, FieldNameError, \
+FieldAlreadyExistsError, FieldNameDoesntExistError
 from calpack.models.fields import Field
 
 
@@ -171,6 +172,8 @@ class Packet(object):
             #   process like normal.
             if key in self.fields_order:
                 setattr(self, key, val)
+            else:
+                raise FieldNameDoesntExistError("{key} is not a valid field name".format(key=key))
 
     @property
     def c_pkt(self):

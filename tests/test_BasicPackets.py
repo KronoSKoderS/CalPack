@@ -4,7 +4,7 @@ import struct
 import sys
 
 from calpack import models
-from calpack.utils import PYPY, FieldAlreadyExistsError
+from calpack.utils import PYPY, FieldAlreadyExistsError, FieldNameDoesntExistError
 
 
 class Test_BasicPacket(unittest.TestCase):
@@ -222,6 +222,17 @@ class Test_BasicPacket(unittest.TestCase):
 
         self.assertEqual(len(p1), ctypes.sizeof(c_simple_pkt))
 
+    def test_pkt_invalid_fieldname_on_init_raises_error(self):
+        class simple_pkt(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
+
+
+        with self.assertRaises(FieldNameDoesntExistError):
+            pkt = simple_pkt(flaot_field=3.123)
+
+        with self.assertRaises(FieldNameDoesntExistError):
+            pkt = simple_pkt(int_field_invalid=123)
 
 class Test_EndianPacket(unittest.TestCase):
 
