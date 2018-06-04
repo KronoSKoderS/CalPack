@@ -1,6 +1,13 @@
 from calpack import models
 from calpack.utils import PYPY
 
+if PYPY:
+    PacketBigEndian = models.Packet
+    PacketLittleEndian = models.Packet
+else:
+    PacketBigEndian = models.PacketBigEndian
+    PacketLittleEndian = models.PacketLittleEndian
+
 __all__ = ['UDP_HEADER', 'TCP_HEADER']
 
 if not PYPY:
@@ -18,7 +25,7 @@ class UDP_HEADER(models.Packet):
     checksum = models.IntField16()
 
 
-class UDP_HEADER_BIG(UDP_HEADER, models.PacketBigEndian):
+class UDP_HEADER_BIG(UDP_HEADER, PacketBigEndian):
     """
     UDP HEADER class.  A simple packet class representing the UDP Header.  This packet uses big
     endian byte ordering.
@@ -26,7 +33,7 @@ class UDP_HEADER_BIG(UDP_HEADER, models.PacketBigEndian):
     pass
 
 
-class UDP_HEADER_LITTLE(UDP_HEADER, models.PacketLittleEndian):
+class UDP_HEADER_LITTLE(UDP_HEADER, PacketLittleEndian):
     """
     UDP HEADER class.  A simple packet class representing the UDP Header.  This packet uses little
     endian byte ordering.
@@ -58,7 +65,7 @@ class TCP_HEADER(models.Packet):
     checksum = models.IntField16()
 
 
-class TCP_HEADER_BIG(TCP_HEADER, models.PacketBigEndian):
+class TCP_HEADER_BIG(TCP_HEADER, PacketBigEndian):
     """
     UDP HEADER class.  A simple packet class representing the UDP Header.  This packet uses big
     byte ordering.
@@ -66,7 +73,7 @@ class TCP_HEADER_BIG(TCP_HEADER, models.PacketBigEndian):
     pass
 
 
-class TCP_HEADER_LITTLE(TCP_HEADER, models.PacketLittleEndian):
+class TCP_HEADER_LITTLE(TCP_HEADER, PacketLittleEndian):
     """
     UDP HEADER class.  A simple packet class representing the UDP Header.  This packet uses little
     byte ordering.
