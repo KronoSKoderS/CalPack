@@ -90,7 +90,7 @@ class _MetaPacket(type):
                 for field_name in base_order:
                     field = getattr(base, field_name)
 
-                    # we don't want to override a field.  If it's already there, then we need to 
+                    # we don't want to override a field.  If it's already there, then we need to
                     # raise and error.
                     if field_name in class_dict.keys():
                         raise FieldAlreadyExistsError("{} field already exitsts!".format(field_name))

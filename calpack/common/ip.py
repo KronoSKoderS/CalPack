@@ -1,3 +1,7 @@
+"""
+A collection of common IP headers (i.e. TCP and UDP) created using the calpack.Packet class.
+"""
+
 from calpack import models
 from calpack.utils import PYPY
 
