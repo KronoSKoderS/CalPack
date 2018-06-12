@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-version = "2018.5.2"
+version = "2018.6.0"
 
 with open('README.md', 'r') as readme:
     long_description = readme.read()
