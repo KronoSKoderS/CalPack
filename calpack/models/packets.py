@@ -5,7 +5,8 @@ import ctypes
 
 from collections import OrderedDict
 
-from calpack.utils import typed_property, PY2, PYPY
+from calpack.utils import typed_property, PY2, PYPY, FieldNameError, \
+FieldAlreadyExistsError, FieldNameDoesntExistError
 from calpack.models.fields import Field
 
 
@@ -88,6 +89,11 @@ class _MetaPacket(type):
                 order += base_order
                 for field_name in base_order:
                     field = getattr(base, field_name)
+
+                    # we don't want to override a field.  If it's already there, then we need to
+                    # raise and error.
+                    if field_name in class_dict.keys():
+                        raise FieldAlreadyExistsError("{} field already exitsts!".format(field_name))
                     class_dict[field_name] = field
 
         # for each 'Field' type we're gonna save the order and prep for the c struct
@@ -99,6 +105,7 @@ class _MetaPacket(type):
             field_tuple = obj.create_field_c_tuple()
 
             fields_tuple.append(field_tuple)
+
             class_dict[name] = obj
 
         # Here we save the order
@@ -108,7 +115,7 @@ class _MetaPacket(type):
 
         # Here we create the internal structure
         class Cstruct(c_struct_type):
-            pass
+            _pack_ = 1
 
         Cstruct._fields_ = fields_tuple
         class_dict['_Packet__c_struct'] = Cstruct
@@ -165,6 +172,8 @@ class Packet(object):
             #   process like normal.
             if key in self.fields_order:
                 setattr(self, key, val)
+            else:
+                raise FieldNameDoesntExistError("{key} is not a valid field name".format(key=key))
 
     @property
     def c_pkt(self):
@@ -216,7 +225,7 @@ class Packet(object):
         :param val: a cytpes compatible value to set the field to
         """
         if field_name not in self.fields_order:
-            raise AttributeError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
+            raise FieldNameError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
 
         setattr(self.__c_pkt, field_name, val)
 

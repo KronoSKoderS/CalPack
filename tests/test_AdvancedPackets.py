@@ -1,4 +1,5 @@
 from calpack import models
+from calpack.utils import FieldNameError, FieldAlreadyExistsError
 import unittest
 import ctypes
 
@@ -6,11 +7,21 @@ import ctypes
 class Test_AdvancedPacket(unittest.TestCase):
 
     def test_advpkt_enc_array_pkts(self):
+        """
+        This test verifies that multiple Packet classes can be "encapsulated" within another packet
+        using the `PacketField` class and the `ArrayField` class.  Multiple 
+        """
         class Point(models.Packet):
+            """
+            A simple `Packet` class to be encapsulated within another `Packet` class
+            """
             x = models.IntField()
             y = models.IntField()
 
         class EncArray(models.Packet):
+            """
+            A `Packet` class that will encapsulate the `Point` class.
+            """
             points = models.ArrayField(
                 models.PacketField(Point),
                 10
@@ -29,17 +40,32 @@ class Test_AdvancedPacket(unittest.TestCase):
             self.assertEqual(pkt._Packet__c_pkt.points[i].y, 50)
 
     def test_advpkt_inception_enc_pkt(self):
+        """
+        This test verifies the functionality of encapsulating multiple `Packet` classes down to
+        3 level (Parent --> Child 1 --> Child 2).  Further more, the encapsulation at level 2
+        (Child 1) will encapsulate level 3 (Child 2) using an `ArrayField` class.
+        """
         class Point(models.Packet):
+            """
+            A simple `Packet` class intended to be encapsulated within another `Packet` class
+            """
             x = models.IntField()
             y = models.IntField()
 
         class TenPoints(models.Packet):
+            """
+            A `Packet` class that will encapsulate the `Point` class and intended to be
+            encapsulated within another `Packet` class.
+            """
             points = models.ArrayField(
                 models.PacketField(Point),
                 8
             )
 
         class TwoTenPoints(models.Packet):
+            """
+            A `Packet` class that will encapsulate the `TenPoints` class.
+            """
             points_one = models.PacketField(TenPoints)
             points_two = models.PacketField(TenPoints)
 
@@ -66,25 +92,42 @@ class Test_AdvancedPacket(unittest.TestCase):
             self.assertEqual(pkt._Packet__c_pkt.points_two.points[i].y, 50)
 
     def test_advpkt_verify_AttributeError_invalid_field_name_set_c_field(self):
+        """
+        This test verifies the internal `set_c_field` function to verify that attempting to set
+        an internal c_pkt field that doesn't exist will raise an AttributeError
+        """
         class Point(models.Packet):
+            """
+            A simple `Packet` class.  It's contents doesn't matter as long as none of the fields
+            have a name called 'bad_name'.
+            """
             x = models.IntField()
             y = models.IntField()
 
         p = Point()
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(FieldNameError):
             p.set_c_field('bad_name', 100)
 
     def test_advpkt_create_complex_packet(self):
         """
-        This test creates a packet that contains all the known built-in fields and ensures that
-        the packet is correctly created and parsed back in.
+        This test verifies that creating a packet that contains all the known built-in fields and
+        ensures that the packet is correctly created and parsed back in.  This test will create a
+        CalPack `Packet` class that will contain all field types (including the `PacketField), set
+        values for each of the fields, export to bytes and compare those values to that of a ctypes
+        Structure class using the same field definitions.
         """
 
         class Point(models.Packet):
+            """
+            A simple `Packet` class to be used for encapsulation
+            """
             x = models.IntField8()
             y = models.IntField8()
 
         class PrimaryPacket(models.Packet):
+            """
+            A `Packet` class used to contain all fields types (including the `PacketField`)
+            """
             int_field = models.IntField()
             float_field = models.FloatField()
             double_field = models.DoubleField()
@@ -93,12 +136,20 @@ class Test_AdvancedPacket(unittest.TestCase):
             bool_field = models.BoolField()
 
         class c_Point(ctypes.Structure):
+            """
+            A ctypes.Structure class that will mimic the `Point` class
+            """
+            _pack_ = 1
             _fields_ = (
                 ('x', ctypes.c_uint8),
                 ('y', ctypes.c_uint8)
             )
 
         class c_PrimaryPacket(ctypes.Structure):
+            """
+            A ctypes.Structure class that will mimc the `PrimaryPacket` class
+            """
+            _pack_ = 1
             _fields_ = (
                 ('int_field', ctypes.c_uint),
                 ('float_field', ctypes.c_float),
@@ -184,3 +235,59 @@ class Test_AdvancedPacket(unittest.TestCase):
         # Check to make sure the PKT_UID's remain correct
         self.assertEqual(t_pkt.PKT_UID, 0x00)
         self.assertEqual(m_pkt.PKT_UID, 0x0E)
+
+
+    def test_advpkt_inheritance_with_additional_fields(self):
+        """
+        This test verifies that a `Packet` class can inherit from another class and have additional
+        fields defined within it.
+        """
+        class MyPacketTemplate(models.Packet):
+            PKT_TYPE = 0x0
+            int_field = models.IntField()
+
+        class MyPacket(MyPacketTemplate):
+            PKT_TYPE = 0xE
+            int_field2 = models.IntField()
+
+        pkt = MyPacket()
+
+        exptected_fields = ['int_field', 'int_field2']
+        self.assertEqual(pkt.fields_order, exptected_fields)
+
+        pkt.int_field = 1
+        pkt.int_field2 = 2
+
+        self.assertEqual(pkt.int_field, 1)
+        self.assertEqual(pkt.int_field2, 2)
+
+        class c_MyPacket(ctypes.Structure):
+            _fields_ = (
+                ('int_field', ctypes.c_uint),
+                ('int_field2', ctypes.c_uint)
+            )
+
+        c_pkt = c_MyPacket()
+        c_pkt.int_field = 1
+        c_pkt.int_field2 = 2
+
+        b_str = pkt.to_bytes()
+        c_b_str = ctypes.string_at(ctypes.addressof(c_pkt), ctypes.sizeof(c_MyPacket))
+
+        self.assertEqual(b_str, c_b_str)
+
+    def test_advpkt_inheritance_with_same_field_name_raises_FieldAlreadyExistsError(self):
+        """
+        This test verifies that a packet that inherits from another packet will raise a 
+        FieldAlreadyExistsError when there are fields that have the same name.
+        """
+        class MyPacketTemplate(models.Packet):
+            field1 = models.IntField()
+
+        with self.assertRaises(FieldAlreadyExistsError):
+            class MyPacket(MyPacketTemplate):
+                field1 = models.IntField()
+
+        with self.assertRaises(FieldAlreadyExistsError):
+            class MyPacket(MyPacketTemplate):
+                field1 = models.FloatField()

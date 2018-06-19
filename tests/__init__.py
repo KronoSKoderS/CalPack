@@ -20,6 +20,7 @@ def full_suite():
     from tests.test_FloatFields import Test_FloatField, Test_DoubleField, Test_LongDoubleField
     from tests.test_BoolField import Test_BoolField
     from tests.test_Repr import Test_Repr
+    from tests.test_Common_IP import Test_TCP_HEADER, Test_UDP_HEADER
 
     return unittest.TestSuite([
         unittest.TestLoader().loadTestsFromTestCase(Test_BasicPacket),
@@ -34,7 +35,9 @@ def full_suite():
         unittest.TestLoader().loadTestsFromTestCase(Test_DoubleField),
         unittest.TestLoader().loadTestsFromTestCase(Test_LongDoubleField),
         unittest.TestLoader().loadTestsFromTestCase(Test_BoolField),
-        unittest.TestLoader().loadTestsFromTestCase(Test_Repr)
+        unittest.TestLoader().loadTestsFromTestCase(Test_Repr),
+        unittest.TestLoader().loadTestsFromTestCase(Test_TCP_HEADER),
+        unittest.TestLoader().loadTestsFromTestCase(Test_UDP_HEADER)
     ])
 
 if __name__ == "__main__":

@@ -98,6 +98,7 @@ class Test_IntField(unittest.TestCase):
         )
 
         class c_pkt_struct(ctypes.Structure):
+            _pack_ = 1
             _fields_ = (
                 ('int_field', ctypes.c_uint),
                 ('int_field_signed', ctypes.c_int),

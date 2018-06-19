@@ -4,12 +4,15 @@ import struct
 import sys
 
 from calpack import models
-from calpack.utils import PYPY
+from calpack.utils import PYPY, FieldAlreadyExistsError, FieldNameDoesntExistError
 
 
 class Test_BasicPacket(unittest.TestCase):
 
     def test_pkt_create_packet_object_with_defined_values(self):
+        """
+        This test verifies that a `Packet` object can be created with defined field values.
+        """
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -19,6 +22,10 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertEqual(p.int_field_signed, -12)
 
     def test_pkt_create_packet_with_default_field_value(self):
+        """
+        This test verifies that a `Packet` definition can be created with default values for a
+        particular field.
+        """
         class two_int_field_packet(models.Packet):
             int_field = models.IntField(default_val=12)
             int_field_signed = models.IntField(signed=True, default_val=-12)
@@ -60,6 +67,10 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertEqual(pkt._Packet__c_pkt.int_field_signed, val_2)
 
     def test_pkt_compare_two_same_packets(self):
+        """
+        This test verifies that two packets of the same class and with the same field values when
+        compared, will be equal.
+        """
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -70,6 +81,10 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertEqual(pkt1, pkt2)
 
     def test_pkt_compare_two_different_packets(self):
+        """
+        This test verifies that two packets of different class types may have the same values and
+        even the same bytecode output, will be non-equal when compared.
+        """
 
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()
@@ -89,6 +104,7 @@ class Test_BasicPacket(unittest.TestCase):
         # fields are the same, this should raise an error as their classes are
         # not the same.
         self.assertFalse(pkt_orig == pkt_different_class_same_byte_out)
+        self.assertNotEqual(pkt_orig, pkt_different_class_same_byte_out)
 
         class three_int_field_packet(models.Packet):
             int_field = models.IntField()
@@ -101,14 +117,20 @@ class Test_BasicPacket(unittest.TestCase):
             int_field_3=3
         )
         self.assertFalse(pkt_orig == pkt_different_class_different_byte_out)
+        self.assertNotEqual(pkt_orig, pkt_different_class_different_byte_out)
 
         pkt_same_class_different_values = two_int_field_packet(
             int_field=1,
             int_field_signed=2
         )
         self.assertFalse(pkt_orig == pkt_same_class_different_values)
+        self.assertNotEqual(pkt_orig, pkt_same_class_different_values)
 
     def test_pkt_export_to_bytes_string(self):
+        """
+        This test verifies that a `Packet` class can create a properly sized bytes string from the
+        `Packet` field values.
+        """
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -137,6 +159,10 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertEqual(pkt_bin, b_val)
 
     def test_pkt_to_bytes_string_then_import_from_binary(self):
+        """
+        This test verifies that a `Packet` class instance can be created from a properly structured
+        byte string.
+        """
         class two_int_field_packet(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -154,6 +180,10 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertEqual(p.int_field_signed, p2.int_field_signed)
 
     def test_pkt_two_instances_different_field_instances(self):
+        """
+        This test verifies that two instances of the same `Packet` class can be created and does
+        not affect the values of the other packet instance class.
+        """
         class simple_pkt(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -174,6 +204,10 @@ class Test_BasicPacket(unittest.TestCase):
         self.assertNotEqual(p1.int_field_signed, p2.int_field_signed)
 
     def test_pkt_len(self):
+        """
+        This test verifies that using the len function on a `Packet` instance will return the
+        packet length.
+        """
         class simple_pkt(models.Packet):
             int_field = models.IntField()
             int_field_signed = models.IntField(signed=True)
@@ -188,10 +222,25 @@ class Test_BasicPacket(unittest.TestCase):
 
         self.assertEqual(len(p1), ctypes.sizeof(c_simple_pkt))
 
+    def test_pkt_invalid_fieldname_on_init_raises_error(self):
+        class simple_pkt(models.Packet):
+            int_field = models.IntField()
+            int_field_signed = models.IntField(signed=True)
+
+
+        with self.assertRaises(FieldNameDoesntExistError):
+            pkt = simple_pkt(flaot_field=3.123)
+
+        with self.assertRaises(FieldNameDoesntExistError):
+            pkt = simple_pkt(int_field_invalid=123)
 
 class Test_EndianPacket(unittest.TestCase):
 
-    def test_little_endian_packet_from_bytes(self):
+    def test_endian_little_endian_packet_from_bytes(self):
+        """
+        This test verifies that a PacketLittleEndian packet can be created from a properly formated
+        little endian byte string.
+        """
 
         # As of 22 Feb '18, PyPy does not support non-native endianess
         if PYPY:
@@ -209,7 +258,11 @@ class Test_EndianPacket(unittest.TestCase):
         self.assertEqual(pkt.field2, 0xbeefcafe)
 
 
-    def test_little_endian_packet_to_bytes(self):
+    def test_endian_little_endian_packet_to_bytes(self):
+        """
+        This test verifies that a PacketLittleEndian packet can be created and will create the
+        properly formated byte string.
+        """
 
         # As of 22 Feb '18, PyPy does not support non-native endianess
         if PYPY:
@@ -229,8 +282,11 @@ class Test_EndianPacket(unittest.TestCase):
         self.assertEqual(pkt.to_bytes(), expected_b_val)
 
 
-    def test_big_endian_packet_from_bytes(self):
-
+    def test_endian_big_endian_packet_from_bytes(self):
+        """
+        This test verifies that a PacketBigEndian packet can be created from a properly formated
+        little endian byte string.
+        """
         # As of 22 Feb '18, PyPy does not support non-native endianess
         if PYPY:
             return True
@@ -247,7 +303,11 @@ class Test_EndianPacket(unittest.TestCase):
         self.assertEqual(pkt.field2, 0xbeefcafe)
 
 
-    def test_big_endian_packet_to_bytes(self):
+    def test_endian_big_endian_packet_to_bytes(self):
+        """
+        This test verifies that a PacketBigEndian packet can be created and will create the
+        properly formated byte string.
+        """
 
         # As of 22 Feb '18, PyPy does not support non-native endianess
         if PYPY:
