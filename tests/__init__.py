@@ -10,20 +10,34 @@ def get_tests():
 
 def full_suite():
 
-    from tests.IntField_Test import Test_IntField
-    from tests.BasicPackets_Test import Test_BasicPacket
-    from tests.ArrayField_Test import Test_ArrayField
-    from tests.PacketField_Test import Test_PacketField
-    from tests.Utilities_Test import Test_Utilities
-    from tests.AdvancedPackets_Test import Test_AdvancedPacket
+    from tests.test_IntFields import Test_IntField
+    from tests.test_BasicPackets import Test_BasicPacket, Test_EndianPacket
+    from tests.test_ArrayField import Test_ArrayField
+    from tests.test_PacketField import Test_PacketField
+    from tests.test_Utilities import Test_Utilities
+    from tests.test_AdvancedPackets import Test_AdvancedPacket
+    from tests.test_FlagField import Test_FlagField
+    from tests.test_FloatFields import Test_FloatField, Test_DoubleField, Test_LongDoubleField
+    from tests.test_BoolField import Test_BoolField
+    from tests.test_Repr import Test_Repr
+    from tests.test_Common_IP import Test_TCP_HEADER, Test_UDP_HEADER
 
     return unittest.TestSuite([
         unittest.TestLoader().loadTestsFromTestCase(Test_BasicPacket),
+        unittest.TestLoader().loadTestsFromTestCase(Test_EndianPacket),
         unittest.TestLoader().loadTestsFromTestCase(Test_IntField),
         unittest.TestLoader().loadTestsFromTestCase(Test_ArrayField),
         unittest.TestLoader().loadTestsFromTestCase(Test_PacketField),
         unittest.TestLoader().loadTestsFromTestCase(Test_Utilities),
         unittest.TestLoader().loadTestsFromTestCase(Test_AdvancedPacket),
+        unittest.TestLoader().loadTestsFromTestCase(Test_FlagField),
+        unittest.TestLoader().loadTestsFromTestCase(Test_FloatField),
+        unittest.TestLoader().loadTestsFromTestCase(Test_DoubleField),
+        unittest.TestLoader().loadTestsFromTestCase(Test_LongDoubleField),
+        unittest.TestLoader().loadTestsFromTestCase(Test_BoolField),
+        unittest.TestLoader().loadTestsFromTestCase(Test_Repr),
+        unittest.TestLoader().loadTestsFromTestCase(Test_TCP_HEADER),
+        unittest.TestLoader().loadTestsFromTestCase(Test_UDP_HEADER)
     ])
 
 if __name__ == "__main__":

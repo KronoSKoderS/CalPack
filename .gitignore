@@ -267,3 +267,7 @@ calpack.egg-info/
 *.sln
 *.pyproj
 *.pyperf
+.vscode/*
+
+\.pytest_cache\*
+.pytest_cache/
