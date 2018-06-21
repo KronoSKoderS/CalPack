@@ -3,6 +3,8 @@
 [![Coverage Status](https://coveralls.io/repos/github/KronoSKoderS/CalPack/badge.svg?branch=prod)](https://coveralls.io/github/KronoSKoderS/CalPack?branch=dev)
 [![Documentation Status](https://readthedocs.org/projects/concorde/badge/?version=latest)](http://concorde.readthedocs.io/en/latest/?badge=latest)
 
+![CalPack Logo](CalPack.png)
+
 # CalPack
 
 Packets in Python Simplified.
