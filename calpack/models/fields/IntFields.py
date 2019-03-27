@@ -40,12 +40,13 @@ class IntField(Field):
         self.c_type = self._c_types[int(self.signed)]
 
         self.bit_len = bit_len
+
+        type_size = ctypes.sizeof(self.c_type) * BYTE_SIZE
+
         if bit_len is None:
-            self.bit_len = ctypes.sizeof(self.c_type) * BYTE_SIZE
-        if self.bit_len <= 0 or self.bit_len > ctypes.sizeof(self.c_type) * BYTE_SIZE:
-            raise ValueError("bit_len must be between 1 and {max_val}".format(
-                max_val=ctypes.sizeof(self.c_type) * BYTE_SIZE)
-            )
+            self.bit_len = type_size
+        if self.bit_len <= 0 or self.bit_len > type_size:
+            raise ValueError(f"bit_len must be between 1 and {type_size}")
 
     def py_to_c(self, val):
         if not self.signed and val < 0:

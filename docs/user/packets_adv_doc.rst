@@ -16,7 +16,7 @@ This is easy to do within :code:`calpack` through the use of the :code:`ArrayFie
 
 Creating an Array of :code:`IntField`'s
 ---------------------------------------
-When deal with a lot of fields that are the same it can become a bear to create each field
+When dealing with a lot of fields that are the same it can become a bear to create each field
 
 .. doctest:: adv_pkt
 

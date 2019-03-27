@@ -34,7 +34,6 @@ class UDP_HEADER_BIG(UDP_HEADER, PacketBigEndian):
     UDP HEADER class.  A simple packet class representing the UDP Header.  This packet uses big
     endian byte ordering.
     """
-    pass
 
 
 class UDP_HEADER_LITTLE(UDP_HEADER, PacketLittleEndian):
@@ -42,7 +41,6 @@ class UDP_HEADER_LITTLE(UDP_HEADER, PacketLittleEndian):
     UDP HEADER class.  A simple packet class representing the UDP Header.  This packet uses little
     endian byte ordering.
     """
-    pass
 
 
 class TCP_HEADER(models.Packet):
@@ -74,7 +72,6 @@ class TCP_HEADER_BIG(TCP_HEADER, PacketBigEndian):
     UDP HEADER class.  A simple packet class representing the UDP Header.  This packet uses big
     byte ordering.
     """
-    pass
 
 
 class TCP_HEADER_LITTLE(TCP_HEADER, PacketLittleEndian):
@@ -82,4 +79,3 @@ class TCP_HEADER_LITTLE(TCP_HEADER, PacketLittleEndian):
     UDP HEADER class.  A simple packet class representing the UDP Header.  This packet uses little
     byte ordering.
     """
-    pass

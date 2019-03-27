@@ -5,7 +5,7 @@ import sys
 
 __all__ = [
     'InvalidArrayFieldSizeError', 'FieldNameError', 'FieldNameDoesntExistError', 'typed_property',
-    'PY2', 'PY3', 'PYPY'
+    'PYPY'
 ]
 
 _NO_TYPE = object()
@@ -13,22 +13,18 @@ _NO_TYPE = object()
 
 class InvalidArrayFieldSizeError(Exception):
     """An exception raised when the ArrayField sizes mismatch"""
-    pass
 
 
 class FieldNameError(Exception):
     """An exception raised when the FieldName errors occur"""
-    pass
 
 
 class FieldNameDoesntExistError(Exception):
     """An exception raised when the Field Name doesn't exist"""
-    pass
 
 
 class FieldAlreadyExistsError(Exception):
     """An exception raised when the Field Name already exists"""
-    pass
 
 
 def typed_property(name, expected_type, default_val=None):
@@ -47,7 +43,7 @@ def typed_property(name, expected_type, default_val=None):
         :code:`expected_type`
     """
     if default_val is not None and not isinstance(default_val, expected_type):
-        raise TypeError("{v} must be of type {t}".format(v=default_val, t=expected_type))
+        raise TypeError(f"{default_val} must be of type {expected_type}")
 
     storage_name = '_internal_' + name
 
@@ -60,7 +56,7 @@ def typed_property(name, expected_type, default_val=None):
     def prop(self, value):
         # Raise an error if `value` is not of the expected type.  This ensure proper type setting.
         if not isinstance(value, expected_type):
-            raise TypeError("{v} must be of type {t}".format(v=value, t=expected_type))
+            raise TypeError(f"{value} must be of type {expected_type}")
         setattr(self, storage_name, value)
 
     return prop

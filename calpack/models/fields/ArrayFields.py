@@ -36,7 +36,7 @@ class ArrayField(Field):
             raise TypeError("Must be of type ArrayField or list")
 
         if len(val) != self.array_size:
-            raise InvalidArrayFieldSizeError("The length of val must be {}!".format(self.array_size))
+            raise InvalidArrayFieldSizeError(f"The length of val must be {self.array_size}!")
 
         return self.c_type(*val)
 

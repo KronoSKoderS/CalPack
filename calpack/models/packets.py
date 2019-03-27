@@ -69,7 +69,7 @@ class _MetaPacket(type):
                     # we don't want to override a field.  If it's already there, then we need to
                     # raise and error.
                     if field_name in class_dict.keys():
-                        raise FieldAlreadyExistsError("{} field already exitsts!".format(field_name))
+                        raise FieldAlreadyExistsError(f"{field_name} field already exitsts!")
                     class_dict[field_name] = field
 
         # for each 'Field' type we're gonna save the order and prep for the c struct
@@ -145,7 +145,7 @@ class Packet(object, metaclass=_MetaPacket):
             if key in self.fields_order:
                 setattr(self, key, val)
             else:
-                raise FieldNameDoesntExistError("{key} is not a valid field name".format(key=key))
+                raise FieldNameDoesntExistError(f"{key} is not a valid field name")
 
     @property
     def c_pkt(self):
@@ -197,7 +197,7 @@ class Packet(object, metaclass=_MetaPacket):
         :param val: a cytpes compatible value to set the field to
         """
         if field_name not in self.fields_order:
-            raise FieldNameError("'{o}' does not contain field '{n}'".format(o=self, n=field_name))
+            raise FieldNameError(f"'{self}' does not contain field '{field_name}'")
 
         setattr(self.__c_pkt, field_name, val)
 
