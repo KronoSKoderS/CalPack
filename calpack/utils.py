@@ -65,6 +65,4 @@ def typed_property(name, expected_type, default_val=None):
 
     return prop
 
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
 PYPY = "PyPy" in sys.version

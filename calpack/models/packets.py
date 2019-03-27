@@ -5,7 +5,7 @@ import ctypes
 
 from collections import OrderedDict
 
-from calpack.utils import typed_property, PY2, PYPY, FieldNameError, \
+from calpack.utils import typed_property, PYPY, FieldNameError, \
 FieldAlreadyExistsError, FieldNameDoesntExistError
 from calpack.models.fields import Field
 
@@ -13,27 +13,6 @@ from calpack.models.fields import Field
 __all__ = ['Packet']
 if not PYPY:
     __all__ += ['PacketLittleEndian', 'PacketBigEndian']
-
-
-# This was taken from the six.py source code.  Reason being that I only needed a small part of six
-#   and didn't want to rely on the third-party installation just for this package.  I highly
-#   recommend looking at them for Python 2/3 compatible coding:  https://github.com/benjaminp/six
-#
-# WARNING: When I finally decide to migrate away from Python 2 this will be removed.
-def add_metaclass(metaclass):
-    """Class decorator for creating a class with a metaclass."""
-    def wrapper(cls):
-        orig_vars = cls.__dict__.copy()
-        slots = orig_vars.get('__slots__')
-        if slots is not None:
-            if isinstance(slots, str):
-                slots = [slots]
-            for slots_var in slots:
-                orig_vars.pop(slots_var)
-        orig_vars.pop('__dict__', None)
-        orig_vars.pop('__weakref__', None)
-        return metaclass(cls.__name__, cls.__bases__, orig_vars)
-    return wrapper
 
 
 class _MetaPacket(type):
@@ -72,9 +51,6 @@ class _MetaPacket(type):
             if isinstance(obj, Field)
         ]
 
-        if PY2:
-            fields.sort(lambda x, y: cmp(x[1].creation_counter, y[1].creation_counter))
-
         # Get all of the attributes of the base classes and see if the Structure is defined
         #   if so, then update to the base C Structure to this one.  We also need to check
         #   to see if any of the bases are other Packet types.  If so, then 'inherit' that
@@ -99,13 +75,9 @@ class _MetaPacket(type):
         # for each 'Field' type we're gonna save the order and prep for the c struct
         for name, obj in fields:
             order.append(name)
-
             obj.field_name = name
-
             field_tuple = obj.create_field_c_tuple()
-
             fields_tuple.append(field_tuple)
-
             class_dict[name] = obj
 
         # Here we save the order
@@ -127,8 +99,7 @@ class _MetaPacket(type):
         return OrderedDict()
 
 
-@add_metaclass(_MetaPacket)
-class Packet(object):
+class Packet(object, metaclass=_MetaPacket):
     """
     A super class that custom packet classes can inherit from.  This class is NOT intended to be
     used directly, but as a super class.
@@ -146,6 +117,7 @@ class Packet(object):
         structure.  This MUST have the same :code:`_fields_` as the Packet would normally have in
         order for it to work properly.
     """
+
     _IS_PKT_CLASS = True
     word_size = typed_property('word_size', int, 16)
     fields_order = []
