@@ -31,7 +31,7 @@ class _MetaPacket(type):
             - The bit width of the field is summed
         3. A `ctypes.Structure` is created with :code:`_fields_` in order and type of the Fields.
 
-    In order for this to work, the following are assumed about the defined :code:`Field` classes:
+    In order for this to work, the following are assumed to be defined by the :code:`Field` classes:
 
         * c_type is defined with a `ctypes.c_<type>`
         * bit_len
@@ -94,6 +94,7 @@ class _MetaPacket(type):
 
         return type.__new__(mcs, clsname, bases, class_dict)
 
+    # TODO: Determine is this is still necessary for Python 3
     @classmethod
     def __prepare__(mcs, clsname, bases, **kwargs):
         return OrderedDict()
