@@ -11,23 +11,23 @@ class Test_FloatField(unittest.TestCase):
 
         f.f_field = 3.14
 
-        self.assertAlmostEquals(f.f_field, 3.14, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.f_field, 3.14, places=5)
+        self.assertAlmostEqual(f.f_field, 3.14, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.f_field, 3.14, places=5)
 
         f.f_field = -3.14
 
-        self.assertAlmostEquals(f.f_field, -3.14, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.f_field, -3.14, places=5)
+        self.assertAlmostEqual(f.f_field, -3.14, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.f_field, -3.14, places=5)
 
         f.f_field = 3
 
-        self.assertAlmostEquals(f.f_field, 3, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.f_field, 3, places=5)
+        self.assertAlmostEqual(f.f_field, 3, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.f_field, 3, places=5)
 
         f.f_field = -3
 
-        self.assertAlmostEquals(f.f_field, -3, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.f_field, -3, places=5)
+        self.assertAlmostEqual(f.f_field, -3, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.f_field, -3, places=5)
 
     def test_floatfield_set_invalid_val_raises_type_error(self):
         class float_packet(models.Packet):
@@ -50,23 +50,23 @@ class Test_DoubleField(unittest.TestCase):
         f = double_packet()
         f.d_field = 3.14
 
-        self.assertAlmostEquals(f.d_field, 3.14, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.d_field, 3.14, places=5)
+        self.assertAlmostEqual(f.d_field, 3.14, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.d_field, 3.14, places=5)
 
         f.d_field = -3.14
 
-        self.assertAlmostEquals(f.d_field, -3.14, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.d_field, -3.14, places=5)
+        self.assertAlmostEqual(f.d_field, -3.14, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.d_field, -3.14, places=5)
 
         f.d_field = 3
 
-        self.assertAlmostEquals(f.d_field, 3, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.d_field, 3, places=5)
+        self.assertAlmostEqual(f.d_field, 3, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.d_field, 3, places=5)
 
         f.d_field = -3
 
-        self.assertAlmostEquals(f.d_field, -3, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.d_field, -3, places=5)
+        self.assertAlmostEqual(f.d_field, -3, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.d_field, -3, places=5)
 
     def test_doublefield_set_invalid_val_raises_type_error(self):
         class double_packet(models.Packet):
@@ -89,23 +89,23 @@ class Test_LongDoubleField(unittest.TestCase):
         f = double_packet()
         f.d_field = 3.14
 
-        self.assertAlmostEquals(f.d_field, 3.14, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.d_field, 3.14, places=5)
+        self.assertAlmostEqual(f.d_field, 3.14, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.d_field, 3.14, places=5)
 
         f.d_field = -3.14
 
-        self.assertAlmostEquals(f.d_field, -3.14, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.d_field, -3.14, places=5)
+        self.assertAlmostEqual(f.d_field, -3.14, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.d_field, -3.14, places=5)
 
         f.d_field = 3
 
-        self.assertAlmostEquals(f.d_field, 3, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.d_field, 3, places=5)
+        self.assertAlmostEqual(f.d_field, 3, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.d_field, 3, places=5)
 
         f.d_field = -3
 
-        self.assertAlmostEquals(f.d_field, -3, places=5)
-        self.assertAlmostEquals(f._Packet__c_pkt.d_field, -3, places=5)
+        self.assertAlmostEqual(f.d_field, -3, places=5)
+        self.assertAlmostEqual(f._Packet__c_pkt.d_field, -3, places=5)
 
     def test_doublefield_set_invalid_val_raises_type_error(self):
         class double_packet(models.Packet):

@@ -110,7 +110,7 @@ class Test_ArrayField(unittest.TestCase):
         p2 = multi_int_field_packet()
         p2.arr_int_field = p1.arr_int_field
 
-        self.assertEquals(p2.arr_int_field, expected_vals)
+        self.assertEqual(p2.arr_int_field, expected_vals)
 
     def test_arrayfield_raise_typeerror_non_byte_aligned_int_field(self):
         """
